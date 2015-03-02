@@ -1,0 +1,9 @@
+exportPattern("^[[:alpha:]]+")
+import("rJava")
+import("coda")
+import("ggplot2")
+
+S3method("print","insilico")
+S3method("plot","insilico")
+S3method("print","insilico_summary")
+

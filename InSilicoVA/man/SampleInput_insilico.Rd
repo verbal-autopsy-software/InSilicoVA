@@ -1,6 +1,6 @@
 \docType{data}
-\name{SampleInput}
-\alias{SampleInput}
+\name{SampleInput_insilico}
+\alias{SampleInput_insilico}
 \title{100 records of Sample Input}
 \format{100 arbitrary input records.}
 \description{
@@ -11,6 +11,6 @@ be in the same format. The orders of the input fields must
 not be changed.
 }
 \examples{
-data(SampleInput)
+data(SampleInput_insilico)
 }
 \keyword{datasets}

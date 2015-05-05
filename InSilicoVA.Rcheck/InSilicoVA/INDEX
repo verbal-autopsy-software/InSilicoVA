@@ -1,0 +1,10 @@
+InsilicoVA-package      What the package does (short line) ~~ package
+                        title ~~
+SampleInput_insilico    100 records of Sample Input
+causetext               Translation list of COD codes
+condprob                Conditional probability table used by InterVA-4
+csmf.diag               Convergence test for fitted InSilico model
+insilico                Implement InSilicoVA methods
+plot.insilico           plot CSMF from a "insilico" object
+probbase                Conditional probability of InterVA4
+summary.insilico        Summarizing InSilicoVA Model Fits

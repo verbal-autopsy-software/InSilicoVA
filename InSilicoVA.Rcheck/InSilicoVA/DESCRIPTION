@@ -1,0 +1,12 @@
+Package: InSilicoVA
+Type: Package
+Title: Java implementation of InSilicoVA
+Version: 1.0
+Date: 2015-02-06
+Author: Zehang Li, Tyler McCormick, Sam Clark
+Maintainer: Zehang Li <lizehang@uw.edu>
+Depends: R (>= 2.15.0), rJava, coda, ggplot2
+Description: Computes individual cause of death and population cause-specific mortality fractions using the InSilicoVA algorithm.
+License: GPL-2
+Packaged: 2015-05-05 21:45:25 UTC; zehangli
+Built: R 3.1.2; ; 2015-05-05 21:45:29 UTC; unix

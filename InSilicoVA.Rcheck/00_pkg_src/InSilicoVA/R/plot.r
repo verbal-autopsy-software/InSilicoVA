@@ -1,4 +1,4 @@
-plot.insilico <- function(x, type = c("box", "bar", "compare")[1], 
+plot.insilico <- function(x, type = c("bar", "compare")[1], 
 	top = 10, causelist = NULL, which.sub = NULL, 
 	xlab = "Causes", ylab = "CSMF", title = "Top CSMF Distribution", 
 	horiz = TRUE, angle = 60, fill = "lightblue", border = "black", bw = FALSE,

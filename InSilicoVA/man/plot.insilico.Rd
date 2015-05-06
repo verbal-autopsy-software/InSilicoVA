@@ -6,10 +6,12 @@
 Produce a bar plot of the CSMFs for a fitted \code{"insilico"} object.
 }
 \usage{
-\method{plot}{insilico}(x, type = c("bar", "compare")[1], top = 10, causelist = NULL, 
-  which.sub = NULL, xlab = "Causes", ylab = "CSMF", title = "Top CSMF Distribution", 
-	horiz = TRUE, angle = 60, fill = "lightblue", border = "black", bw = FALSE,
-	...)
+\method{plot}{insilico}(x, type = c("errorbar", "bar", "compare")[1], 
+  top = 10, causelist = NULL, which.sub = NULL, 
+  xlab = "Causes", ylab = "CSMF", title = "Top CSMF Distribution", 
+  horiz = TRUE, angle = 60, fill = "lightblue", 
+  err_width = .4, err_size = .6, point_size = 2, 
+  border = "black", bw = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,6 +28,9 @@ fitted \code{"insilico"} object}
   \item{angle}{Angle of rotation for the texts on x axis when \code{horiz} is set to FALSE}
   \item{fill}{The color to fill the bars when \code{type} is set to "bar". }
   \item{border}{The color to color the borders of bars when \code{type} is set to "bar".}
+  \item{err_width}{Size of the error bars.}
+  \item{err_size}{Thickness of the error bar lines.}
+  \item{point_size}{Size of the points.}
   \item{bw}{Logical indicator for setting the theme of the plots to be black and white.}
   \item{\dots}{Not used.}
 }
@@ -61,17 +66,24 @@ data <- SampleInput_insilico$data
 subpop <- SampleInput_insilico$subpop
 
 # run without sub-population
-fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+fit1<- insilico( data, subpop = NULL, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 # default plot
 plot(fit1)
-# customized plot
+
+# customized line plot
 plot(fit1, top = 15, horiz = FALSE, fill = "gold", 
-		   bw = TRUE, title = "Top 15 CSMFs", angle = 70)
+		   bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
+       err_width = .2, err_size = .6, point_size = 2)
+
+# customized bar plot
+plot(fit1, type = "bar", top = 15, horiz = TRUE, 
+       bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
+       err_width = .5, err_size = .6)
 
 # run with sub-populations
-fit2<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+fit2<- insilico( data, subpop = subpop, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 # default plot

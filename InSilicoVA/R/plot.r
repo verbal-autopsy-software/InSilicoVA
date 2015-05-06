@@ -1,11 +1,13 @@
-plot.insilico <- function(x, type = c("box", "bar", "compare")[1], 
+plot.insilico <- function(x, type = c("errorbar", "bar", "compare")[1], 
 	top = 10, causelist = NULL, which.sub = NULL, 
 	xlab = "Causes", ylab = "CSMF", title = "Top CSMF Distribution", 
-	horiz = TRUE, angle = 60, fill = "lightblue", border = "black", bw = FALSE,
-	...){
+	horiz = TRUE, angle = 60, fill = "lightblue", 
+	err_width = .4, err_size = .6, point_size = 2, 
+	border = "black", bw = FALSE, ...){
 	
 	sx <- summary(x)
-	
+	# sx2 <- summary(x,  CI.csmf = 0.5)
+
 	# to please R CMD Check with ggplot
 	Group <- Mean <- Lower <- Upper <- Causes <- NULL
 
@@ -54,7 +56,7 @@ plot.insilico <- function(x, type = c("box", "bar", "compare")[1],
 	##
 	## for single population plot 
 	##
-	if(type == "bar"){
+	if(type == "bar" || type == "errorbar"){
 		# check which subpopulation to plot first.
 		# if no subpopulation
 		if(is.null(sx$subpop_counts)){
@@ -108,8 +110,32 @@ plot.insilico <- function(x, type = c("box", "bar", "compare")[1],
 									 y=Mean))
 		}
 		g <- g + geom_bar( stat="identity", 
-				 colour=border, fill=fill,  size =.3)
-		g <- g + geom_errorbar(aes(ymin = Lower, ymax = Upper), size = .3, width = .2, position = position_dodge(.9))
+				 colour=border, fill=fill,  size = .3)
+		## todo		
+		g <- g + geom_errorbar(aes(ymin = Lower, ymax = Upper), size = err_size, width = err_width,  position = position_dodge(.9))
+		g <- g + xlab(xlab) + ylab(ylab) 
+		g <- g + ggtitle(title)
+		if(horiz) g <- g + coord_flip()
+		if(bw) g <- g + theme_bw()
+		if(!horiz) g <- g + theme(axis.text.x = element_text(angle = angle, hjust = 1))	
+		return(g)
+	}
+
+	# making error bar plot
+	# require: number of top causes or which causes to plot;
+	#		   color list
+	if(type == "errorbar"){
+		# initialize ggplot, force order of bars
+		if(horiz){
+			g <- ggplot(csmf.toplot, aes(x=reorder(Causes, seq(length(Causes), 1)),
+									 y=Mean))	
+		}else{
+			g <- ggplot(csmf.toplot, aes(x=reorder(Causes, seq(1:length(Causes))),
+									 y=Mean))
+		}
+		g <- g + geom_point( stat="identity", 
+				 colour=border, fill=fill,  size = point_size)
+		g <- g + geom_errorbar(aes(ymin = Lower, ymax = Upper), size = err_size, width = err_width, position = position_dodge(.9))
 		g <- g + xlab(xlab) + ylab(ylab) 
 		g <- g + ggtitle(title)
 		if(horiz) g <- g + coord_flip()
@@ -123,16 +149,15 @@ plot.insilico <- function(x, type = c("box", "bar", "compare")[1],
 		# initialize ggplot, force order of bars
 		if(horiz){
 			g <- ggplot(csmf.toplot, aes(x=reorder(Causes, seq(length(Causes), 1)),
-									 y=Mean, 
+									 y=Mean, ymax=max(Upper)*1.05,
 									 fill = Group))
 		}else{
 			g <- ggplot(csmf.toplot, aes(x=reorder(Causes, seq(1:length(Causes))),
-									 y=Mean, 
+									 y=Mean, ymax=max(Upper)*1.05, 
 									 fill = Group))
 		}
-		g <- g + geom_bar( stat="identity", position = "dodge", 
-				 colour=border,  size =.3)
-		g <- g + geom_errorbar(aes(ymin = Lower, ymax = Upper), size = .3, width = .2, position = position_dodge(.9))
+		g <- g + geom_point( aes(color=Group), position=position_dodge(0.5), size = point_size) 
+		g <- g + geom_errorbar(aes(ymin = Lower, ymax = Upper, color = Group), size = err_size, width = err_width, position = position_dodge(.5))
 		g <- g + xlab(xlab) + ylab(ylab) 
 		g <- g + ggtitle(title)
 		g <- g + scale_y_continuous() 

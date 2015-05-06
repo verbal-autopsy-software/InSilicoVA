@@ -8,5 +8,5 @@ Maintainer: Zehang Li <lizehang@uw.edu>
 Depends: R (>= 2.15.0), rJava, coda, ggplot2
 Description: Computes individual cause of death and population cause-specific mortality fractions using the InSilicoVA algorithm.
 License: GPL-2
-Packaged: 2015-05-06 00:43:21 UTC; zehangli
-Built: R 3.1.2; ; 2015-05-06 00:43:25 UTC; unix
+Packaged: 2015-05-06 00:46:32 UTC; zehangli
+Built: R 3.1.2; ; 2015-05-06 00:46:36 UTC; unix

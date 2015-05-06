@@ -192,7 +192,7 @@ Sub-population 0 acceptance ratio: 0.57
 ..........
 Iteration: 300 
 Sub-population 0 acceptance ratio: 0.60 
-0.02min elapsed, 0.01min remaining 
+0.01min elapsed, 0.00min remaining 
 .........
 Overall acceptance ratio
 Sub-population 0 : 0.6275 
@@ -234,7 +234,7 @@ Sub-population 0 acceptance ratio: 0.67
 ..........
 Iteration: 400 
 Sub-population 0 acceptance ratio: 0.68 
-0.02min elapsed, 0.02min remaining 
+0.01min elapsed, 0.01min remaining 
 ..........
 Iteration: 500 
 Sub-population 0 acceptance ratio: 0.69 
@@ -341,7 +341,7 @@ Iteration: 400
 Sub-population 0 acceptance ratio: 0.71 
 Sub-population 1 acceptance ratio: 0.80 
 Sub-population 2 acceptance ratio: 0.85 
-0.02min elapsed, 0.02min remaining 
+0.01min elapsed, 0.01min remaining 
 ..........
 Iteration: 500 
 Sub-population 0 acceptance ratio: 0.71 
@@ -783,7 +783,7 @@ Fresh stillbirth                  0.0091    0.0054 0.0029 0.0079 0.0225
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  25.765 0.433 24.755 0 0 
+Time elapsed:  24.238 0.373 23.154 0 0 
 > grDevices::dev.off()
 null device 
           1 

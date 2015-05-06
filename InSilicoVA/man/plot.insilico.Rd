@@ -17,7 +17,7 @@ Produce a bar plot of the CSMFs for a fitted \code{"insilico"} object.
 \arguments{
   \item{x}{
 fitted \code{"insilico"} object}
-  \item{type}{An indicator of the type of chart to plot. "bar" for bar chart on single population; "compare" for bar charts on multiple sub-populations.}
+  \item{type}{An indicator of the type of chart to plot. "errorbar" for line plots of only the error bars on single population; "bar" for bar chart with error bars on single population; "compare" for line charts on multiple sub-populations.}
   \item{top}{The number of top causes to plot. If multiple sub-populations are to be plotted, it will plot the union of the top causes in all sub-populations.}
   \item{causelist}{The list of causes to plot. It could be a numeric vector indicating the position of the causes in the InterVA cause list (see \code{\link{causetext}}), or a vector of character string of the cause names. The argument supports partial matching of the cause names. e.g., "HIV/AIDS related death" could be abbreviated into "HIV"; "Other and unspecified infect dis" could be abbreviated into "Other and unspecified infect".}
   \item{which.sub}{Specification of which sub-population to plot if there are multiple and \code{type} is set to "bar".}

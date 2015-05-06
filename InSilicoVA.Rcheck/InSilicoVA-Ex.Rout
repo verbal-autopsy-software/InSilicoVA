@@ -105,13 +105,13 @@ Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C. Crampin, Kathleen Kah
 > ##D subpop <- SampleInput_insilico$subpop
 > ##D 
 > ##D # run without sub-population
-> ##D fit1a<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+> ##D fit1a<- insilico( data, subpop = NULL, 
 > ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 1, 
 > ##D               auto.length = FALSE)
-> ##D fit1b<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+> ##D fit1b<- insilico( data, subpop = NULL,  
 > ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 2, 
 > ##D               auto.length = FALSE)
-> ##D fit1c<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+> ##D fit1c<- insilico( data, subpop = NULL,  
 > ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 3, 
 > ##D               auto.length = FALSE)
 > ##D # single chain check
@@ -126,13 +126,13 @@ Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C. Crampin, Kathleen Kah
 > ##D 
 > ##D 
 > ##D # with sub-populations
-> ##D fit2a<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+> ##D fit2a<- insilico( data, subpop = subpop,  
 > ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 1, 
 > ##D               auto.length = FALSE)
-> ##D fit2b<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+> ##D fit2b<- insilico( data, subpop = subpop,  
 > ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 2, 
 > ##D               auto.length = FALSE)
-> ##D fit2c<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+> ##D fit2c<- insilico( data, subpop = subpop,   
 > ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 3, 
 > ##D               auto.length = FALSE)
 > ##D 
@@ -165,14 +165,14 @@ Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C. Crampin, Kathleen Kah
 > 
 > # load sample data together with sub-population list
 > data(SampleInput_insilico)
-> # extract INterVA style input data
+> # extract InterVA style input data
 > data <- SampleInput_insilico$data
 > # extract sub-population information. 
 > # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
 > subpop <- SampleInput_insilico$subpop
 > 
 > # run without subpopulation
-> fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+> fit1<- insilico( data, subpop = NULL,  
 +               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 +               external.sep = TRUE, keepProbbase.level = TRUE)
 Warning: 132 symptom missing completely and added to missing list 
@@ -192,7 +192,7 @@ Sub-population 0 acceptance ratio: 0.57
 ..........
 Iteration: 300 
 Sub-population 0 acceptance ratio: 0.60 
-0.01min elapsed, 0.00min remaining 
+0.02min elapsed, 0.01min remaining 
 .........
 Overall acceptance ratio
 Sub-population 0 : 0.6275 
@@ -222,7 +222,7 @@ Insilico Sampler initiated, 800 iterations to sample
 ...........
 Iteration: 100 
 Sub-population 0 acceptance ratio: 0.67 
-0.00min elapsed, 0.02min remaining 
+0.00min elapsed, 0.03min remaining 
 ..........
 Iteration: 200 
 Sub-population 0 acceptance ratio: 0.65 
@@ -234,7 +234,7 @@ Sub-population 0 acceptance ratio: 0.67
 ..........
 Iteration: 400 
 Sub-population 0 acceptance ratio: 0.68 
-0.01min elapsed, 0.01min remaining 
+0.02min elapsed, 0.02min remaining 
 ..........
 Iteration: 500 
 Sub-population 0 acceptance ratio: 0.69 
@@ -255,7 +255,7 @@ Not all causes with CSMF > 0.02 are convergent.
  Please check using csmf.diag() for more information.
 > 
 > # re-run with subpopulation
-> fit2<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+> fit2<- insilico( data, subpop = subpop, 
 +               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 +               external.sep = TRUE, keepProbbase.level = TRUE)
 Warning: 132 symptom missing completely and added to missing list 
@@ -341,7 +341,7 @@ Iteration: 400
 Sub-population 0 acceptance ratio: 0.71 
 Sub-population 1 acceptance ratio: 0.80 
 Sub-population 2 acceptance ratio: 0.85 
-0.01min elapsed, 0.01min remaining 
+0.02min elapsed, 0.02min remaining 
 ..........
 Iteration: 500 
 Sub-population 0 acceptance ratio: 0.71 
@@ -394,7 +394,7 @@ Not all causes with CSMF > 0.02 are convergent.
 > subpop <- SampleInput_insilico$subpop
 > 
 > # run without sub-population
-> fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+> fit1<- insilico( data, subpop = NULL, 
 +               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 +               external.sep = TRUE, keepProbbase.level = TRUE)
 Warning: 132 symptom missing completely and added to missing list 
@@ -477,12 +477,19 @@ Not all causes with CSMF > 0.02 are convergent.
  Please check using csmf.diag() for more information.
 > # default plot
 > plot(fit1)
-> # customized plot
+> 
+> # customized line plot
 > plot(fit1, top = 15, horiz = FALSE, fill = "gold", 
-+ 		   bw = TRUE, title = "Top 15 CSMFs", angle = 70)
++ 		   bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
++        err_width = .2, err_size = .6, point_size = 2)
+> 
+> # customized bar plot
+> plot(fit1, type = "bar", top = 15, horiz = TRUE, 
++        bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
++        err_width = .5, err_size = .6)
 > 
 > # run with sub-populations
-> fit2<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+> fit2<- insilico( data, subpop = subpop, 
 +               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 +               external.sep = TRUE, keepProbbase.level = TRUE)
 Warning: 132 symptom missing completely and added to missing list 
@@ -648,7 +655,7 @@ Not all causes with CSMF > 0.02 are convergent.
 > subpop <- SampleInput_insilico$subpop
 > 
 > # run without subpopulation
-> fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+> fit1<- insilico( data, subpop = NULL, 
 +               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 +               external.sep = TRUE, keepProbbase.level = TRUE)
 Warning: 132 symptom missing completely and added to missing list 
@@ -736,8 +743,6 @@ InSilicoVA Call:
  80 iterations saved after thinning
 Fitted with re-estimated InterVA4 conditional probability level table
 Data consistency check performed as in InterVA4 
-HIV level:      h 
-Malaria level:  h 
 
 Top 10 CSMFs:
                                     Mean Std.Error  Lower Median  Upper
@@ -758,8 +763,6 @@ InSilicoVA Call:
  80 iterations saved after thinning
 Fitted with re-estimated InterVA4 conditional probability level table
 Data consistency check performed as in InterVA4 
-HIV level:      h 
-Malaria level:  h 
 
 Top 10 CSMFs:
                                     Mean Std.Error  Lower Median  Upper
@@ -780,7 +783,7 @@ Fresh stillbirth                  0.0091    0.0054 0.0029 0.0079 0.0225
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  23.912 0.362 22.812 0 0 
+Time elapsed:  25.765 0.433 24.755 0 0 
 > grDevices::dev.off()
 null device 
           1 

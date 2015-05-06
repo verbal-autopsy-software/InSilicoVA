@@ -15,8 +15,7 @@ For Windows user, this function will produce a popup window showing the progress
   insilico(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  
            cond.prob.touse = NULL, datacheck = TRUE, warning.write = FALSE, 
            external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, 
-           auto.length = TRUE, conv.csmf = 0.02,
-           HIV = NULL, Malaria = NULL, jump.scale = 0.1, 
+           auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, 
            levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, 
            trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1)
 }
@@ -56,10 +55,10 @@ For Windows user, this function will produce a popup window showing the progress
 %    \item{csmf.prior}{ If \code{UseInterVA} is set to 0, this allows a user defined distribution of CSMF to be used. If it is not provided, the algorithm will start from uniform distribution across all causes.
 % }
  
-  \item{HIV}{ The HIV level used when \code{UseHIV} is set to 1 or 2.
-}
-  \item{Malaria}{ The Malaria level used when \code{UseHIV} is set to 1 or 2.
-}
+%   \item{HIV}{ The HIV level used when \code{UseHIV} is set to 1 or 2.
+% }
+%   \item{Malaria}{ The Malaria level used when \code{UseHIV} is set to 1 or 2.
+% }
   \item{jump.scale}{ The scale of Metropolis proposal in the Normal model. Default to be 0.1.
 }
 
@@ -121,19 +120,19 @@ Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C. Crampin, Kathleen Kah
 \examples{
 # load sample data together with sub-population list
 data(SampleInput_insilico)
-# extract INterVA style input data
+# extract InterVA style input data
 data <- SampleInput_insilico$data
 # extract sub-population information. 
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
 subpop <- SampleInput_insilico$subpop
 
 # run without subpopulation
-fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+fit1<- insilico( data, subpop = NULL,  
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 
 # re-run with subpopulation
-fit2<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+fit2<- insilico( data, subpop = subpop, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 

@@ -78,13 +78,13 @@ data(SampleInput_insilico)
 ##D subpop <- SampleInput_insilico$subpop
 ##D 
 ##D # run without sub-population
-##D fit1a<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+##D fit1a<- insilico( data, subpop = NULL, 
 ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 1, 
 ##D               auto.length = FALSE)
-##D fit1b<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+##D fit1b<- insilico( data, subpop = NULL,  
 ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 2, 
 ##D               auto.length = FALSE)
-##D fit1c<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+##D fit1c<- insilico( data, subpop = NULL,  
 ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 3, 
 ##D               auto.length = FALSE)
 ##D # single chain check
@@ -99,13 +99,13 @@ data(SampleInput_insilico)
 ##D 
 ##D 
 ##D # with sub-populations
-##D fit2a<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+##D fit2a<- insilico( data, subpop = subpop,  
 ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 1, 
 ##D               auto.length = FALSE)
-##D fit2b<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+##D fit2b<- insilico( data, subpop = subpop,  
 ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 2, 
 ##D               auto.length = FALSE)
-##D fit2c<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+##D fit2c<- insilico( data, subpop = subpop,   
 ##D               length.sim = 400, burnin = 200, thin = 10 , seed = 3, 
 ##D               auto.length = FALSE)
 ##D 
@@ -138,19 +138,19 @@ flush(stderr()); flush(stdout())
 
 # load sample data together with sub-population list
 data(SampleInput_insilico)
-# extract INterVA style input data
+# extract InterVA style input data
 data <- SampleInput_insilico$data
 # extract sub-population information. 
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
 subpop <- SampleInput_insilico$subpop
 
 # run without subpopulation
-fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+fit1<- insilico( data, subpop = NULL,  
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 
 # re-run with subpopulation
-fit2<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+fit2<- insilico( data, subpop = subpop, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 
@@ -179,17 +179,24 @@ data <- SampleInput_insilico$data
 subpop <- SampleInput_insilico$subpop
 
 # run without sub-population
-fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+fit1<- insilico( data, subpop = NULL, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 # default plot
 plot(fit1)
-# customized plot
+
+# customized line plot
 plot(fit1, top = 15, horiz = FALSE, fill = "gold", 
-		   bw = TRUE, title = "Top 15 CSMFs", angle = 70)
+		   bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
+       err_width = .2, err_size = .6, point_size = 2)
+
+# customized bar plot
+plot(fit1, type = "bar", top = 15, horiz = TRUE, 
+       bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
+       err_width = .5, err_size = .6)
 
 # run with sub-populations
-fit2<- insilico( data, subpop = subpop, HIV = "h", Malaria = "h", 
+fit2<- insilico( data, subpop = subpop, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 # default plot
@@ -245,7 +252,7 @@ data <- SampleInput_insilico$data
 subpop <- SampleInput_insilico$subpop
 
 # run without subpopulation
-fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+fit1<- insilico( data, subpop = NULL, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 summary(fit1)

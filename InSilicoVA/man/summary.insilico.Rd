@@ -36,8 +36,8 @@ This function is the summary method for class \code{insilico}.}
 \item{length.sim}{Component of \code{"insilico"} object.}
 \item{thin}{Component of \code{"insilico"} object.}
 \item{burnin}{Component of \code{"insilico"} object.}
-\item{HIV}{Component of \code{"insilico"} object.}
-\item{Malaria}{Component of \code{"insilico"} object.}
+% \item{HIV}{Component of \code{"insilico"} object.}
+% \item{Malaria}{Component of \code{"insilico"} object.}
 \item{jump.scale}{Component of \code{"insilico"} object.}
 \item{levels.prior}{Component of \code{"insilico"} object.}
 \item{levels.strength}{Component of \code{"insilico"} object.}
@@ -71,7 +71,7 @@ data <- SampleInput_insilico$data
 subpop <- SampleInput_insilico$subpop
 
 # run without subpopulation
-fit1<- insilico( data, subpop = NULL, HIV = "h", Malaria = "h", 
+fit1<- insilico( data, subpop = NULL, 
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 summary(fit1)

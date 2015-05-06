@@ -1,4 +1,4 @@
-insilico <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, HIV = NULL, Malaria = NULL, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1){ 
+insilico <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1){ 
 	
 #############################################################################
 #############################################################################
@@ -495,9 +495,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(is.null(length.sim) || is.null(thin) || is.null(burnin)){
 		stop("Length of chain/thinning/burn-in not specified")
 	}
-	if((is.null(HIV) || is.null(Malaria))){
-		stop("No HIV or Malaria status provided")
-	}
+
 ##---------------------------------------------------------------------------------##
 ## initialize key data dependencies
 ##	
@@ -691,23 +689,6 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	Sys_Prior <- as.numeric(change.inter(probbase[1,17:76], order = FALSE))
 	# Number of indicators + 13 description variables. A_group:14-16;B_group:17:76;D_group:77:81
 	D <- length(Sys_Prior)
-	## Modify the prior based on HIV and Malaria prevalence
-	## 19 = B_HIVAIDS; 21 = B_MALAR; 39 = B_SICKLE
-	if(HIV == "h") Sys_Prior[3] <- 0.05
-	if(HIV == "l") Sys_Prior[3] <- 0.005
-	if(HIV == "v") Sys_Prior[3] <- 0.00001
-	if(Malaria == "h"){
-		Sys_Prior[5] <- 0.05
-		Sys_Prior[23] <- 0.05
-	}
-	if(Malaria == "l"){
-		Sys_Prior[5] <- 0.005
-		Sys_Prior[23] <- 0.00001
-	}
-	if(Malaria == "v"){
-		Sys_Prior[5] <- 0.00001
-		Sys_Prior[23] <- 0.00001
-	}
 	csmf.prior <- Sys_Prior/sum(Sys_Prior)
 ##---------------------------------------------------------------------------------##
 ##  initialize prior and adjust for external causes
@@ -968,8 +949,7 @@ out <- list(
 		length.sim = length.sim, 
 		thin = thin, 
 		burnin = burnin, 
-		HIV = HIV, 
-		Malaria = Malaria, 
+	
 		jump.scale = jump.scale, 
 		levels.prior = levels.prior, 
 		levels.strength = levels.strength, 

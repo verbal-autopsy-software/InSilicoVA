@@ -369,6 +369,121 @@ Organizing output, might take a moment...
 Not all causes with CSMF > 0.02 are convergent.
  Please check using csmf.diag() for more information.
 > 
+> # run without re-sampling conditional probabilities
+> fit3<- insilico( data, subpop = subpop, 
++               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
++               external.sep = TRUE, useProbbase = TRUE)
+Warning: 132 symptom missing completely and added to missing list 
+List of missing symptoms: 
+ infant, neonate, died_d1, died_d23, died_d36, died_w1, acute, chronic, sudden, heart_dis, cancer, copd, dement, depress, stroke, sickle, kidney_dis, liver_dis, measles, men_con, mencon3, malaria, malarneg, whoop, breath, ac_rpbr, ch_rpbr, lying_br, chest_in, abdom, skin_les, sk_feet, unc_con, swell, swe_oral, exc_drink, eye_sunk, bl_orif, vb_men, vb_after, first_p, more4, cs_prev, multip, lab_24, died_lab, breast_fd, prof_ass, baby_pos, mon_early, hyster, fit_preg, vis_bl, bleed, e_bleed, s_bleed, d_bleed, p_bleed, placent_r, disch_sm, term_att, born_early, born_3437, born_38, ab_size, born_small, born_big, twin, comdel, cord, waters, move_lb, cyanosis, baby_br, born_nobr, cried, no_life, mushy, fed_d1, st_suck, ab_posit, conv_d1, conv_d2, arch_b, font_hi, font_lo, unw_d1, unw_d2, cold, umbinf, b_yellow, devel, born_malf, mlf_bk, mlf_lh, mlf_sh, mttv, b_norm, b_assist, b_caes, b_first, b_more4, b_mbpr [... truncated]
+Performing data consistency check...
+Data check finished.
+Insilico Sampler initiated, 400 iterations to sample
+...........
+Iteration: 100 
+Sub-population 0 acceptance ratio: 0.50 
+Sub-population 1 acceptance ratio: 0.72 
+Sub-population 2 acceptance ratio: 0.71 
+0.00min elapsed, 0.01min remaining 
+..........
+Iteration: 200 
+Sub-population 0 acceptance ratio: 0.57 
+Sub-population 1 acceptance ratio: 0.72 
+Sub-population 2 acceptance ratio: 0.70 
+0.00min elapsed, 0.00min remaining 
+..........
+Iteration: 300 
+Sub-population 0 acceptance ratio: 0.60 
+Sub-population 1 acceptance ratio: 0.69 
+Sub-population 2 acceptance ratio: 0.72 
+0.01min elapsed, 0.00min remaining 
+.........
+Overall acceptance ratio
+Sub-population 0 : 0.6400 
+Sub-population 1 : 0.6950 
+Sub-population 2 : 0.7250 
+Organizing output, might take a moment...
+Not all causes with CSMF > 0.02 are convergent.
+Increase chain length with another 400 iterations
+Insilico Sampler initiated, 400 iterations to sample
+...........
+Iteration: 100 
+Sub-population 0 acceptance ratio: 0.72 
+Sub-population 1 acceptance ratio: 0.64 
+Sub-population 2 acceptance ratio: 0.78 
+0.00min elapsed, 0.01min remaining 
+..........
+Iteration: 200 
+Sub-population 0 acceptance ratio: 0.74 
+Sub-population 1 acceptance ratio: 0.70 
+Sub-population 2 acceptance ratio: 0.80 
+0.00min elapsed, 0.00min remaining 
+..........
+Iteration: 300 
+Sub-population 0 acceptance ratio: 0.75 
+Sub-population 1 acceptance ratio: 0.74 
+Sub-population 2 acceptance ratio: 0.79 
+0.01min elapsed, 0.00min remaining 
+.........
+Overall acceptance ratio
+Sub-population 0 : 0.7475 
+Sub-population 1 : 0.7475 
+Sub-population 2 : 0.7875 
+Organizing output, might take a moment...
+Not all causes with CSMF > 0.02 are convergent.
+Increase chain length with another 800 iterations
+Insilico Sampler initiated, 800 iterations to sample
+...........
+Iteration: 100 
+Sub-population 0 acceptance ratio: 0.69 
+Sub-population 1 acceptance ratio: 0.68 
+Sub-population 2 acceptance ratio: 0.83 
+0.00min elapsed, 0.02min remaining 
+..........
+Iteration: 200 
+Sub-population 0 acceptance ratio: 0.72 
+Sub-population 1 acceptance ratio: 0.74 
+Sub-population 2 acceptance ratio: 0.85 
+0.01min elapsed, 0.02min remaining 
+..........
+Iteration: 300 
+Sub-population 0 acceptance ratio: 0.74 
+Sub-population 1 acceptance ratio: 0.77 
+Sub-population 2 acceptance ratio: 0.86 
+0.01min elapsed, 0.01min remaining 
+..........
+Iteration: 400 
+Sub-population 0 acceptance ratio: 0.75 
+Sub-population 1 acceptance ratio: 0.77 
+Sub-population 2 acceptance ratio: 0.85 
+0.01min elapsed, 0.01min remaining 
+..........
+Iteration: 500 
+Sub-population 0 acceptance ratio: 0.74 
+Sub-population 1 acceptance ratio: 0.76 
+Sub-population 2 acceptance ratio: 0.87 
+0.01min elapsed, 0.01min remaining 
+..........
+Iteration: 600 
+Sub-population 0 acceptance ratio: 0.75 
+Sub-population 1 acceptance ratio: 0.77 
+Sub-population 2 acceptance ratio: 0.87 
+0.01min elapsed, 0.00min remaining 
+..........
+Iteration: 700 
+Sub-population 0 acceptance ratio: 0.74 
+Sub-population 1 acceptance ratio: 0.77 
+Sub-population 2 acceptance ratio: 0.87 
+0.02min elapsed, 0.00min remaining 
+.........
+Overall acceptance ratio
+Sub-population 0 : 0.7388 
+Sub-population 1 : 0.7688 
+Sub-population 2 : 0.8663 
+Organizing output, might take a moment...
+Not all causes with CSMF > 0.02 are convergent.
+ Please check using csmf.diag() for more information.
+> 
 > 
 > 
 > 
@@ -783,7 +898,7 @@ Fresh stillbirth                  0.0091    0.0054 0.0029 0.0079 0.0225
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  24.238 0.373 23.154 0 0 
+Time elapsed:  27.194 0.413 26.128 0 0 
 > grDevices::dev.off()
 null device 
           1 

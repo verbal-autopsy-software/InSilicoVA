@@ -719,7 +719,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		cond.prob <- cond.initiate(prob.order, expIni = TRUE, Inter.ini = TRUE,
 						  min = trunc.min, max = trunc.max)
     }else{
-    	cond.prob <- prob.orig
+    	cond.prob <- change.inter(prob.orig)
     }
 
     # library(rJava)

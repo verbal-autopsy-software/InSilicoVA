@@ -136,4 +136,9 @@ fit2<- insilico( data, subpop = subpop,
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 
+# run without re-sampling conditional probabilities
+fit3<- insilico( data, subpop = subpop, 
+              length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+              external.sep = TRUE, useProbbase = TRUE)
+
 }

@@ -1,3 +1,7 @@
 .Rapp.history
 .project
 org.eclipse.jdt.core.prefs
+.classpath
+Insilico/bin
+*.class
+Insilico/library/META-INF

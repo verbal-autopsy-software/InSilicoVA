@@ -5,3 +5,7 @@ org.eclipse.jdt.core.prefs
 Insilico/bin
 *.class
 Insilico/library/META-INF
+*.iml
+*.
+*.xml
+.name

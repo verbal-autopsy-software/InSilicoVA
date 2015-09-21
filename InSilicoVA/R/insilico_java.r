@@ -726,7 +726,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(is.null(java_option)) java_option = "-Xmx1g"
 	options( java.parameters = java_option )
 
-	obj <- .jnew("InsilicoSampler")
+	obj <- .jnew("sampler/InsilicoSampler")
 
     N.j <- as.integer(N)
     S.j <- as.integer(S)
@@ -812,7 +812,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 
 			cat(paste("Not all causes with CSMF >", conv.csmf, "are convergent.\n"))
     		cat(paste("Increase chain length with another", N_gibbs.j, "iterations\n"))
-    		obj <- .jnew("InsilicoSampler")
+    		obj <- .jnew("sampler/InsilicoSampler")
     		ins  <- .jcall(obj, "[D", "Fit", 
 						N.j, S.j, C.j, N_sub.j, N_level.j, 
 						probbase.j, probbase_order.j, level_values.j, 

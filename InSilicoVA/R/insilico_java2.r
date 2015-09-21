@@ -6,7 +6,7 @@
 ##      - things changed: pnb, 
 
 insilico2 <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, 
-	phy.code = NULL, phy.cat = NULL, phy.unknown = 0){ 
+	phy.code = NULL, phy.cat = NULL, phy.unknown = 0, phy.external = "External"){ 
 	
 #############################################################################
 #############################################################################
@@ -616,11 +616,13 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	}
 
 	if(!is.null(phy.code)){
+		#TODO: make assignment sum up to 1, and first column is unknown
+
 		# also remove external causes too if needed
 		if(external.sep){
 			external.match <- match(phy.cat[, 1], vacauses[external.causes])
 			phy.cat <- phy.cat[-which(!is.na(external.match)), ]
-
+			phy.code <- phy.code[, -which(colnames(phy.code) == phy.external)]
 		}
 		# check every cause in phy.cat is an actual cause
 		testmatch <- match(phy.cat[, 1], vacauses.current)
@@ -631,17 +633,36 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			stop("Repeated cause names in physician category matching")
 		}
 
-		# remove unknowns because they are not helping
-		matchunknown <- which(phy.code[, 2] == phy.unknown)
-		phy.code <- phy.code[-matchunknown, ]
+		if(!(phy.unknown %in% colnames(phy.code))){
+			stop("Cannot find Unknown category in phy.code")
+		}		
 		# causes in the physician coded categories
 		cause.phy <- unique(phy.cat[, 2])
 		if(phy.unknown %in% cause.phy){
 			stop("Unknown cause exist in phy.cat matrix! Please remove it")
 		}
 		# Added varible for java:
-		#   number of categories provided by physician 
-		C.phy <- length(cause.phy)
+		#   number of categories provided by physician + unknown
+		C.phy <- length(cause.phy) + 1
+		# when the two dimensions disagree
+		if(dim(phy.code)[2] != C.phy + 1){
+			# exist cause not appeared in phy.code, fine, just add empty column
+			morecause <- which(!(cause.phy %in% colnames(phy.code)))
+			if(length(morecause) > 0){
+				empty <- matrix(0, dim(phy.code)[1], length(morecause))
+				colnames(empty) <- cause.phy[morecause]
+				phy.code <- cbind(phy.code, empty)
+			}
+			# exist cause not appeared in phy.cat, error
+			if(dim(phy.code)[2] != C.phy + 1){
+				stop("List of physician coded causes in phy.code and phy.cat do not match")
+			}
+		}
+		# make unknown cause the first column
+		matchunknown <- which(colnames(phy.code) == phy.unknown)
+		restcolumns <- match(cause.phy, colnames(phy.code))
+		phy.code <- phy.code[, c(1, matchunknown, restcolumns)]
+
 		# Added varible for java:
 		#   ordered set of broader cause
 		vacauses.broader <- phy.cat[match(vacauses.current, phy.cat[,1]), 2]
@@ -650,37 +671,38 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		matchid <- match(phy.code[, 1], data[, 1])
 		# Added varible for java:
 		#    assigned cause
-		assignment <- rep(0, N)
+		assignment <- matrix(0, N, C.phy)	
+		# first column is unknown	
+		assignment[, 1] <- 1
 		# remove unmatched physician coding
 		if(length(which(is.na(matchid))) > 0){
 			phy.code <- phy.code[-which(is.na(matchid)), ]
 			matchid <- matchid[-which(is.na(matchid))]
 		}
-		assignment[matchid] <- match(phy.code[, 2], cause.phy)
-
-		if(length(which(is.na(assignment))) > 0){
-			assignment[which(is.na(assignment))] <- 0
+		assignment[matchid, ] <- phy.code[, -1]
+		
+		#normalize assignment
+		for(index in 1:dim(assignment)[1]){
+			assignment[index, ] <- assignment[index, ] / sum(assignment[index, ])
 		}
 		
-		print(paste(length(matchunknown), 
-			"deaths found unknown physician coding."))
+		cat(paste(length(matchunknown), 
+			"deaths found unknown physician coding.\n"))
 		if(external.sep){
-			print(paste(length(matchid), 
-				"deaths found known physician coding after removing deaths from external causes."))			
+			cat(paste(length(matchid), 
+				"deaths found known physician coding after removing deaths from external causes.\n"))			
 		}else{
-			print(paste(length(matchid), 
- 				"deaths found known physician coding."))
+			cat(paste(length(matchid), 
+ 				"deaths found known physician coding.\n"))
 		}
 	}else{
 		# if no physician coding, everything is unknown
-		assignment <- rep(0, N)
-		C.phy <- C
+		C.phy <- 1
+		assignment <- matrix(0, N, C.phy)	
+		assignment[, 1] <- 1
 		vacauses.broader <- 1:length(vacauses.current)
 	}
-	print(assignment)
-	print(C.phy)
-	print(vacauses.broader)
-
+	
 ##---------------------------------------------------------------------------------##
 	## Specify the prior for truncated beta distribution
 	prior.b.cond = trunc(1.5 * N)			
@@ -809,7 +831,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(is.null(java_option)) java_option = "-Xmx1g"
 	options( java.parameters = java_option )
 
-	obj <- .jnew("InsilicoSampler")
+	obj <- .jnew("sampler/InsilicoSampler2")
 
     N.j <- as.integer(N)
     S.j <- as.integer(S)
@@ -836,6 +858,10 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     sigma2.j <- sigma2 
     isUnix <-  .Platform$OS.type == "unix"
 
+    assignment.j <- .jarray(as.matrix(assignment), dispatch = TRUE)
+    C.phy.j <- as.integer(C.phy)
+    vacauses.broader.j <- .jarray(vacauses.broader+0.0, dispatch = TRUE)
+
     if(is.null(subpop)){
 		N_sub.j <- as.integer(1)
 		subpop.j <- .jarray(as.integer(rep(0, N)), dispatch = TRUE)
@@ -856,7 +882,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		indic.j, subpop.j, contains_missing.j, pool.j, 
 		seed.j, N_gibbs.j, burn.j, thin.j, 
 		mu.j, sigma2.j, isUnix, useProbbase, 
-		isAdded, mu.last.j, sigma2.last.j, theta.last.j) 
+		isAdded, mu.last.j, sigma2.last.j, theta.last.j, 
+		C.phy.j, vacauses.broader.j, assignment.j) 
     # one dimensional array is straightforward
     fit <- ins
     # fit <-  .jeval(ins, .jevalArray))
@@ -895,7 +922,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 
 			cat(paste("Not all causes with CSMF >", conv.csmf, "are convergent.\n"))
     		cat(paste("Increase chain length with another", N_gibbs.j, "iterations\n"))
-    		obj <- .jnew("InsilicoSampler")
+    		obj <- .jnew("sampler/InsilicoSampler2")
     		ins  <- .jcall(obj, "[D", "Fit", 
 						N.j, S.j, C.j, N_sub.j, N_level.j, 
 						probbase.j, probbase_order.j, level_values.j, 
@@ -903,7 +930,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 						indic.j, subpop.j, contains_missing.j, pool.j, 
 						seed.j, N_gibbs.j, burn.j, thin.j, 
 						mu.j, sigma2.j, isUnix, useProbbase, 
-						TRUE, mu.last.j, sigma2.last.j, theta.last.j) 
+						TRUE, mu.last.j, sigma2.last.j, theta.last.j, 
+						C.phy.j, vacauses.broader.j, assignment.j)
     		# one dimensional array is straightforward
     		fit.add <- ins
     		# fit.add <-  t(sapply(ins, .jevalArray))

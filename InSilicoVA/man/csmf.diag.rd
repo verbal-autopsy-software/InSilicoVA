@@ -6,8 +6,8 @@
 Produce convergence test for CSMFs from fitted \code{"insilico"} objects.
 }
 \usage{
-csmf.diag(csmf, conv.csmf = 0.02, test= c("gelman", "heidel")[2], verbose = TRUE, 
-          autoburnin = FALSE, ...)
+csmf.diag(csmf, conv.csmf = 0.02, test= c("gelman", "heidel")[2], 
+          verbose = TRUE, autoburnin = FALSE, external.sep = TRUE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,6 +16,7 @@ csmf.diag(csmf, conv.csmf = 0.02, test= c("gelman", "heidel")[2], verbose = TRUE
   \item{test}{Type of test. Currently supporting Gelman and Rubin's test (\code{test = "gelman"}) for multi-chain test, and Heidelberger and Welch's test (\code{test = "heidel"}) for single-chain test. }
   \item{verbose}{Logical indicator to return the test detail instead of one logical outcome for Heidelberger and Welch's test. Default to be TRUE.}
   \item{autoburnin}{Logical indicator of whether to omit the first half of the chain as burn in. Default to be FALSE since \code{insilico} return only the iterations after burnin by default.}
+   \item{external.sep}{Logical indicator for whether to separate out external causes first. Default set to be TRUE. If set to TRUE, the function will not check convergence for external causes, e.g., traffic accident, accidental fall, suicide, etc.}
   \item{\dots}{Arguments to be passed to \link{heidel.diag} or \link{gelman.diag}}
 }
 

@@ -1,9 +1,15 @@
 /**
  * Created by zehangli on 9/19/15.
  */
+package sampler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
+import utils.MathUtil;
+import utils.ProgressPopup;
+import utils.ProgressBar;
 
 import org.apache.commons.math3.distribution.BetaDistribution;
 
@@ -42,11 +48,20 @@ public class InsilicoSampler2 {
     // length C vector, counts of each causes
     public int[] count_c;
 
+    // stuff related to physician coding
+    // number of physician coded categories
+    public int C_phy;
+    // length C conversion vector
+    public double[] broader;
+    // HashMap that tells which causes go into each category
+    // Key: category, Value: set of causes
+    public HashMap<Integer, HashSet<Integer>> catmap;
+
     /*
      * Initialization of InSilico Sampler
      */
     public void initiate(int N, int S, int C, int N_sub, int N_level, int[] subpop,
-                         double[][] probbase, double[][] probbase_order, double[] level_values){
+                         double[][] probbase, double[][] probbase_order, double[] level_values) {
         this.N = N;
         this.S = S;
         this.C = C;
@@ -61,7 +76,39 @@ public class InsilicoSampler2 {
         this.probbase_level = new HashMap<Integer, HashMap<Integer, ArrayList<Integer>>>();
         this.levelize();
     }
+    /*
+     * Initialization with physician coding
+     */
+    public void initiate(int N, int S, int C, int N_sub, int N_level, int[] subpop,
+                         double[][] probbase, double[][] probbase_order, double[] level_values, int C_phy, double[]
+                                 broader){
+        this.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values);
+        // added variables
+        this.C_phy = C_phy;
+        this.broader = broader;
+        this.initiateCatMap();
+    }
 
+    /*
+     * Initialize Category Mapping
+     */
+    public void initiateCatMap(){
+        this.catmap = new HashMap<Integer, HashSet<Integer>>();
+        // unknown causes
+        this.catmap.put(0, new HashSet<Integer>());
+        for(int j = 1; j < this.broader.length; j++) {
+            this.catmap.get(0).add(j);
+        }
+        // actual causes
+        for(int i = 1; i < this.C_phy; i++){
+            this.catmap.put(i, new HashSet<Integer>());
+            for(int j = 1; j < this.broader.length; j++){
+                if( (int) this.broader[j] == i){
+                    this.catmap.get(i).add(j);
+                }
+            }
+        }
+    }
     /*
      * function to summarize the current levels of prob base.
      */
@@ -148,16 +195,55 @@ public class InsilicoSampler2 {
     }
 
     /*
-     * function to sample y, note the sampled y starts from 0!
+     * function to calculate p.nb with sub-population and physician coding
+     * some key dimensions: indic (N x S),csmf_sub (Nsub x C), subpop (N), assignment(N)
+     * output: nb (N by C)
+     */
+    public double[][] pnb(boolean contains_missing,
+                          double[][] indic, double[][] csmf_sub,
+                          int[] subpop, int[] g_new){
+        // initialize p.nb matrix to p.hat
+        double[][] nb = new double[this.N][this.C];
+        // pnb_{nc} <- csmf_{subpop_n, c}
+
+        // sample a cause group first, using the same as sample new Y
+        //default to zero, update those with physician codes, normalize at the end
+        for(int n = 0; n < this.N; n++){
+            for(int c : this.catmap.get(g_new[n])){
+                nb[n][c] =  csmf_sub[subpop[n]][c];
+            }
+        }
+
+        // calculate posterior
+        for(int n = 0 ; n < this.N; n++){
+            // find which symptoms are not missing for this death
+            ArrayList<Integer> nomissing = new ArrayList<Integer>();
+            for(int s = 0 ; s < indic[n].length; s++){
+                if(indic[n][s] >= 0) nomissing.add(s);
+            }
+            // loop over cause-symptoms combination to calculate naive bayes prob
+            for(int c : this.catmap.get(g_new[n])){
+                for(int s : nomissing){
+                    nb[n][c] *= (indic[n][s]>0) ? (this.probbase[s][c]) : (1-this.probbase[s][c]);
+                }
+            }
+            // normalization
+            nb[n] = MathUtil.norm(nb[n]);
+        }
+        return(nb);
+    }
+
+    /*
+     * function to sample a multinomial, note the sampled y starts from 0!
      */
     public int[] sampleY(double[][] pnb, Random rand){
-        int[] y = new int[this.N];
+        int[] y = new int[pnb.length];
         // loop over every death
-        for(int n = 0; n < this.N; n++){
+        for(int n = 0; n < pnb.length; n++){
             // naive implementation of categorical distribution
             double u = rand.nextDouble();
             double cum = 0;
-            for(int c = 0; c< this.C; c++){
+            for(int c = 0; c< pnb[n].length; c++){
                 cum += pnb[n][c];
                 if(u < cum){
                     y[n] = c;
@@ -279,7 +365,7 @@ public class InsilicoSampler2 {
                     }else if(index == exist_levels_under_c.size() - 1){
                         lower = trunc_min;
                         int l_prev = exist_levels_under_c.get(index-1);
-                        upper = MathUtil.array_min(new_prob_under_c , levels_under_c.get(l_prev));
+                        upper = MathUtil.array_min(new_prob_under_c, levels_under_c.get(l_prev));
                         upper = Math.min(upper, trunc_max);
                         // if in the middle
                     }else{
@@ -287,7 +373,7 @@ public class InsilicoSampler2 {
                         lower = MathUtil.array_max(prob_under_c, levels_under_c.get(l_next));
                         lower = Math.max(lower, trunc_min);
                         int l_prev = exist_levels_under_c.get(index - 1);
-                        upper = MathUtil.array_min(new_prob_under_c , levels_under_c.get(l_prev));
+                        upper = MathUtil.array_min(new_prob_under_c, levels_under_c.get(l_prev));
                         upper = Math.min(upper,  trunc_max);
                     }
                     // if range is invalid, use higher case
@@ -398,7 +484,9 @@ public class InsilicoSampler2 {
                                double[][] indic, int[] subpop, int contains_missing, int pool,
                                int seed, int N_gibbs, int burn, int thin,
                                double[] mu, double sigma2, boolean this_is_Unix, boolean useProbbase,
-                               boolean isAdded, double[][] mu_continue, double[] sigma2_continue, double[][] theta_continue){
+                               boolean isAdded,
+                               double[][] mu_continue, double[] sigma2_continue, double[][] theta_continue,
+                               int C_phy, double[] broader, double[][] assignment){
 //			public static void main(String[] args){
 //				int N = 5;
 //				int S = 3;
@@ -425,10 +513,24 @@ public class InsilicoSampler2 {
 //				double sigma2 = 1;
 //		        boolean this_is_Unix = true;
 //				boolean useProbbase = false;
+//                boolean isAdded = false;
+//                double[][] mu_continue = {{0,0}, {0,0}};
+//                double[] sigma2_continue = {0,0};
+//                double[][] theta_continue = {{0,0}, {0,0}};
+//                int C_phy = 2;
+//                double[] broader = {1,1};
+//                double[] assignment = {1,0,1,1,0};
 
         // initialization
-        InsilicoSampler insilico = new InsilicoSampler();
-        insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values);
+        InsilicoSampler2 insilico = new InsilicoSampler2();
+        boolean withPhy = (C_phy > 1);
+
+        if(!withPhy){
+            insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values);
+        }else{
+            insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values, C_phy, broader);
+        }
+
         System.out.printf("Insilico Sampler initiated, %d iterations to sample\n", N_gibbs);
         // list of random number generators to use
         DoubleRandomEngine rngEngine=new DoubleMersenneTwister(seed);
@@ -494,8 +596,15 @@ public class InsilicoSampler2 {
 
         }
         // first time pnb (naive bayes probability) calculation, note it is inverse of R version
-        double[][] pnb = new double[N][C];
-        pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop);
+        //        double[][] pnb = new double[N][C];
+        double[][] pnb;
+        if(!withPhy){
+            pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop);
+        }else{
+            int[] g_new = insilico.sampleY(assignment, rand);
+            pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, g_new);
+        }
+
         // start loop
         long start = System.currentTimeMillis();
         // popup window under non-unix system
@@ -507,6 +616,8 @@ public class InsilicoSampler2 {
             }
             // sample new y vector
             int[] y_new = insilico.sampleY(pnb, rand);
+            int[] g_new = insilico.sampleY(assignment, rand);
+
             // count the appearance of each cause
             int[][] Y = new int[N_sub][C];
             for(int n = 0; n < N; n++){Y[subpop[n]][y_new[n]] += 1;}
@@ -553,7 +664,11 @@ public class InsilicoSampler2 {
                 }
             }
 
-            pnb = insilico.pnb((contains_missing==1), indic, p_now, subpop);
+            if(!withPhy){
+                pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop);
+            }else{
+                pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, g_new);
+            }
 
             // format output message
             if(k % 10 == 0) System.out.printf(".");

@@ -1,6 +1,12 @@
+package sampler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import utils.MathUtil;
+import utils.ProgressPopup;
+import utils.ProgressBar;
+
 
 import org.apache.commons.math3.distribution.BetaDistribution;
 
@@ -277,7 +283,7 @@ public class InsilicoSampler {
 					}else if(index == exist_levels_under_c.size() - 1){
 						lower = trunc_min;
 						int l_prev = exist_levels_under_c.get(index-1);
-						upper = MathUtil.array_min(new_prob_under_c , levels_under_c.get(l_prev));
+						upper = MathUtil.array_min(new_prob_under_c, levels_under_c.get(l_prev));
 						upper = Math.min(upper, trunc_max);
 					// if in the middle
 					}else{
@@ -285,7 +291,7 @@ public class InsilicoSampler {
 						lower = MathUtil.array_max(prob_under_c, levels_under_c.get(l_next));
 						lower = Math.max(lower, trunc_min);
 						int l_prev = exist_levels_under_c.get(index - 1);
-						upper = MathUtil.array_min(new_prob_under_c , levels_under_c.get(l_prev));
+						upper = MathUtil.array_min(new_prob_under_c, levels_under_c.get(l_prev));
 						upper = Math.min(upper,  trunc_max);
 					}
 					// if range is invalid, use higher case

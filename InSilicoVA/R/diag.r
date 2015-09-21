@@ -6,15 +6,26 @@
 ## test     : type of test
 ## verbose  : whether to return the test statistics, or simply outcome
 
-csmf.diag <- function(csmf, conv.csmf = 0.02, test= c("gelman", "heidel")[2], verbose = TRUE, autoburnin = FALSE, ...){
+csmf.diag <- function(csmf, conv.csmf = 0.02, test= c("gelman", "heidel")[2], verbose = TRUE, autoburnin = FALSE, external.sep = TRUE, ...){
+	
+	external.causes = seq(41, 51)
+	
 	# check if the input is insilico object or only csmf
 	if(class(csmf) == "insilico"){
-		csmf <- csmf$csmf
+		if(external.sep){
+			csmf <- csmf[, -external.causes]
+		}else{
+			csmf <- csmf$csmf
+		}
 	}  
 	if(class(csmf) == "list" && class(csmf[[1]]) == "insilico"){
 		csmf_only <- vector("list", length(csmf))
 		for(i in 1:length(csmf)){
-			csmf_only[[i]] <- csmf[[i]]$csmf
+			if(external.sep){
+				csmf_only[[i]] <- csmf[[i]]$csmf[, -external.causes]
+			}else{
+				csmf_only[[i]] <- csmf[[i]]$csmf
+			}
 		}
 		csmf <- csmf_only
 	}

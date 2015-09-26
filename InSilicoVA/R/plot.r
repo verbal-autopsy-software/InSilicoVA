@@ -51,7 +51,7 @@ plot.insilico <- function(x, type = c("errorbar", "bar", "compare")[1],
 									     dim(csmf.toplot.tmp)[1]))
 		}
 		rownames(csmf.toplot) <- NULL
-		csmf.toplot <- data.frame(Causes=causelist, csmf.toplot, Group =csmf.sub)
+		csmf.toplot <- data.frame(Causes=causelist, csmf.toplot, Group = factor(csmf.sub, levels = unique(csmf.sub)))
 	}
 	##
 	## for single population plot 

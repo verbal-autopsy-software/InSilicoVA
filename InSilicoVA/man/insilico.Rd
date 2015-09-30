@@ -17,7 +17,7 @@ For Windows user, this function will produce a popup window showing the progress
            external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, 
            auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, 
            levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, 
-           trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1)
+           trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = 0, phy.external = "External", phy.debias = NULL)
 }
 \arguments{
   \item{data}{The original data to be used. It is suggested to use similar input as InterVA4, with the first column being death IDs. The only difference in input is InsilicoVA takes three levels: ``present'', ``absent'', and ``missing (no data)''. Similar to InterVA software, ``present'' symptoms takes value ``Y''; ``absent'' symptoms take take value ``NA'' or ``''. For missing symptoms, e.g., questions not asked or answered in the original interview, corrupted data, etc., the input should be coded by ``.'' to distinguish from ``absent'' category.}
@@ -76,6 +76,11 @@ For Windows user, this function will produce a popup window showing the progress
   \item{java_option}{Option to initialize java JVM. Default to ``-Xmx1g'', which sets the maximum heap size to be 1GB. If R produces ``java.lang.OutOfMemoryError: Java heap space'' error message, consider increasing heap size using this option, or one of the following: (1) decreasing \code{length.sim}, (2) increasing \code{thin}, or (3) disabling \code{auto.length}.}
 
   \item{seed}{ Seed used for initializing sampler. The algorithm will produce the same outcome with the same seed in each machine.}
+  \item{phy.code}{A matrix of physician assigned cause distribution. The physician assigned causes need not be the same as the list of causes used in InSilicoVA and InterVA-4. The cause list used could be a higher level aggregation of the InSilicoVA causes. See \code{phy.cat} for more detail. The first column of \code{phy.code} should be death ID that could be matched to the symptom dataset, the following columns are the probabilities of each cause category used by physicians.}
+  \item{phy.cat}{A two column matrix describing the correspondence between InSilicoVA causes and the physician assigned causes. Note each InSilicoVA cause (see \code{causetext}) could only correspond to one physician assigned cause. See \code{SampleCategory} for an example. 'Unknown' category should not be included in this matrix.}
+  \item{phy.unknown}{The name of the physician assigned cause that correspond to unknown COD.}
+  \item{phy.external}{The name of the physician assigned cause that correspond to external causes. This will only be used if \code{external.sep} is set to TRUE. In that case, all external causes should be grouped together, as they are assigned deterministically by the corresponding symptoms.}
+  \item{phy.debias}{Fitted object from physician coding debias function (see \code{physician_debias}) that overwrites all physician coding parameters.}
 
 }
 \details{

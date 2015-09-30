@@ -61,7 +61,7 @@ public class InsilicoSampler2 {
      * Initialization of InSilico Sampler
      */
     public void initiate(int N, int S, int C, int N_sub, int N_level, int[] subpop,
-                         double[][] probbase, double[][] probbase_order, double[] level_values) {
+                         double[][] probbase, double[][] probbase_order, double[] level_values, int pool) {
         this.N = N;
         this.S = S;
         this.C = C;
@@ -74,15 +74,15 @@ public class InsilicoSampler2 {
         this.count_c = new int[C];
         this.level_values = level_values;
         this.probbase_level = new HashMap<Integer, HashMap<Integer, ArrayList<Integer>>>();
-        this.levelize();
+        this.levelize(pool);
     }
     /*
      * Initialization with physician coding
      */
     public void initiate(int N, int S, int C, int N_sub, int N_level, int[] subpop,
-                         double[][] probbase, double[][] probbase_order, double[] level_values, int C_phy, double[]
-                                 broader){
-        this.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values);
+                         double[][] probbase, double[][] probbase_order, double[] level_values, int pool,
+                         int C_phy, double[] broader){
+        this.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values, pool);
         // added variables
         this.C_phy = C_phy;
         this.broader = broader;
@@ -112,18 +112,40 @@ public class InsilicoSampler2 {
     /*
      * function to summarize the current levels of prob base.
      */
-    private void levelize(){
-        // loop over all s and c combination
-        for(int s = 0; s < S; s++){
-            for(int c = 0; c < C; c++){
-                // get the level of this s-c combination
-                int level = (int) this.probbase_order[s][c];
-                // initialize if this cause has not been initialized in probbase_level yet
-                if(this.probbase_level.get(c) == null) this.probbase_level.put(c,  new HashMap<Integer,ArrayList<Integer>>());
-                // initialize if this level under this cause has not been initialized
-                if(this.probbase_level.get(c).get(level) == null) this.probbase_level.get(c).put(level, new ArrayList<Integer>());
-                // save the cause-level-symptom combination
-                this.probbase_level.get(c).get(level).add(s);
+    private void levelize(int pool){
+        // if pool = 1, count level by cause
+        if(pool == 1){
+            // loop over all s and c combination
+            for(int s = 0; s < S; s++) {
+                for (int c = 0; c < C; c++) {
+                    // get the level of this s-c combination
+                    int level = (int) this.probbase_order[s][c];
+                    // initialize if this cause has not been initialized in probbase_level yet
+                    if (this.probbase_level.get(c) == null)
+                        this.probbase_level.put(c, new HashMap<Integer, ArrayList<Integer>>());
+                    // initialize if this level under this cause has not been initialized
+                    if (this.probbase_level.get(c).get(level) == null)
+                        this.probbase_level.get(c).put(level, new ArrayList<Integer>());
+                    // save the cause-level-symptom combination
+                    this.probbase_level.get(c).get(level).add(s);
+                }
+            }
+        // if pool = 2, count level by symptom
+        }else if(pool == 2){
+            // loop over all s and c combination
+            for(int s = 0; s < S; s++) {
+                for (int c = 0; c < C; c++) {
+                    // get the level of this s-c combination
+                    int level = (int) this.probbase_order[s][c];
+                    // initialize if this cause has not been initialized in probbase_level yet
+                    if (this.probbase_level.get(s) == null)
+                        this.probbase_level.put(s, new HashMap<Integer, ArrayList<Integer>>());
+                    // initialize if this level under this symptom has not been initialized
+                    if (this.probbase_level.get(s).get(level) == null)
+                        this.probbase_level.get(s).put(level, new ArrayList<Integer>());
+                    // save the cause-level-symptom combination
+                    this.probbase_level.get(s).get(level).add(c);
+                }
             }
         }
     }
@@ -303,40 +325,30 @@ public class InsilicoSampler2 {
         }
         return(theta_new);
     }
-
-
     /*
-     * function to perform Truncated beta distribution for the whole conditional probability matrix.
-     * update cond.prob within the class.
-     * Note: between causes comparison not performed here. Truncation only performed within same cause
-     *
-     * input:
-     * rand: randome number generator
-     * prior_a: prior of alpha vector
-     * prior_b: prior of beta
-     * trunc_max, trunc_Min: max/min of truncation
-     * used fields:
-     * probbase_order, level_values, probbase_level, count_m, count_m_all, count_c
-     *   key: 1 to C, second key: 1:N_level, value: which symptoms
-     *   HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> probbase_level;
+     * Update Sep 30, 2015: core function in TruncBeta by one direction, adapted from original TruncBeta function
+     * major change: update probbase separately from the generic one
      */
-    public void TruncBeta(Random rand, double[] prior_a, double prior_b,
+    public double[][] TruncBeta_core(double[][] current_probbase, Random rand, double[] prior_a, double prior_b,
                           double trunc_min, double trunc_max){
         double a = 0;
         double b = 0;
         // create a new probbase matrix
-        double[][] new_probbase = new double[this.S][this.C];
-        for(int s=0; s<this.S; s++){
-            for(int c=0; c < this.C; c++){new_probbase[s][c] = this.probbase[s][c];}
+        int thisS = current_probbase.length;
+        int thisC = current_probbase[0].length;
+
+        double[][] new_probbase = new double[thisS][thisC];
+        for(int s=0; s<thisS; s++){
+            for(int c=0; c < thisC; c++){new_probbase[s][c] = current_probbase[s][c];}
         }
         // loop over causes c
-        for( int c = 0; c < C; c++){
+        for( int c = 0; c < thisC; c++){
             // find which level-symptom combinations under this cause
-            HashMap<Integer, ArrayList<Integer>> levels_under_c = probbase_level.get(c);
+            HashMap<Integer, ArrayList<Integer>> levels_under_c = this.probbase_level.get(c);
             // get the conditional probabilities of each symptoms given cause c
-            double[] prob_under_c = MathUtil.grab2(this.probbase, c);
+            double[] prob_under_c = MathUtil.grab2(current_probbase, c);
             // create new instance of this vector
-            double[] new_prob_under_c = new double[S];
+            double[] new_prob_under_c = new double[thisS];
             // find the list of all levels present under cause c
             ArrayList<Integer> exist_levels_under_c = new ArrayList<Integer>();
             for(int l = 1; l <= this.N_level; l++){
@@ -387,10 +399,68 @@ public class InsilicoSampler2 {
                     }
                 }
             }
-            // update this column of probbase
-            for(int s = 0; s < this.S; s++){this.probbase[s][c] = new_prob_under_c[s];}
         }
+        return(new_probbase);
+    }
 
+
+    /*
+    * Update Sep 30, 2015: truncated beta for new SCI
+    * function to perform Truncated beta distribution for the whole conditional probability matrix.
+    * update cond.prob within the class.
+    * Note: between symptom comparison not performed here. Truncation only performed within same symptom
+    *
+    * input:
+    * rand: randome number generator
+    * prior_a: prior of alpha vector
+    * prior_b: prior of beta
+    * trunc_max, trunc_Min: max/min of truncation
+    * used fields:
+    * probbase_order, level_values, probbase_level, count_m, count_m_all, count_c
+    *   key: 1 to C, second key: 1:N_level, value: which symptoms
+    *   HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> probbase_level;
+    */
+    public void TruncBeta2(Random rand, double[] prior_a, double prior_b,
+                          double trunc_min, double trunc_max){
+        double a = 0;
+        double b = 0;
+        // create a new probbase matrix
+        double[][] trans_probbase = new double[this.C][this.S];
+        for(int s=0; s<this.S; s++){
+            for(int c=0; c < this.C; c++){trans_probbase[c][s] = this.probbase[s][c];}
+        }
+        double[][] new_trans_probbase = TruncBeta_core(trans_probbase, rand, prior_a, prior_b, trunc_min, trunc_max);
+        for(int s=0; s<this.S; s++) {
+            for (int c = 0; c < this.C; c++) {
+                this.probbase[s][c] = new_trans_probbase[c][s];
+            }
+        }
+    }
+
+    /*
+     * function to perform Truncated beta distribution for the whole conditional probability matrix.
+     * update cond.prob within the class.
+     * Note: between causes comparison not performed here. Truncation only performed within same cause
+     *
+     * input:
+     * rand: randome number generator
+     * prior_a: prior of alpha vector
+     * prior_b: prior of beta
+     * trunc_max, trunc_Min: max/min of truncation
+     * used fields:
+     * probbase_order, level_values, probbase_level, count_m, count_m_all, count_c
+     *   key: 1 to C, second key: 1:N_level, value: which symptoms
+     *   HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> probbase_level;
+     */
+    public void TruncBeta(Random rand, double[] prior_a, double prior_b,
+                          double trunc_min, double trunc_max){
+
+        double[][] new_probbase = TruncBeta_core(this.probbase, rand, prior_a, prior_b, trunc_min, trunc_max);
+        for(int s=0; s<this.S; s++) {
+            for (int c = 0; c < this.C; c++) {
+                this.probbase[s][c] = new_probbase[s][c];
+            }
+        }
     }
 
     /*
@@ -474,6 +544,7 @@ public class InsilicoSampler2 {
      *         Note: should start from 0. All 0 if no sub-population exist.
      * contains_missing: if there are missing
      * pool: if estimating the probbase table only
+     *       update Sep 30, 2015: pool = 2, compare only within each symptom
      * seed, N_gibbs, thin: integers
      * mu: vector initialized in R
      * sigma2: value initialized in R
@@ -526,12 +597,13 @@ public class InsilicoSampler2 {
         boolean withPhy = (C_phy > 1);
 
         if(!withPhy){
-            insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values);
+            insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values, pool);
         }else{
-            insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values, C_phy, broader);
+            insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values, pool, C_phy,
+                    broader);
         }
 
-        System.out.printf("Insilico Sampler initiated, %d iterations to sample\n", N_gibbs);
+        System.out.printf("InSilico Sampler initiated, %d iterations to sample\n", N_gibbs);
         // list of random number generators to use
         DoubleRandomEngine rngEngine=new DoubleMersenneTwister(seed);
         Normal rngN=new Normal(0.0,1.0,rngEngine);

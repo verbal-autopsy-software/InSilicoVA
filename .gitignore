@@ -9,3 +9,4 @@ Insilico/library/META-INF
 *.
 *.xml
 .name
+InSilicoVA.Rcheck/*

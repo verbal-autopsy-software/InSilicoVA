@@ -22,7 +22,10 @@ difference in input is InsilicoVA takes three levels: ``present'',
 ``present'' symptoms takes value ``Y''; ``absent'' symptoms take take value
 ``NA'' or ``''. For missing symptoms, e.g., questions not asked or answered
 in the original interview, corrupted data, etc., the input should be coded
-by ``.'' to distinguish from ``absent'' category.}
+by ``.'' to distinguish from ``absent'' category. The order of the columns does
+not matter as long as the column names are correct. It can also include more
+unused columns than the standard InterVA4 input. But the first column should be
+the death ID.}
 
 \item{isNumeric}{Indicator if the input is already in numeric form. If the
 input is coded numerically such that 1 for ``present'', 0 for ``absent'',
@@ -95,9 +98,11 @@ probability table. Default to be 0.0001}
 \item{trunc.max}{Maximum possible value for estimated conditional
 probability table. Default to be 0.9999}
 
-\item{subpop}{A vector of sub-population assignments of the same length of
-death records. It could be numerical indicators or character vectors of
-names.}
+\item{subpop}{This could be the column name of the variable in data that is to
+be used as sub-population indicator, or a list of column names if more than one
+variable are to be used. Or it could be a vector of sub-population assignments
+of the same length of death records. It could be numerical indicators or character
+vectors of names.}
 
 \item{java_option}{Option to initialize java JVM. Default to ``-Xmx1g'',
 which sets the maximum heap size to be 1GB. If R produces
@@ -200,6 +205,23 @@ fit1<- insilico( data, subpop = NULL,
 
 # re-run with subpopulation
 fit2<- insilico( data, subpop = subpop,
+              length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+              external.sep = TRUE, keepProbbase.level = TRUE)
+
+# note a different ways to specify subpopulation
+HIV_indicator <- SampleInput_insilico$subpop
+data_more <- cbind(data, HIV_indicator)
+fit2<- insilico( data_more, subpop = "HIV_indicator",
+              length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+              external.sep = TRUE, keepProbbase.level = TRUE)
+
+# When more than one variables are used to divide the population
+# for example, if we shuffle the HIV indicator to create another fake grouping
+# and we want to use the combination of both as a subpopulation indicator
+HIV_indicator <- SampleInput_insilico$subpop
+HIV_indicator2 <- sample(SampleInput_insilico$subpop)
+data_more <- cbind(data, HIV_indicator, HIV_indicator2)
+fit2<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"),
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 

@@ -43,7 +43,10 @@
 #' ``present'' symptoms takes value ``Y''; ``absent'' symptoms take take value
 #' ``NA'' or ``''. For missing symptoms, e.g., questions not asked or answered
 #' in the original interview, corrupted data, etc., the input should be coded
-#' by ``.'' to distinguish from ``absent'' category.
+#' by ``.'' to distinguish from ``absent'' category. The order of the columns does
+#' not matter as long as the column names are correct. It can also include more 
+#' unused columns than the standard InterVA4 input. But the first column should be 
+#' the death ID.
 #' @param isNumeric Indicator if the input is already in numeric form. If the
 #' input is coded numerically such that 1 for ``present'', 0 for ``absent'',
 #' and -1 for ``missing'', this indicator could be set to True to avoid
@@ -98,9 +101,11 @@
 #' probability table. Default to be 0.0001
 #' @param trunc.max Maximum possible value for estimated conditional
 #' probability table. Default to be 0.9999
-#' @param subpop A vector of sub-population assignments of the same length of
-#' death records. It could be numerical indicators or character vectors of
-#' names.
+#' @param subpop This could be the column name of the variable in data that is to
+#' be used as sub-population indicator, or a list of column names if more than one 
+#' variable are to be used. Or it could be a vector of sub-population assignments 
+#' of the same length of death records. It could be numerical indicators or character 
+#' vectors of names. 
 #' @param java_option Option to initialize java JVM. Default to ``-Xmx1g'',
 #' which sets the maximum heap size to be 1GB. If R produces
 #' ``java.lang.OutOfMemoryError: Java heap space'' error message, consider
@@ -179,9 +184,26 @@
 #' fit2<- insilico( data, subpop = subpop, 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 #'               external.sep = TRUE, keepProbbase.level = TRUE)
-#' 
+#'  
+#' # note a different ways to specify subpopulation
+#' HIV_indicator <- SampleInput_insilico$subpop
+#' data_more <- cbind(data, HIV_indicator)
+#' fit2<- insilico( data_more, subpop = "HIV_indicator", 
+#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+#'               external.sep = TRUE, keepProbbase.level = TRUE)
+#'
+#' # When more than one variables are used to divide the population
+#' # for example, if we shuffle the HIV indicator to create another fake grouping
+#' # and we want to use the combination of both as a subpopulation indicator
+#' HIV_indicator <- SampleInput_insilico$subpop
+#' HIV_indicator2 <- sample(SampleInput_insilico$subpop)
+#' data_more <- cbind(data, HIV_indicator, HIV_indicator2)
+#' fit3<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"), 
+#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+#'               external.sep = TRUE, keepProbbase.level = TRUE)
+#'  
 #' # run without re-sampling conditional probabilities
-#' fit3<- insilico( data, subpop = subpop, 
+#' fit4<- insilico( data, subpop = subpop, 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 #'               external.sep = TRUE, useProbbase = TRUE)
 #' 
@@ -697,8 +719,33 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	# get interVA probbase
   	prob.orig <- probbase[2:246,17:76] 
 
+  	# get subpopulation if it's a columnname
+  	if(class(subpop) == "list" || length(subpop) == 1){
+  		col.index <- match(subpop, colnames(data))
+  		if(length(which(is.na(col.index))) > 0){
+  			stop("error: invalid sub-population name specification")
+  		}
+  		if(length(col.index) == 1){
+  			subpop <- data[, col.index]
+  		}else{
+  			subpop <- data[, col.index]
+  			subpop <- apply(subpop, 1, function(x){paste(x, collapse = ' ')})
+  		}
+  	}
+  	
+  	if(length(unique(subpop)) == 1){
+  			subpop <- NULL
+  			warning("Only one level in subpopulation")
+  	}
+  	
   	if(dim(data)[2] != dim(probbase)[1] ){
-        stop("error: invalid data input format. Number of values incorrect")
+  		correct_names <- probbase[2:246, 2]
+  		exist <- correct_names %in% colnames(data)
+  		if(length(which(exist == FALSE)) > 0){
+	        stop(paste("error: invalid data input format. Symptom(s) not found:", correct_names[!exist]))
+  		}else{
+  			data <- data[, c(1, match(correct_names, colnames(data)))]
+  		}
     }
 
     ## check the column names and give warning
@@ -734,7 +781,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	#############################################################
 	## remove bad data happens before taking into missing
 	## (bad data refers to data without age/sex or has no real symptoms)
-	tmp <- removeBad(as.matrix(data), isNumeric, subpop)
+	tmp <- removeBad(data, isNumeric, subpop)
   	data <- tmp[[1]]
   	subpop <- tmp[[2]]
 
@@ -1195,8 +1242,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     						  p.indiv[, (ext1:C.j)])
     	
     	p.indiv.ext <- matrix(0, nrow = length(externals$ext.id), ncol = C.j + length(external.causes) )
-    	# following codes used when p.indiv is recording all iterations
-    	# for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}
+    	for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}
     	p.indiv <- rbind(p.indiv, p.indiv.ext) 
     	id <- c(id, externals$ext.id)
    }

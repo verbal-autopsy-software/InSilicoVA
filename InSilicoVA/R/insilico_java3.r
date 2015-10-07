@@ -125,7 +125,7 @@
 #' @param phy.debias Fitted object from physician coding debias function (see
 #' \code{physician_debias}) that overwrites all physician coding parameters.
 #' @param dev.customization default to be FALSE
-#' @param SCI_by_symp.dev default to be FALSE
+#' @param Probbase_by_symp.dev default to be FALSE
 #' @param probbase.dev default to be NULL
 #' @param table.dev default to be NULL
 #' @param gstable.dev default to be NULL
@@ -189,7 +189,7 @@
 #' 
 #' 
 #' @export insilico
-insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = 0, phy.external = "External", dev.customization = FALSE, SCI_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, prob.order.dev = NULL){ 
+insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = 0, phy.external = "External", dev.customization = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, prob.order.dev = NULL){ 
 	
 #############################################################################
 #############################################################################
@@ -606,7 +606,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     counter <- counter + N.j * C.j
 
     # extract probbase 
-    if(pool.j == 0){
+    if(pool.j != 0){
         probbase.gibbs <- fit[counter:(counter + S.j * C.j * N_thin - 1)]
         # array(..., dim =c(a,b,c))
         # what it does it for each c, fill by column
@@ -686,7 +686,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(is.null(length.sim) || is.null(thin) || is.null(burnin)){
 		stop("Length of chain/thinning/burn-in not specified")
 	}
-
+	if(keepProbbase.level && Probbase_by_symp.dev){
+		stop("keepProbbase.level and Probbase_by_symp.dev cannot be set to TRUE simultaneously.")
+	}
 ##---------------------------------------------------------------------------------##
 ## initialize key data dependencies
 ##	
@@ -1032,8 +1034,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     trunc_max.j <- trunc.max
     indic.j <- .jarray(as.matrix(indic), dispatch=TRUE)
     contains_missing.j <- as.integer(contains.missing)
-    # update pool for by-symptom separation as well
-    pool.j <- as.integer(keepProbbase.level) + as.integer(SCI_by_symp.dev)
+    # update Oct 1, 2015: pool variable redefined:
+    # 					  0 - pool to table; 1 - by cause; 2 - by symptom
+    pool.j <- as.integer(!keepProbbase.level) + as.integer(Probbase_by_symp.dev)
     seed.j <- as.integer(seed)
     N_gibbs.j <- as.integer(length.sim)
     burn.j <- as.integer(burnin)
@@ -1202,7 +1205,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
    }
 ##---------------------------------------------------------------------------------##    	
 ## add column names to outcome
-if(pool.j == 0){
+if(pool.j != 0){
 	if(external.sep){
 		# remove column "ID"
 		valabels <- valabels[-1]
@@ -1213,7 +1216,7 @@ if(pool.j == 0){
 		valabels <- valabels[-missing.all]
 	}
 	dimnames(probbase.gibbs)[[2]] <- valabels
-	dimnames(probbase.gibbs)[[3]] <- vacauses.ext
+	dimnames(probbase.gibbs)[[3]] <- vacauses.ext		
 }else{
 	colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")
 	probbase.gibbs <- levels.gibbs

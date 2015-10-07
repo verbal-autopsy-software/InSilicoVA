@@ -605,7 +605,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     counter <- counter + N.j * C.j
 
     # extract probbase 
-    if(pool.j == 0){
+    if(pool.j == 1){
         probbase.gibbs <- fit[counter:(counter + S.j * C.j * N_thin - 1)]
         # array(..., dim =c(a,b,c))
         # what it does it for each c, fill by column
@@ -1031,7 +1031,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     trunc_max.j <- trunc.max
     indic.j <- .jarray(as.matrix(indic), dispatch=TRUE)
     contains_missing.j <- as.integer(contains.missing)
-    pool.j <- as.integer(keepProbbase.level)
+    # update Oct 1, 2015: pool variable redefined:
+    # 					  0 - pool to table; 1 - by cause;
+    pool.j <- as.integer(!keepProbbase.level) 
     seed.j <- as.integer(seed)
     N_gibbs.j <- as.integer(length.sim)
     burn.j <- as.integer(burnin)
@@ -1200,7 +1202,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
    }
 ##---------------------------------------------------------------------------------##    	
 ## add column names to outcome
-if(pool.j == 0){
+if(pool.j == 1){
 	if(external.sep){
 		# remove column "ID"
 		valabels <- valabels[-1]

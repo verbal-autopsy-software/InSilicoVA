@@ -492,7 +492,7 @@ impute <- function(indic.w.missing, y.new, cond.prob, S, subbelong, missing.imp)
 	return(t(indic.w.missing))
 }
   
-removeExt <- function(data, prob.orig, is.Numeric, subpop, external.causes, external.symps){
+removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps){
 ###########################################################
 # function to remove external causes/symps and assign deterministic deaths
 # @param:
@@ -563,15 +563,15 @@ removeExt <- function(data, prob.orig, is.Numeric, subpop, external.causes, exte
 	# delete the causes from probbase
 	prob.orig <- prob.orig[ -(extSymps), -(extCauses)]
 	if(!is.null(subpop)){
-		ext.csmf <- vector("list", length(unique(subpop)))
+		ext.csmf <- vector("list", length(subpop_order_list))
 		for(i in 1:length(ext.csmf)){
 			ext.csmf[[i]] <- rep(0, length(extCauses))
-			ext.cod.temp <- ext.cod[which(ext.sub == unique(subpop)[i])]
+			ext.cod.temp <- ext.cod[which(ext.sub == subpop_order_list[i])]
 			if(!is.null(ext.cod.temp)){
 				for(j in 1:length(extCauses)){
 					ext.csmf[[i]][j] <- length(which(ext.cod.temp == extCauses[j]))
 				}
-				ext.csmf[[i]] <- ext.csmf[[i]]/length(which(subpop == unique(subpop)[i]))		
+				ext.csmf[[i]] <- ext.csmf[[i]]/length(which(subpop == subpop_order_list[i]))		
 			}
 		}
 	}else{
@@ -787,11 +787,11 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	tmp <- removeBad( data, isNumeric, subpop)
   	data <- tmp[[1]]
   	subpop <- tmp[[2]]
-
+  	subpop_order_list <- sort(unique(subpop))
   	#############################################################
   	## remove external causes
   	if(external.sep){
-  		externals <- removeExt(data,prob.orig, isNumeric, subpop, external.causes, external.symps)
+  		externals <- removeExt(data,prob.orig, isNumeric, subpop, subpop_order_list, external.causes, external.symps)
   		data <- externals$data
   		subpop <- externals$subpop
   		prob.orig <- externals$prob.orig
@@ -960,14 +960,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			stop("Sub-population size not match")
 		}
 		subpop.numeric <- rep(0, length(subpop))
-		sublist <- vector("list", length(unique(subpop)))
+		sublist <- vector("list", length(subpop_order_list))
 		subbelong <- rep(0, N)
-		for(i in 1:length(unique(subpop))){
-			sublist[[i]] <- which(subpop == unique(subpop)[i])
-			subbelong[which(subpop == unique(subpop)[i])] <- i
+		for(i in 1:length(subpop_order_list)){
+			sublist[[i]] <- which(subpop == subpop_order_list[i])
+			subbelong[which(subpop == subpop_order_list[i])] <- i
 			subpop.numeric[sublist[[i]]] <- i-1
 		}
-		names(sublist)<- unique(subpop)
+		names(sublist)<- subpop_order_list
 		N.sub <- length(sublist)
 	}
 ##---------------------------------------------------------------------------------##
@@ -1210,7 +1210,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     		# set p.hat to NULL, and set up csmf.sub.all as a list of p.hat 
     		p.hat <- NULL
     		csmf.sub.all <- vector("list", N_sub.j)
-    		names(csmf.sub.all) <- unique(subpop)
+    		names(csmf.sub.all) <- subpop_order_list
     		# iterate over all subpopulation
     		for(j in 1:length(csmf.sub)){
     			# initialize the csmf matrix 
@@ -1218,7 +1218,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     				dim(csmf.sub[[j]])[1], 
     				C.j + length(external.causes))
     			# rescale the non-external CSMF once the external causes are added 
-    			rescale <- length(sublist[[j]]) / (length(sublist[[j]]) + length(which(externals$ext.sub == unique(subpop)[j])))
+    			rescale <- length(sublist[[j]]) / (length(sublist[[j]]) + length(which(externals$ext.sub == subpop_order_list[j])))
     			temp <- csmf.sub[[j]] * rescale
     					
     			# combine the rescaled non-external CSMF with the external CSMF	
@@ -1248,6 +1248,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     	for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}
     	p.indiv <- rbind(p.indiv, p.indiv.ext) 
     	id <- c(id, externals$ext.id)
+    	subpop <- c(subpop, externals$ext.sub)
    }
 ##---------------------------------------------------------------------------------##    	
 ## add column names to outcome

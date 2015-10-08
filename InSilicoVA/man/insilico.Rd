@@ -221,12 +221,12 @@ fit2<- insilico( data_more, subpop = "HIV_indicator",
 HIV_indicator <- SampleInput_insilico$subpop
 HIV_indicator2 <- sample(SampleInput_insilico$subpop)
 data_more <- cbind(data, HIV_indicator, HIV_indicator2)
-fit2<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"),
+fit3<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"),
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, keepProbbase.level = TRUE)
 
 # run without re-sampling conditional probabilities
-fit3<- insilico( data, subpop = subpop,
+fit4<- insilico( data, subpop = subpop,
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
               external.sep = TRUE, useProbbase = TRUE)
 }

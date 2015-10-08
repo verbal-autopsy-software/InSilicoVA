@@ -95,7 +95,9 @@ physician_debias <- function(data, phy.id, phy.code, phylist, causelist, tol = 0
 	}
 	K.indiv <- apply(T.hat,1,sum)
 	for(i in 1 : A){
-	   T.hat[i,] <- T.hat[i,] / K.indiv[i]
+		if(K.indiv[i] > 0){
+		   T.hat[i,] <- T.hat[i,] / K.indiv[i]
+		}		
 	}
 
 	T.hat.ori <- T.hat

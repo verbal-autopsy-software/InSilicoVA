@@ -918,8 +918,6 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			assignment[index, ] <- assignment[index, ] / sum(assignment[index, ])
 		}
 		
-		cat(paste(length(matchunknown), 
-			"deaths found unknown physician coding.\n"))
 		if(external.sep){
 			cat(paste(length(matchid), 
 				"deaths found known physician coding after removing deaths from external causes.\n"))			

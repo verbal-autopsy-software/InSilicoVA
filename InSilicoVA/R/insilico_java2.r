@@ -718,7 +718,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	
 	# get interVA probbase
   	prob.orig <- probbase[2:246,17:76] 
-
+  	subpop <- as.character(subpop)
   	# get subpopulation if it's a columnname
   	if(class(subpop) == "list" || length(subpop) == 1){
   		col.index <- match(subpop, colnames(data))

@@ -722,9 +722,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	
 	# get interVA probbase
   	prob.orig <- probbase[2:246,17:76]
-  	if(!is.null(subpop)){
-  		subpop <- as.character(subpop)
-  	} 
+  	
   	# get subpopulation if it's a columnname
   	if(class(subpop) == "list" || length(subpop) == 1){
   		col.index <- match(subpop, colnames(data))
@@ -738,10 +736,12 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   			subpop <- apply(subpop, 1, function(x){paste(x, collapse = ' ')})
   		}
   	}
-  	
+  	if(!is.null(subpop)){
+  		subpop <- as.character(subpop)
+  	} 
   	if(length(unique(subpop)) == 1){
   			subpop <- NULL
-  			warning("Only one level in subpopulation")
+  			warning("Only one level in subpopulation, running the dataset as one population")
   	}
 
   	if(dim(data)[2] != dim(probbase)[1] ){

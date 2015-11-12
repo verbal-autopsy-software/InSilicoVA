@@ -980,7 +980,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		indic <- data[, -1]
 	}else{		
 		for(i in 1:S){
-			temp <- data[,i+1]
+			temp <- toupper(data[,i+1])
 			temp.ind <- which(temp == "Y")
 			indic[temp.ind, i] <- 1
 		}

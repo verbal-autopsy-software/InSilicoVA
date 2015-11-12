@@ -39,7 +39,9 @@ physician_debias <- function(data, phy.id, phy.code, phylist, causelist, tol = 0
 	if(sum(noDoc) == dim(data)[1]){
 		stop("No physician coding found for the list of physician IDs")
 	}
-	data <- data[-which(noDoc == TRUE), ]
+	if(sum(noDoc) > 0){
+		data <- data[-which(noDoc == TRUE), ]
+	}
 	id <- data[, 1]
 	# number of death
 	A <- dim(data)[1]

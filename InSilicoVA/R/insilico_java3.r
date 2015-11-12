@@ -683,7 +683,81 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 #     out_all$theta.last <- out_last$theta.last     
 #     return(out_all)
 # }
+#############################################################################
+## InSilico VA -  helper functions for overriding standard setup
+##
+## author: Richard Li 
+## date: 09/13/2015
+#############################################################################
+superInterVA.table <- function(table.dev){	
+	# avoid zero
+	if(min(table.dev) == 0)
+	table.dev[which.min(table.dev)] <- sort(table.dev, decreasing=F)[2]/10
+	return(sort(table.dev, decreasing = TRUE))
+}
+# superscale.vec.inter <- function(table.dev, aaa, scale = NULL, scale.max = NULL){
+# ###########################################################
+# # function to map ordered input vector to InterVA alphabetic scale
+# # Note:  to avoid 0, change the last one to 0.000001 here
+# # @param:
+# #	    aaa       : vector to be scaled
+# # 		scale     : sum of the vector after scaling
+# #       scale.max : max of the vector after scaling
+# #		reverse   : whether the order should be reversed
+# # @values:	
+# #  
+# 	dist <- superInterVA.table(table.dev)
+# 	if(length(aaa) != length(dist)){
+# 		warning("dimension of probbase prior not correct, use linear prior")
+# 		dist <- seq(1, 1e-5, len = length(aaa))
+# 	}
+# 	bbb <- dist[order(aaa)]
+# 	if(!is.null(scale)) return(bbb/sum(bbb) * scale)
+# 	if(!is.null(scale.max)) return(bbb * scale.max / max(bbb))
+# }
+superchange.inter <- function(x, table.dev, order = FALSE){
+	# function to translate alphebatic matrix into numeric matrix or order matrix
+	# @param:
+	# 	x      : alphabetic matrix 
+	#	order  : whether to change the matrix into order matrix
+	# @values:
+	#	numeric matrix by InterVA probbase rules, or the order matrix
+		a <- dim(x)[1]
+		b <- dim(x)[2]
+		if(is.null(a)){
+			y <- rep(0,length(x))
+		}else{
+			y <- matrix(0, a, b)
+		}  	
+		inter.table <- superInterVA.table(table.dev)
+		y[x == "I"] <- inter.table[1]
+	    y[x == "A+"] <- inter.table[2]
+	    y[x == "A"] <- inter.table[3]
+	    y[x == "A-"] <- inter.table[4]
+	    y[x == "B+"] <- inter.table[5]
+	    y[x == "B"] <- inter.table[6]
+	    y[x == "B-"] <- inter.table[7]
+	    y[x == "B -"] <- inter.table[7]
+	    y[x == "C+"] <- inter.table[8]
+	    y[x == "C"] <- inter.table[9]
+	    y[x == "C-"] <- inter.table[10]
+	    y[x == "D+"] <- inter.table[11]
+	    y[x == "D"] <- inter.table[12]
+	    y[x == "D-"] <- inter.table[13]
+	    y[x == "E"] <- inter.table[14]
+	    y[x == "N"] <- inter.table[15]
+	    y[x == ""] <- inter.table[15]
 
+	    if(order){
+	    	for(i in 1: length(inter.table)){
+				y[y == inter.table[i] ] <- i
+			}
+	    }
+	    if(!is.null(a)){
+			y <- matrix(y, a, b)
+		}  	
+	    return(y) 
+}
 
 ##---------------------------------------------------------------------------------##
 #############################################################################
@@ -712,6 +786,11 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(keepProbbase.level && Probbase_by_symp.dev){
 		stop("keepProbbase.level and Probbase_by_symp.dev cannot be set to TRUE simultaneously.")
 	}
+	if(!is.null(nlevel.dev)){
+		nlevel <- nlevel.dev
+	}else{
+		nlevel <- 15
+	}
 ##---------------------------------------------------------------------------------##
 ## initialize key data dependencies
 ##	
@@ -720,77 +799,79 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	data("causetext", envir = environment())
 	causetext<- get("causetext", envir  = environment())
 	
-	# get interVA probbase
-  	prob.orig <- probbase[2:246,17:76]
-  	
-  	# get subpopulation if it's a columnname
-  	if(class(subpop) == "list" || length(subpop) == 1){
-  		col.index <- match(subpop, colnames(data))
-  		if(length(which(is.na(col.index))) > 0){
-  			stop("error: invalid sub-population name specification")
-  		}
-  		if(length(col.index == 1)){
-  			subpop <- data[, col.index]
-  		}else{
-  			subpop <- data[, col.index]
-  			subpop <- apply(subpop, 1, function(x){paste(x, collapse = ' ')})
-  		}
-  	}
-  	if(!is.null(subpop)){
-  		subpop <- as.character(subpop)
-  	} 
-  	if(length(unique(subpop)) == 1){
-  			subpop <- NULL
-  			warning("Only one level in subpopulation, running the dataset as one population")
-  	}
+	if(!dev.customization){
+		# get interVA probbase
+	  	prob.orig <- probbase[2:246,17:76]
+	  	
+	  	# get subpopulation if it's a columnname
+	  	if(class(subpop) == "list" || length(subpop) == 1){
+	  		col.index <- match(subpop, colnames(data))
+	  		if(length(which(is.na(col.index))) > 0){
+	  			stop("error: invalid sub-population name specification")
+	  		}
+	  		if(length(col.index) == 1){
+	  			subpop <- data[, col.index]
+	  		}else{
+	  			subpop <- data[, col.index]
+	  			subpop <- apply(subpop, 1, function(x){paste(x, collapse = ' ')})
+	  		}
+	  	}
+	  	if(!is.null(subpop)){
+	  		subpop <- as.character(subpop)
+	  	} 
+	  	if(length(unique(subpop)) == 1){
+	  			subpop <- NULL
+	  			warning("Only one level in subpopulation, running the dataset as one population")
+	  	}
 
-  	if(dim(data)[2] != dim(probbase)[1] ){
-  		correct_names <- probbase[2:246, 2]
-  		exist <- correct_names %in% colnames(data)
-  		if(length(which(exist == FALSE)) > 0){
-	        stop(paste("error: invalid data input format. Symptom(s) not found:", correct_names[!exist]))
-  		}else{
-  			data <- data[, c(1, match(correct_names, colnames(data)))]
-  		}
-    }
+	  	if(dim(data)[2] != dim(probbase)[1] ){
+	  		correct_names <- probbase[2:246, 2]
+	  		exist <- correct_names %in% colnames(data)
+	  		if(length(which(exist == FALSE)) > 0){
+		        stop(paste("error: invalid data input format. Symptom(s) not found:", correct_names[!exist]))
+	  		}else{
+	  			data <- data[, c(1, match(correct_names, colnames(data)))]
+	  		}
+	    }
 
-    ## check the column names and give warning
-    data("SampleInput_insilico", envir = environment())
-    SampleInput_insilico <- get("SampleInput_insilico", envir  = environment())
-    valabels <- colnames(SampleInput_insilico$data)
-    vacauses <- causetext[4:63,2]
-    external.causes = seq(41, 51)
-    external.symps = seq(211, 222)
-    
-    count.changelabel = 0
-    for(i in 1:246){
-        if(tolower(colnames(data)[i]) != tolower(valabels)[i]){
-            warning(paste("Input columne '", colnames(data)[i], "' does not match InterVA standard: '", 
-                    valabels[i], "'", sep = ""),
-                    call. = FALSE, immediate. = TRUE)
-            count.changelabel = count.changelabel + 1
-        }         
-    }
-    if(count.changelabel > 0){
-        warning(paste(count.changelabel, "column names changed in input. \n If the change in undesirable, please change in the input to match standard InterVA4 input format.\n"), call. = FALSE, immediate. = TRUE)
-        colnames(data) <- valabels
-    }
-##---------------------------------------------------------------------------------##
-  	if(!is.null(cond.prob.touse)){
-  		prob.orig <- cond.prob.touse
+	    ## check the column names and give warning
+	    data("SampleInput_insilico", envir = environment())
+	    SampleInput_insilico <- get("SampleInput_insilico", envir  = environment())
+	    valabels <- colnames(SampleInput_insilico$data)
+	    vacauses <- causetext[4:63,2]
+	    external.causes = seq(41, 51)
+	    external.symps = seq(211, 222)
+	    
+	    count.changelabel = 0
+	    for(i in 1:246){
+	        if(tolower(colnames(data)[i]) != tolower(valabels)[i]){
+	            warning(paste("Input columne '", colnames(data)[i], "' does not match InterVA standard: '", 
+	                    valabels[i], "'", sep = ""),
+	                    call. = FALSE, immediate. = TRUE)
+	            count.changelabel = count.changelabel + 1
+	        }         
+	    }
+	    if(count.changelabel > 0){
+	        warning(paste(count.changelabel, "column names changed in input. \n If the change in undesirable, please change in the input to match standard InterVA4 input format.\n"), call. = FALSE, immediate. = TRUE)
+	        colnames(data) <- valabels
+	    }
+	##---------------------------------------------------------------------------------##
+	  	if(!is.null(cond.prob.touse)){
+	  		prob.orig <- cond.prob.touse
+	  	}
+	 
+		#############################################################
+		## remove bad data happens before taking into missing
+		## (bad data refers to data without age/sex or has no real symptoms)
+		tmp <- removeBad(data, isNumeric, subpop)
+	  	data <- tmp[[1]]
+	  	subpop <- tmp[[2]]
+	  	subpop_order_list <- sort(unique(subpop))
+  	}else{
+  		prob.orig <- probbase.dev
+		valabels <- colnames(data)
+	    vacauses <- gstable.dev
   	}
- #  	if(useInterVA == 2){
-	# 		va <- InterVA(as.matrix(data), HIV = HIV, Malaria = Malaria, write = FALSE)
-	#   		csmf.inter <- Population.summary(va$VA, min.prob = 0, noplot = TRUE)
-	#   		if(length(csmf.inter) == 61) csmf.inter <- as.numeric(csmf.inter[-61])
-	# }	
-	#############################################################
-	## remove bad data happens before taking into missing
-	## (bad data refers to data without age/sex or has no real symptoms)
-	tmp <- removeBad( data, isNumeric, subpop)
-  	data <- tmp[[1]]
-  	subpop <- tmp[[2]]
-  	subpop_order_list <- sort(unique(subpop))
   	#############################################################
   	## remove external causes
   	if(external.sep){
@@ -823,14 +904,24 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		prob.orig <- prob.orig[-missing.all, ]	
 	}	
 ##---------------------------------------------------------------------------------##
-  	## convert original probbase into order matrix
-  	prob.order <- change.inter(prob.orig, order = TRUE)
-  	## translate original probbase into InterVA interpreted values
-  	if(!is.numeric(prob.orig)){
-  		cond.prob.true <- change.inter(prob.orig, order = FALSE)
- 	}else{
- 		cond.prob.true <- prob.orig
- 	}
+	if(!dev.customization){
+	  	## convert original probbase into order matrix
+	  	prob.order <- change.inter(prob.orig, order = TRUE)
+	  	## translate original probbase into InterVA interpreted values
+	  	if(!is.numeric(prob.orig)){
+	  		cond.prob.true <- change.inter(prob.orig, order = FALSE)
+	 	}else{
+	 		cond.prob.true <- prob.orig
+	 	}
+	}else{
+	 	if(!is.null(prob.order.dev)){
+  			prob.order <- prob.order.dev
+  			cond.prob.true <- prob.orig
+  		}else{
+	  		prob.order <- superchange.inter(prob.orig, table.dev, order = TRUE)
+	  		cond.prob.true <- superchange.inter(prob.orig, table.dev, order = FALSE)
+  		}
+	 } 	
 ##---------------------------------------------------------------------------------##
   	# get data dimensions
   	## number of data
@@ -951,7 +1042,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	}
 
 	if(is.null(levels.prior)){
-			levels.prior <- scale.vec.inter(seq(1,15), 
+			levels.prior <- scale.vec.inter(seq(1,nlevel), 
 					scale.max = prior.b.cond * 0.99)		
 	}
 ##---------------------------------------------------------------------------------##
@@ -981,7 +1072,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		indic <- data[, -1]
 	}else{		
 		for(i in 1:S){
-			temp <- data[,i+1]
+			temp <- toupper(data[,i+1])
 			temp.ind <- which(temp == "Y")
 			indic[temp.ind, i] <- 1
 		}
@@ -1069,11 +1160,35 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     N.j <- as.integer(N)
     S.j <- as.integer(S)
     C.j <- as.integer(C)
-    N_level.j <- as.integer(15)
     probbase.j <- .jarray(as.matrix(cond.prob), dispatch=TRUE)
-    probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
-
-    dist <- InterVA.table(0)
+    
+     if(dev.customization && !(useProbbase)){
+    	# get new dist
+    	dist <- superInterVA.table(table.dev)
+    	# check existence of probbase levels
+    	exist <- seq(1:length(dist)) %in% unique(as.vector(prob.order))
+    	
+    	# update order matrix
+    	prob.order.new <- prob.order
+    	for(i in 1:length(dist)){
+    		if(!exist[i]){
+    			# I is 1, N is 15
+    			# if a level is missing, all level after should minus 1
+    			prob.order.new[which(prob.order > i)] <- prob.order.new[which(prob.order > i)] - 1
+    		}
+    	}
+    	prob.order <- prob.order.new
+    	probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
+    	# update level vector
+    	dist <- dist[exist]
+    	levels.prior <- levels.prior[exist]
+    	N_level.j <- as.integer(sum(exist))
+    }else{
+    	probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
+    	N_level.j <- as.integer(nlevel)
+    	dist <- InterVA.table(0)
+	}
+   
     level_values.j <- .jarray(dist, dispatch = TRUE)
     prior_a.j <- .jarray(levels.prior , dispatch = TRUE)
     prior_b.j <- prior.b.cond
@@ -1266,7 +1381,11 @@ if(pool.j != 0){
 	dimnames(probbase.gibbs)[[2]] <- valabels
 	dimnames(probbase.gibbs)[[3]] <- vacauses.ext		
 }else{
-	colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")
+	if(dev.customization && is.null(nlevel.dev)){
+		colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")[exist]
+	}else{
+		colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")
+	}
 	probbase.gibbs <- levels.gibbs
 } 
 if(!is.null(subpop)){

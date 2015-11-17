@@ -30,7 +30,7 @@
 #' For more detail of model specification, see the paper on
 #' \url{http://arxiv.org/abs/1411.3042}.
 #' 
-#' @aliases insilico print.insilico
+#' 
 #' @param data The original data to be used. It is suggested to use similar
 #' input as InterVA4, with the first column being death IDs. The only
 #' difference in input is InsilicoVA takes three levels: ``present'',
@@ -169,13 +169,14 @@
 #' @keywords InSilicoVA
 #' @examples
 #' 
+#' \dontrun{
 #' # load sample data together with sub-population list
-#' data(SampleInput_insilico)
+#' data(RandomVA1)
 #' # extract InterVA style input data
-#' data <- SampleInput_insilico$data
+#' data <- RandomVA1$data
 #' # extract sub-population information. 
 #' # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-#' subpop <- SampleInput_insilico$subpop
+#' subpop <- RandomVA1$subpop
 #' 
 #' # run without subpopulation
 #' fit1<- insilico( data, subpop = NULL,  
@@ -188,7 +189,7 @@
 #'               external.sep = TRUE, keepProbbase.level = TRUE)
 #'  
 #' # note a different ways to specify subpopulation
-#' HIV_indicator <- SampleInput_insilico$subpop
+#' HIV_indicator <- RandomVA1$subpop
 #' data_more <- cbind(data, HIV_indicator)
 #' fit2<- insilico( data_more, subpop = "HIV_indicator", 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
@@ -197,8 +198,8 @@
 #' # When more than one variables are used to divide the population
 #' # for example, if we shuffle the HIV indicator to create another fake grouping
 #' # and we want to use the combination of both as a subpopulation indicator
-#' HIV_indicator <- SampleInput_insilico$subpop
-#' HIV_indicator2 <- sample(SampleInput_insilico$subpop)
+#' HIV_indicator <- RandomVA1$subpop
+#' HIV_indicator2 <- sample(RandomVA1$subpop)
 #' data_more <- cbind(data, HIV_indicator, HIV_indicator2)
 #' fit2<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"), 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
@@ -209,10 +210,10 @@
 #' fit3<- insilico( data, subpop = subpop, 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 #'               external.sep = TRUE, useProbbase = TRUE)
-#' 
+#' }
 #' 
 #' @export insilico
-insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = 0, phy.external = "External", dev.customization = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, prob.order.dev = NULL){ 
+insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, dev.customization = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, prob.order.dev = NULL){ 
 	
 #############################################################################
 #############################################################################
@@ -395,8 +396,11 @@ datacheck.interVA <- function(id, indic, missing.all, external.sep, warning.writ
 		if(warning.write){
 			cat(paste("Warning log built for InterVA", Sys.time(), "\n"),file="warnings.txt",append = FALSE) 
 		}
-		data(probbase)
-		data(causetext)
+		data("probbase", envir = environment())
+		probbase <- get("probbase", envir  = environment())
+		data("causetext", envir = environment())
+		causetext <- get("causetext", envir  = environment())
+
 	    probbase <- as.matrix(probbase)
 	    Input <- as.matrix(indic)
 	    symps <- probbase[2:246, 2]
@@ -835,9 +839,9 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 	    }
 
 	    ## check the column names and give warning
-	    data("SampleInput_insilico", envir = environment())
-	    SampleInput_insilico <- get("SampleInput_insilico", envir  = environment())
-	    valabels <- colnames(SampleInput_insilico$data)
+	    data("RandomVA1", envir = environment())
+	    RandomVA1 <- get("RandomVA1", envir  = environment())
+	    valabels <- colnames(RandomVA1$data)
 	    vacauses <- causetext[4:63,2]
 	    external.causes = seq(41, 51)
 	    external.symps = seq(211, 222)
@@ -866,7 +870,12 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 		tmp <- removeBad(data, isNumeric, subpop)
 	  	data <- tmp[[1]]
 	  	subpop <- tmp[[2]]
-	  	subpop_order_list <- sort(unique(subpop))
+  	  	if(is.null(subpop)){
+	  		subpop_order_list <- NULL
+	  	}else{
+		  	subpop_order_list <- sort(unique(subpop))
+	  	}
+
   	}else{
   		prob.orig <- probbase.dev
 		valabels <- colnames(data)
@@ -940,7 +949,9 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 	}else{
 		vacauses.current <- vacauses
 	}
-
+  if(!is.null(phy.debias)){
+    phy.code <- phy.debias$code.debias
+  }
 	if(!is.null(phy.code)){
 		#TODO: make assignment sum up to 1, and first column is unknown
 

@@ -12,12 +12,12 @@ insilico(data, isNumeric = FALSE, useProbbase = FALSE,
   jump.scale = 0.1, levels.prior = NULL, levels.strength = 1,
   trunc.min = 1e-04, trunc.max = 0.9999, subpop = NULL,
   java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL,
-  phy.unknown = 0, phy.external = "External")
+  phy.unknown = NULL, phy.external = NULL, phy.debias = NULL)
 }
 \arguments{
 \item{data}{The original data to be used. It is suggested to use similar
-input as InterVA4, with the first column being death IDs. The only
-difference in input is InsilicoVA takes three levels: ``present'',
+input as InterVA4, with the first column being death IDs and 245 symptoms.
+The only difference in input is InsilicoVA takes three levels: ``present'',
 ``absent'', and ``missing (no data)''. Similar to InterVA software,
 ``present'' symptoms takes value ``Y''; ``absent'' symptoms take take value
 ``NA'' or ``''. For missing symptoms, e.g., questions not asked or answered
@@ -25,7 +25,8 @@ in the original interview, corrupted data, etc., the input should be coded
 by ``.'' to distinguish from ``absent'' category. The order of the columns does
 not matter as long as the column names are correct. It can also include more
 unused columns than the standard InterVA4 input. But the first column should be
-the death ID.}
+the death ID. For example input data format, see \code{RandomVA1} and
+\code{RandomVA2}.}
 
 \item{isNumeric}{Indicator if the input is already in numeric form. If the
 input is coded numerically such that 1 for ``present'', 0 for ``absent'',
@@ -37,7 +38,7 @@ probability table without re-estimating.}
 
 \item{keepProbbase.level}{Logical indicator when \code{useProbbase} is
 FALSE. If TRUE, then only estimate the InterVA's conditional probability
-table interpretation table; if FALSE, estimate the whole conditional
+interpretation table; if FALSE, estimate the whole conditional
 probability matrix. Default to TRUE.}
 
 \item{cond.prob.touse}{Customized conditional probability table to use.
@@ -137,7 +138,7 @@ TRUE. In that case, all external causes should be grouped together, as they
 are assigned deterministically by the corresponding symptoms.}
 
 \item{phy.debias}{Fitted object from physician coding debias function (see
-\code{physician_debias}) that overwrites all physician coding parameters.}
+\code{\link{physician_debias}}) that overwrites \code{phy.code}.}
 }
 \value{
 \item{id}{A vector of death ID. Note the order of the ID is in
@@ -190,45 +191,73 @@ For more detail of model specification, see the paper on
 \url{http://arxiv.org/abs/1411.3042}.
 }
 \examples{
+\donttest{
 # load sample data together with sub-population list
-data(SampleInput_insilico)
+data(RandomVA1)
 # extract InterVA style input data
-data <- SampleInput_insilico$data
+data <- RandomVA1$data
 # extract sub-population information.
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-subpop <- SampleInput_insilico$subpop
+subpop <- RandomVA1$subpop
 
 # run without subpopulation
 fit1<- insilico( data, subpop = NULL,
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-              external.sep = TRUE, keepProbbase.level = TRUE)
+              external.sep = TRUE, keepProbbase.level = TRUE,
+				 auto.length = TRUE)
 
 # re-run with subpopulation
 fit2<- insilico( data, subpop = subpop,
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-              external.sep = TRUE, keepProbbase.level = TRUE)
+              external.sep = TRUE, keepProbbase.level = TRUE,
+				 auto.length = TRUE)
 
 # note a different ways to specify subpopulation
-HIV_indicator <- SampleInput_insilico$subpop
-data_more <- cbind(data, HIV_indicator)
-fit2<- insilico( data_more, subpop = "HIV_indicator",
+data(RandomVA2)
+# see the added column named "subpop"
+head(RandomVA2[, 1:5])
+fit2<- insilico(RandomVA2, subpop = "subpop",
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-              external.sep = TRUE, keepProbbase.level = TRUE)
+              external.sep = TRUE, keepProbbase.level = TRUE,
+				 auto.length = TRUE)
 
 # When more than one variables are used to divide the population
 # for example, if we shuffle the HIV indicator to create another fake grouping
 # and we want to use the combination of both as a subpopulation indicator
-HIV_indicator <- SampleInput_insilico$subpop
-HIV_indicator2 <- sample(SampleInput_insilico$subpop)
+HIV_indicator <- RandomVA2$subpop
+HIV_indicator2 <- sample(RandomVA2$subpop)
 data_more <- cbind(data, HIV_indicator, HIV_indicator2)
 fit3<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"),
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-              external.sep = TRUE, keepProbbase.level = TRUE)
+              external.sep = TRUE, keepProbbase.level = TRUE,
+				 auto.length = FALSE)
 
 # run without re-sampling conditional probabilities
 fit4<- insilico( data, subpop = subpop,
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-              external.sep = TRUE, useProbbase = TRUE)
+              external.sep = TRUE, useProbbase = TRUE,
+				 auto.length = FALSE)
+
+# run with physician coding
+data(RandomPhysician)
+head(RandomPhysician[, 1:10])
+data(SampleCategory)
+
+causelist <- c("Communicable", "TB/AIDS", "Maternal",
+               "NCD", "External", "Unknown")
+
+phydebias <- physician_debias(RandomPhysician, phy.id = c("rev1", "rev2"),
+phy.code = c("code1", "code2"), phylist = c("doc1", "doc2"),
+causelist = causelist, tol = 0.0001, max.itr = 5000)
+
+fit5<- insilico(data, subpop = NULL,
+              phy.debias =  phydebias,
+              phy.cat = SampleCategory,
+              phy.external = "External", phy.unknown = "Unknown",
+              length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+              external.sep = TRUE, useProbbase = TRUE,
+				 auto.length = FALSE)
+}
 }
 \author{
 Zehang Li, Tyler McCormick, Sam Clark
@@ -243,7 +272,7 @@ cause-of-death assignment using verbal autopsies},
 for Statistics and the Social Sciences, University of Washington}
 }
 \seealso{
-\code{\link{plot.insilico}}, \code{\link{summary.insilico}}
+\code{\link{plot.insilico}}, \code{\link{summary.insilico}}, \code{\link{physician_debias}}
 }
 \keyword{InSilicoVA}
 

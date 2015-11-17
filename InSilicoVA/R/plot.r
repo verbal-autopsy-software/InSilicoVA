@@ -48,18 +48,20 @@
 #' @keywords InSilicoVA
 #' @examples
 #' 
+#' \donttest{
 #' # load sample data together with sub-population list
-#' data(SampleInput_insilico)
+#' data(RandomVA1)
 #' # extract INterVA style input data
-#' data <- SampleInput_insilico$data
+#' data <- RandomVA1$data
 #' # extract sub-population information. 
 #' # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-#' subpop <- SampleInput_insilico$subpop
+#' subpop <- RandomVA1$subpop
 #' 
 #' # run without sub-population
 #' fit1<- insilico( data, subpop = NULL, 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, keepProbbase.level = TRUE)
+#'               external.sep = TRUE, keepProbbase.level = TRUE, 
+#'				 auto.length = FALSE)
 #' # default plot
 #' plot(fit1)
 #' 
@@ -76,7 +78,8 @@
 #' # run with sub-populations
 #' fit2<- insilico( data, subpop = subpop, 
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, keepProbbase.level = TRUE)
+#'               external.sep = TRUE, keepProbbase.level = TRUE, 
+#'				 auto.length = FALSE)
 #' # default plot
 #' plot(fit2, type = "compare", top = 5, title = "Top 5 causes comparison")
 #' # customized single sub-population plot
@@ -88,7 +91,7 @@
 #' plot(fit2, type = "compare", horiz = FALSE,  causelist = some_causes,
 #' 		   title = "Infectious diseases in three sub-populations", 
 #' 		   angle = 20)
-#' 
+#' }
 #' 
 #' @export plot.insilico
 plot.insilico <- function(x, type = c("errorbar", "bar", "compare")[1], 

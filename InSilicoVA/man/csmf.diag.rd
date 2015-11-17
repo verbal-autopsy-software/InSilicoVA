@@ -55,13 +55,13 @@ not be comparable by this test.
 }
 \examples{
 # load sample data together with sub-population list
-data(SampleInput_insilico)
+data(RandomVA1)
 \dontrun{
 # extract INterVA style input data
-data <- SampleInput_insilico$data
+data <- RandomVA1$data
 # extract sub-population information.
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-subpop <- SampleInput_insilico$subpop
+subpop <- RandomVA1$subpop
 
 # run without sub-population
 fit1a<- insilico( data, subpop = NULL,

@@ -2,7 +2,8 @@
 
 #' Implement physician debias algorithm
 #' 
-#' This function implements physician debias algorithm proposed in ...
+#' This function implements physician debias algorithm proposed in Salter-Townshend 
+#' and Murphy (2013).
 #'
 #' @param data The original data to be used. It is suggested to use similar
 #' input as InterVA4, with the first column being death IDs. The only
@@ -12,9 +13,10 @@
 #' ``NA'' or ``''. For missing symptoms, e.g., questions not asked or answered
 #' in the original interview, corrupted data, etc., the input should be coded
 #' by ``.'' to distinguish from ``absent'' category. The order of the columns does
-#' not matter as long as the column names are correct. It can also include more 
-#' unused columns than the standard InterVA4 input. But the first column should be 
-#' the death ID. Everything other than the death ID, physician ID, and physician codes should be symptoms.
+#' not matter as long as the column names are correct. Currently it cannot other
+#' non-symptom columns such as subpopulation. And the first column should be 
+#' the death ID. Everything other than the death ID, physician ID, and physician 
+#' codes should be symptoms.
 #' @param phy.id vector of column names for physician ID
 #' @param phy.code vector of column names for physician code
 #' @param phylist vector of physician ID used in physician ID columns
@@ -22,11 +24,29 @@
 #' @param tol tolerance of the EM algorithm
 #' @param max.itr maximum iteration to run
 
-#' @return \item{code.debias}{Individial cause likelihood distribution}
+#' @return \item{code.debias}{Individual cause likelihood distribution}
 #' @return \item{csmf}{Cause specific distribution in the sample}
 #' @return \item{phy.bias}{Bias matrix for each physician}
 #' @return \item{cond.prob}{Conditional probability of symptoms given causes}
+#' 
+#' @examples 
+#' 
+#' data(RandomPhysician)
+#' head(RandomPhysician[, 1:10])
+#' 
+#' causelist <- c("Communicable", "TB/AIDS", "Maternal", 
+#'                "NCD", "External", "Unknown")
+#' phydebias <- physician_debias(RandomPhysician, phy.id = c("rev1", "rev2"), 
+#' phy.code = c("code1", "code2"), phylist = c("doc1", "doc2"), 
+#' causelist = causelist, tol = 0.0001, max.itr = 5000)
+#' 
+#' # see the first physician's bias matrix
+#' round(phydebias$phy.bias[[1]], 2)
 
+#' @references M. Salter-Townshend and T. B. Murphy (2013).\emph{Sentiment 
+#' analysis of online media}. \cr \emph{In Algorithms from and for Nature and 
+#' Life, pages 137-145, Springer.}
+#' 
 physician_debias <- function(data, phy.id, phy.code, phylist, causelist, tol = 0.0001, max.itr = 5000){
 	# which columns are doctor ID
 	docCol <- match(phy.id, colnames(data))

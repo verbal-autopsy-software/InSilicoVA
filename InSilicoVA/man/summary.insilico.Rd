@@ -52,12 +52,12 @@ below for more detail.
 }
 \examples{
 # load sample data together with sub-population list
-data(SampleInput_insilico)
+data(RandomVA1)
 # extract INterVA style input data
-data <- SampleInput_insilico$data
+data <- RandomVA1$data
 # extract sub-population information.
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-subpop <- SampleInput_insilico$subpop
+subpop <- RandomVA1$subpop
 
 # run without subpopulation
 fit1<- insilico( data, subpop = NULL,

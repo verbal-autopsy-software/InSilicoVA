@@ -181,8 +181,11 @@ datacheck.interVA <- function(id, indic, missing.all, external.sep, warning.writ
 		if(warning.write){
 			cat(paste("Warning log built for InterVA", Sys.time(), "\n"),file="warnings.txt",append = FALSE) 
 		}
-		data(probbase)
-		data(causetext)
+		data("probbase", envir = environment())
+		probbase <- get("probbase", envir  = environment())
+		data("causetext", envir = environment())
+		causetext <- get("causetext", envir  = environment())
+
 	    probbase <- as.matrix(probbase)
 	    Input <- as.matrix(indic)
 	    symps <- probbase[2:246, 2]

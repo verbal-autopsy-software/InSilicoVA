@@ -3,9 +3,8 @@
 \alias{InsilicoVA}
 \docType{package}
 \title{
-What the package does (short line)
-~~ package title ~~
-}
+Perform InSilicoVA algorithm and provide graphical summarization of CSMF and COD
+distribution.}
 \description{
 Computes individual cause of death and population
 cause-specific mortality fractions using the InSilicoVA

@@ -10,3 +10,12 @@ Insilico/library/META-INF
 *.xml
 .name
 InSilicoVA.Rcheck/*
+*.
+Insilico-manual-concordance.tex
+*.
+Documents/cache
+Documents/figure
+*.synctex.gz
+Documents/data
+insilico_indiv_prob.csv
+.Rhistory

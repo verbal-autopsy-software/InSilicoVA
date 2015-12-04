@@ -18,6 +18,8 @@ export(csmf.diag)
 import("rJava")
 import("coda")
 import("ggplot2")
+importFrom("stats", "median", "quantile", "rbinom", "reorder", "runif")
+importFrom("utils", "write.csv")
 
 S3method("print","insilico")
 S3method("plot","insilico")

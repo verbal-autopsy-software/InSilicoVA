@@ -51,6 +51,7 @@ fitted object on screen and show the several top CSMFs of user's choice. See
 below for more detail.
 }
 \examples{
+\dontrun{
 # load sample data together with sub-population list
 data(RandomVA1)
 # extract INterVA style input data
@@ -65,6 +66,7 @@ fit1<- insilico( data, subpop = NULL,
               external.sep = TRUE, keepProbbase.level = TRUE)
 summary(fit1)
 summary(fit1, top = 10)
+}
 }
 \author{
 Zehang Li, Tyler McCormick, Sam Clark

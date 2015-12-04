@@ -48,7 +48,7 @@
 #' @keywords InSilicoVA
 #' @examples
 #' 
-#' \donttest{
+#' \dontrun{
 #' # load sample data together with sub-population list
 #' data(RandomVA1)
 #' # extract INterVA style input data

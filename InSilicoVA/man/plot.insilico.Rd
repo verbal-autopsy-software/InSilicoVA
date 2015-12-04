@@ -68,7 +68,7 @@ Produce a bar plot of the CSMFs for a fitted \code{"insilico"} object.
 To-do
 }
 \examples{
-\donttest{
+\dontrun{
 # load sample data together with sub-population list
 data(RandomVA1)
 # extract INterVA style input data

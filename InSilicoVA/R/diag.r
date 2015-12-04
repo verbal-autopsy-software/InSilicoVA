@@ -77,7 +77,7 @@
 #' 
 #' # load sample data together with sub-population list
 #' data(RandomVA1)
-#' \dontrun{
+#' \donttest{
 #' # extract INterVA style input data
 #' data <- RandomVA1$data
 #' # extract sub-population information. 

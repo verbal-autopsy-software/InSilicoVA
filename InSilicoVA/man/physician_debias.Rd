@@ -49,7 +49,7 @@ and Murphy (2013).
 \examples{
 data(RandomPhysician)
 head(RandomPhysician[, 1:10])
-
+\dontrun{
 causelist <- c("Communicable", "TB/AIDS", "Maternal",
                "NCD", "External", "Unknown")
 phydebias <- physician_debias(RandomPhysician, phy.id = c("rev1", "rev2"),
@@ -58,6 +58,7 @@ causelist = causelist, tol = 0.0001, max.itr = 5000)
 
 # see the first physician's bias matrix
 round(phydebias$phy.bias[[1]], 2)
+}
 }
 \references{
 M. Salter-Townshend and T. B. Murphy (2013).\emph{Sentiment

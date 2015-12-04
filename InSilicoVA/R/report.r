@@ -41,7 +41,7 @@
 #' assignment using verbal autopsies, \emph{arXiv preprint arXiv:1411.3042}
 #' \url{http://arxiv.org/abs/1411.3042} (2014)
 #' @examples
-#' 
+#' \dontrun{
 #' # load sample data together with sub-population list
 #' data(RandomVA1)
 #' # extract INterVA style input data
@@ -56,7 +56,7 @@
 #'               external.sep = TRUE, keepProbbase.level = TRUE)
 #' summary(fit1)
 #' summary(fit1, top = 10)
-#' 
+#' }
 #' @export summary.insilico
 summary.insilico <- function(object, CI.csmf = 0.95, CI.cond = 0.95, 
 				  file = NULL, top = 10, ...){

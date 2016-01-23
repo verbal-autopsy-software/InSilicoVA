@@ -128,7 +128,8 @@
 #' TRUE. In that case, all external causes should be grouped together, as they
 #' are assigned deterministically by the corresponding symptoms.
 #' @param phy.debias Fitted object from physician coding debias function (see
-#' \code{physician_debias}) that overwrites all physician coding parameters.
+#' \code{\link{physician_debias}}) that overwrites \code{phy.code}.
+#' @param exclude.impossible.cause logical indicator to exclude impossible causes based on the age and gender of the death.
 #' @param dev.customization default to be FALSE
 #' @param Probbase_by_symp.dev default to be FALSE
 #' @param probbase.dev default to be NULL
@@ -183,37 +184,10 @@
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
 #'               external.sep = TRUE, keepProbbase.level = TRUE)
 #' 
-#' # re-run with subpopulation
-#' fit2<- insilico( data, subpop = subpop, 
-#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, keepProbbase.level = TRUE)
-#'  
-#' # note a different ways to specify subpopulation
-#' HIV_indicator <- RandomVA1$subpop
-#' data_more <- cbind(data, HIV_indicator)
-#' fit2<- insilico( data_more, subpop = "HIV_indicator", 
-#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, keepProbbase.level = TRUE)
-#'
-#' # When more than one variables are used to divide the population
-#' # for example, if we shuffle the HIV indicator to create another fake grouping
-#' # and we want to use the combination of both as a subpopulation indicator
-#' HIV_indicator <- RandomVA1$subpop
-#' HIV_indicator2 <- sample(RandomVA1$subpop)
-#' data_more <- cbind(data, HIV_indicator, HIV_indicator2)
-#' fit2<- insilico( data_more, subpop = list("HIV_indicator", "HIV_indicator2"), 
-#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, keepProbbase.level = TRUE)
-#'
-#'
-#' # run without re-sampling conditional probabilities
-#' fit3<- insilico( data, subpop = subpop, 
-#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, useProbbase = TRUE)
 #' }
 #' 
-#' @export insilico
-insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, dev.customization = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, prob.order.dev = NULL){ 
+#' @export insilico.dev
+insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, , exclude.impossible.cause = TRUE, dev.customization = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, prob.order.dev = NULL){ 
 	
 #############################################################################
 #############################################################################
@@ -222,17 +196,31 @@ insilico.dev <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbba
 ## author: Richard Li 
 ## date: 05/11/2014
 #############################################################################
-InterVA.table <- function(min){
+InterVA.table <- function(standard = TRUE, min = NULL, table.dev = NULL){
 ###########################################################
 # function to return the interVA conversion table for alphabetic levels
 # also change the smallest value from 0 to user input		
 # @param:
-#		min: minimum level
+#       standard: if TRUE, only need min and use interVA standard values
+#		min: minimum level to replace 0 in interVA standard
+#       table.dev: customized values
 # @values:
 # 		vector of interVA4 levels
-	return(c(1, 0.8, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 
-			  0.001, 0.0005, 0.0001, 0.00001, min))
-}	
+	if(standard){
+		if(is.null(min)){stop("Error, minimum level not specified")}
+		return(c(1, 0.8, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 
+			  0.001, 0.0005, 0.0001, 0.00001, min))		
+	}else{
+		if(is.null(table.dev)){
+			stop("Error, numerical level table not specified")
+		}
+		if(min(table.dev) == 0){
+			table.dev[which.min(table.dev)] <- sort(table.dev, decreasing=FALSE)[2]/10			
+		}
+		return(sort(table.dev, decreasing = TRUE))
+	}
+}
+
 scale.vec <- function(aaa, scale = NULL, scale.max = NULL, reverse = TRUE){
 ###########################################################
 # function to change the scale of a given vector
@@ -261,7 +249,7 @@ scale.vec.inter <- function(aaa, scale = NULL, scale.max = NULL){
 #		reverse   : whether the order should be reversed
 # @values:	
 #  
-	dist <- InterVA.table(0.000001)
+	dist <- InterVA.table(standard = TRUE, min = 0.000001)
 	if(length(aaa) != length(dist)){stop("dimension of probbase prior not correct")}
 	bbb <- dist[order(aaa)]
 	if(!is.null(scale)) return(bbb/sum(bbb) * scale)
@@ -269,6 +257,7 @@ scale.vec.inter <- function(aaa, scale = NULL, scale.max = NULL){
 }
 
 change.inter <- function(x, order = FALSE){
+###########################################################	
 # function to translate alphebatic matrix into numeric matrix or order matrix
 # @param:
 # 	x      : alphabetic matrix 
@@ -282,7 +271,7 @@ change.inter <- function(x, order = FALSE){
 	}else{
 		y <- matrix(0, a, b)
 	}  	
-	inter.table <- InterVA.table(0)
+	inter.table <- InterVA.table(standard = TRUE, min = 0)
 	y[x == "I"] <- 1
     y[x == "A+"] <- 0.8
     y[x == "A"] <- 0.5
@@ -312,7 +301,7 @@ change.inter <- function(x, order = FALSE){
     return(y)   
 }
 
-cond.initiate <- function(probbase.order, expIni, Inter.ini, min, max){
+cond.initiate <- function(probbase.order, expIni, Inter.ini, min, max){###########################################################
 # Randomly initialize probbase from order matrix
 # @param:
 # 	probbase.order : order matrix
@@ -336,7 +325,7 @@ cond.initiate <- function(probbase.order, expIni, Inter.ini, min, max){
 		}
 		# if the random levels are initialized proportional to InterVA intervals
 		if(Inter.ini){
-			randomlevels <- InterVA.table(0)
+			randomlevels <- InterVA.table(standard = TRUE, min = 0)
 			randomlevels <- (randomlevels * (max - min)) + min
 		}
 		# change order matrix into actual values
@@ -447,55 +436,6 @@ datacheck.interVA <- function(id, indic, missing.all, external.sep, warning.writ
 	Input
 }
 
-impute <- function(indic.w.missing, y.new, cond.prob, S, subbelong, missing.imp){
-###########################################################
-# function to impute missing data (NOT USED)
-# @param:
-#		indic.w.missing : matrix of indicators
-#		y.new           : current cause vector
-#		cond.prob       : cond prob matrix
-#		S 				: number of symptoms
-#		subbelong       : vector of sub-population membership
-#		missing.imp     : as in the main function	
-# @values:
-# 		imputed indic matrix		
-	## if no imputing
-	if(missing.imp == "none"){
-		return(indic.w.missing)
-
-	## if impute for all missings
-	}else if(missing.imp == "all"){
-		## arrange indic into vectors, one death after another
-		indic.w.missing <- t(indic.w.missing)
-		## find where are the missing values
-		where.miss <- which(indic.w.missing < 0)
-	
-	# if impute for all missings except sub-population specific total missing
-	}else if(missing.imp == "sub"){
-		## arrange indic into vectors, one death after another
-		indic.w.missing <- t(indic.w.missing)
-		## find where are the missing values
-		where.miss <- which(indic.w.missing == -1)
-	}
-
-	if(length(where.miss)  == 0) return(indic.w.missing)
-	## find the causes for each of the missing values
-	what.cause <- y.new[trunc((where.miss-0.1)/S) + 1]
-	## find the corresponding cond.prob
-	getprob <- function(i, where.miss, what.cause, cond.prob, S){
-		which.symp <- where.miss[i] %% S
-		if(which.symp == 0) which.symp <- S
-		cond.prob[which.symp, what.cause[i]]
-	}
-	prob <- sapply(seq(1:length(where.miss)), getprob, 
-					where.miss, what.cause, cond.prob, S)
-	## sample new indic.vec
-	samp <- rbinom(n = length(where.miss), size = 1, 
-					prob = prob)
-	indic.w.missing[where.miss] <- samp
-	return(t(indic.w.missing))
-}
-  
 removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps){
 ###########################################################
 # function to remove external causes/symps and assign deterministic deaths
@@ -667,58 +607,13 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     return(out)
 }
 
-# Parse_Add_Result <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit, fit.add){
-# ###########################################################
-# # function to add Java output to previous results and parse into correct place 
-# # @param:
-# #	   various java arguments
-# #	   both new and old Java output
-# # @values:
-# #		list of variables parsed 
-#     # remove the first row from the added matrix, since it is the starting point
-#     fit.all <- rbind(fit, fit.add[-1, ])
-#     # parse all the saved iterations
-#     out_all <- ParseResult(N_sub.j, C.j, S.j, N_level.j, pool.j, fit.all)
-#     # parse only the added fit to find the most recent values
-#     out_last <- ParseResult(N_sub.j, C.j, S.j, N_level.j, pool.j, fit.add)
-#     # replace the most recent values with the correct set
-#     out_all$mu.last <- out_last$mu.last
-#     out_all$sigma2.last <- out_last$sigma2.last
-#     out_all$theta.last <- out_last$theta.last     
-#     return(out_all)
-# }
-#############################################################################
+
+#########################################################################
 ## InSilico VA -  helper functions for overriding standard setup
 ##
 ## author: Richard Li 
 ## date: 09/13/2015
-#############################################################################
-superInterVA.table <- function(table.dev){	
-	# avoid zero
-	if(min(table.dev) == 0)
-	table.dev[which.min(table.dev)] <- sort(table.dev, decreasing=F)[2]/10
-	return(sort(table.dev, decreasing = TRUE))
-}
-# superscale.vec.inter <- function(table.dev, aaa, scale = NULL, scale.max = NULL){
-# ###########################################################
-# # function to map ordered input vector to InterVA alphabetic scale
-# # Note:  to avoid 0, change the last one to 0.000001 here
-# # @param:
-# #	    aaa       : vector to be scaled
-# # 		scale     : sum of the vector after scaling
-# #       scale.max : max of the vector after scaling
-# #		reverse   : whether the order should be reversed
-# # @values:	
-# #  
-# 	dist <- superInterVA.table(table.dev)
-# 	if(length(aaa) != length(dist)){
-# 		warning("dimension of probbase prior not correct, use linear prior")
-# 		dist <- seq(1, 1e-5, len = length(aaa))
-# 	}
-# 	bbb <- dist[order(aaa)]
-# 	if(!is.null(scale)) return(bbb/sum(bbb) * scale)
-# 	if(!is.null(scale.max)) return(bbb * scale.max / max(bbb))
-# }
+#########################################################################
 superchange.inter <- function(x, table.dev, order = FALSE){
 	# function to translate alphebatic matrix into numeric matrix or order matrix
 	# @param:
@@ -733,7 +628,7 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 		}else{
 			y <- matrix(0, a, b)
 		}  	
-		inter.table <- superInterVA.table(table.dev)
+		inter.table <- InterVA.table(standard = FALSE, table.dev = table.dev)
 		y[x == "I"] <- inter.table[1]
 	    y[x == "A+"] <- inter.table[2]
 	    y[x == "A"] <- inter.table[3]
@@ -862,6 +757,7 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 	##---------------------------------------------------------------------------------##
 	  	if(!is.null(cond.prob.touse)){
 	  		prob.orig <- cond.prob.touse
+	  		exclude.impossible.cause <- FALSE
 	  	}
 	 
 		#############################################################
@@ -1175,7 +1071,7 @@ superchange.inter <- function(x, table.dev, order = FALSE){
     
      if(dev.customization && !(useProbbase)){
     	# get new dist
-    	dist <- superInterVA.table(table.dev)
+    	dist <- InterVA.table(standard = TRUE, table.dev = table.dev)
     	# check existence of probbase levels
     	exist <- seq(1:length(dist)) %in% unique(as.vector(prob.order))
     	
@@ -1197,7 +1093,7 @@ superchange.inter <- function(x, table.dev, order = FALSE){
     }else{
     	probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
     	N_level.j <- as.integer(nlevel)
-    	dist <- InterVA.table(0)
+    	dist <- InterVA.table(standard = TRUE, min = 0)
 	}
    
     level_values.j <- .jarray(dist, dispatch = TRUE)

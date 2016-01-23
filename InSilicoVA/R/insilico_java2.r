@@ -252,16 +252,29 @@ insilico <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.l
 ## author: Richard Li 
 ## date: 05/11/2014
 #############################################################################
-InterVA.table <- function(min){
+InterVA.table <- function(standard = TRUE, min = NULL, table.dev = NULL){
 ###########################################################
 # function to return the interVA conversion table for alphabetic levels
 # also change the smallest value from 0 to user input		
 # @param:
-#		min: minimum level
+#       standard: if TRUE, only need min and use interVA standard values
+#		min: minimum level to replace 0 in interVA standard
+#       table.dev: customized values
 # @values:
 # 		vector of interVA4 levels
-	return(c(1, 0.8, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 
-			  0.001, 0.0005, 0.0001, 0.00001, min))
+	if(standard){
+		if(is.null(min)){stop("Error, minimum level not specified")}
+		return(c(1, 0.8, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 
+			  0.001, 0.0005, 0.0001, 0.00001, min))		
+	}else{
+		if(is.null(table.dev)){
+			stop("Error, numerical level table not specified")
+		}
+		if(min(table.dev) == 0){
+			table.dev[which.min(table.dev)] <- sort(table.dev, decreasing=FALSE)[2]/10			
+		}
+		return(sort(table.dev, decreasing = TRUE))
+	}
 }	
 scale.vec <- function(aaa, scale = NULL, scale.max = NULL, reverse = TRUE){
 ###########################################################
@@ -291,7 +304,7 @@ scale.vec.inter <- function(aaa, scale = NULL, scale.max = NULL){
 #		reverse   : whether the order should be reversed
 # @values:	
 #  
-	dist <- InterVA.table(0.000001)
+	dist <- InterVA.table(standard = TRUE, min = 0.000001)
 	if(length(aaa) != length(dist)){stop("dimension of probbase prior not correct")}
 	bbb <- dist[order(aaa)]
 	if(!is.null(scale)) return(bbb/sum(bbb) * scale)
@@ -313,7 +326,7 @@ change.inter <- function(x, order = FALSE){
 	}else{
 		y <- matrix(0, a, b)
 	}  	
-	inter.table <- InterVA.table(0)
+	inter.table <- InterVA.table(standard = TRUE, min = 0)
 	y[x == "I"] <- 1
     y[x == "A+"] <- 0.8
     y[x == "A"] <- 0.5
@@ -368,7 +381,7 @@ cond.initiate <- function(probbase.order, expIni, Inter.ini, min, max){
 		}
 		# if the random levels are initialized proportional to InterVA intervals
 		if(Inter.ini){
-			randomlevels <- InterVA.table(0)
+			randomlevels <- InterVA.table(standard = TRUE, min = 0)
 			randomlevels <- (randomlevels * (max - min)) + min
 		}
 		# change order matrix into actual values
@@ -1064,7 +1077,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     probbase.j <- .jarray(as.matrix(cond.prob), dispatch=TRUE)
     probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
 
-    dist <- InterVA.table(0)
+    dist <- InterVA.table(standard = TRUE, min = 0)
     level_values.j <- .jarray(dist, dispatch = TRUE)
     prior_a.j <- .jarray(levels.prior , dispatch = TRUE)
     prior_b.j <- prior.b.cond

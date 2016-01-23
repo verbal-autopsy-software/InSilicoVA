@@ -256,12 +256,14 @@ scale.vec.inter <- function(aaa, scale = NULL, scale.max = NULL){
 	if(!is.null(scale.max)) return(bbb * scale.max / max(bbb))
 }
 
-change.inter <- function(x, order = FALSE){
-###########################################################	
+change.inter <- function(x, order = FALSE, standard = TRUE, table.dev = NULL){
+###########################################################
 # function to translate alphebatic matrix into numeric matrix or order matrix
 # @param:
 # 	x      : alphabetic matrix 
 #	order  : whether to change the matrix into order matrix
+#   standard: whether to use the standard table
+#   table.dev: new table to replace it
 # @values:
 #	numeric matrix by InterVA probbase rules, or the order matrix
 	a <- dim(x)[1]
@@ -271,24 +273,26 @@ change.inter <- function(x, order = FALSE){
 	}else{
 		y <- matrix(0, a, b)
 	}  	
-	inter.table <- InterVA.table(standard = TRUE, min = 0)
-	y[x == "I"] <- 1
-    y[x == "A+"] <- 0.8
-    y[x == "A"] <- 0.5
-    y[x == "A-"] <- 0.2
-    y[x == "B+"] <- 0.1
-    y[x == "B"] <- 0.05
-    y[x == "B-"] <- 0.02
-    y[x == "B -"] <- 0.02
-    y[x == "C+"] <- 0.01
-    y[x == "C"] <- 0.005
-    y[x == "C-"] <- 0.002
-    y[x == "D+"] <- 0.001
-    y[x == "D"] <- 5e-4
-    y[x == "D-"] <- 1e-4
-    y[x == "E"] <- 1e-5
-    y[x == "N"] <- 0
-    y[x == ""] <- 0
+	inter.table <- InterVA.table(standard = FALSE, table.dev = table.dev)
+	y[x == "I"] <- inter.table[1]
+    y[x == "A+"] <- inter.table[2]
+    y[x == "A"] <- inter.table[3]
+    y[x == "A-"] <- inter.table[4]
+    y[x == "B+"] <- inter.table[5]
+    y[x == "B"] <- inter.table[6]
+    y[x == "B-"] <- inter.table[7]
+    # historical error in probbase
+    y[x == "B -"] <- inter.table[7]
+
+    y[x == "C+"] <- inter.table[8]
+    y[x == "C"] <- inter.table[9]
+    y[x == "C-"] <- inter.table[10]
+    y[x == "D+"] <- inter.table[11]
+    y[x == "D"] <- inter.table[12]
+    y[x == "D-"] <- inter.table[13]
+    y[x == "E"] <- inter.table[14]
+    y[x == "N"] <- inter.table[15]
+    y[x == ""] <- inter.table[15]
 
     if(order){
     	for(i in 1: length(inter.table)){
@@ -607,57 +611,6 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     return(out)
 }
 
-
-#########################################################################
-## InSilico VA -  helper functions for overriding standard setup
-##
-## author: Richard Li 
-## date: 09/13/2015
-#########################################################################
-superchange.inter <- function(x, table.dev, order = FALSE){
-	# function to translate alphebatic matrix into numeric matrix or order matrix
-	# @param:
-	# 	x      : alphabetic matrix 
-	#	order  : whether to change the matrix into order matrix
-	# @values:
-	#	numeric matrix by InterVA probbase rules, or the order matrix
-		a <- dim(x)[1]
-		b <- dim(x)[2]
-		if(is.null(a)){
-			y <- rep(0,length(x))
-		}else{
-			y <- matrix(0, a, b)
-		}  	
-		inter.table <- InterVA.table(standard = FALSE, table.dev = table.dev)
-		y[x == "I"] <- inter.table[1]
-	    y[x == "A+"] <- inter.table[2]
-	    y[x == "A"] <- inter.table[3]
-	    y[x == "A-"] <- inter.table[4]
-	    y[x == "B+"] <- inter.table[5]
-	    y[x == "B"] <- inter.table[6]
-	    y[x == "B-"] <- inter.table[7]
-	    y[x == "B -"] <- inter.table[7]
-	    y[x == "C+"] <- inter.table[8]
-	    y[x == "C"] <- inter.table[9]
-	    y[x == "C-"] <- inter.table[10]
-	    y[x == "D+"] <- inter.table[11]
-	    y[x == "D"] <- inter.table[12]
-	    y[x == "D-"] <- inter.table[13]
-	    y[x == "E"] <- inter.table[14]
-	    y[x == "N"] <- inter.table[15]
-	    y[x == ""] <- inter.table[15]
-
-	    if(order){
-	    	for(i in 1: length(inter.table)){
-				y[y == inter.table[i] ] <- i
-			}
-	    }
-	    if(!is.null(a)){
-			y <- matrix(y, a, b)
-		}  	
-	    return(y) 
-}
-
 ##---------------------------------------------------------------------------------##
 #############################################################################
 #############################################################################
@@ -811,10 +764,10 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 ##---------------------------------------------------------------------------------##
 	if(!dev.customization){
 	  	## convert original probbase into order matrix
-	  	prob.order <- change.inter(prob.orig, order = TRUE)
+	  	prob.order <- change.inter(prob.orig, order = TRUE, standard = TRUE)
 	  	## translate original probbase into InterVA interpreted values
 	  	if(!is.numeric(prob.orig)){
-	  		cond.prob.true <- change.inter(prob.orig, order = FALSE)
+	  		cond.prob.true <- change.inter(prob.orig, order = FALSE, standard = TRUE)
 	 	}else{
 	 		cond.prob.true <- prob.orig
 	 	}
@@ -823,8 +776,8 @@ superchange.inter <- function(x, table.dev, order = FALSE){
   			prob.order <- prob.order.dev
   			cond.prob.true <- prob.orig
   		}else{
-	  		prob.order <- superchange.inter(prob.orig, table.dev, order = TRUE)
-	  		cond.prob.true <- superchange.inter(prob.orig, table.dev, order = FALSE)
+	  		prob.order <- superchange.inter(prob.orig, order = TRUE, standard = FALSE, table.dev = table.dev)
+	  		cond.prob.true <- superchange.inter(prob.orig, order = FALSE, standard = FALSE, table.dev = table.dev)
   		}
 	 } 	
 ##---------------------------------------------------------------------------------##
@@ -1022,7 +975,7 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 ## parameter initialization
    # csmf.prior <- rep(1/C, C)
 
-	Sys_Prior <- as.numeric(change.inter(probbase[1,17:76], order = FALSE))
+	Sys_Prior <- as.numeric(change.inter(probbase[1,17:76], order = FALSE), standard = TRUE)
 	# Number of indicators + 13 description variables. A_group:14-16;B_group:17:76;D_group:77:81
 	D <- length(Sys_Prior)
 	csmf.prior <- Sys_Prior/sum(Sys_Prior)
@@ -1055,7 +1008,7 @@ superchange.inter <- function(x, table.dev, order = FALSE){
 		cond.prob <- cond.initiate(prob.order, expIni = TRUE, Inter.ini = TRUE,
 						  min = trunc.min, max = trunc.max)
     }else{
-    	cond.prob <- change.inter(prob.orig)
+    	cond.prob <- change.inter(prob.orig, standard = TRUE)
     }
 
     # library(rJava)

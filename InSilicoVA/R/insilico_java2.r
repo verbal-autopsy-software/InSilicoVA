@@ -135,6 +135,7 @@
 #' are assigned deterministically by the corresponding symptoms.
 #' @param phy.debias Fitted object from physician coding debias function (see
 #' \code{\link{physician_debias}}) that overwrites \code{phy.code}.
+#' @param exclude.impossible.cause logical indicator to exclude impossible causes based on the age and gender of the death.
 #' @return \item{id}{A vector of death ID. Note the order of the ID is in
 #' general different from the input file. See \code{report} for organizing the
 #' report.}
@@ -168,7 +169,6 @@
 #' @keywords InSilicoVA
 #' @examples
 #' 
-#' \donttest{
 #' # load sample data together with sub-population list
 #' data(RandomVA1)
 #' # extract InterVA style input data
@@ -177,6 +177,12 @@
 #' # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
 #' subpop <- RandomVA1$subpop
 #' 
+#' # very short toy chain for testing 
+#' fit0<- insilico( data, subpop = NULL,  
+#'               length.sim = 20, burnin = 10, thin = 1 , seed = 1,
+#'               external.sep = TRUE, keepProbbase.level = TRUE, 
+#'				 auto.length = TRUE)
+#' \dontrun{
 #' # run without subpopulation
 #' fit1<- insilico( data, subpop = NULL,  
 #'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
@@ -237,7 +243,7 @@
 #' }
 #' @export insilico
 insilico <- function(data, isNumeric = FALSE,useProbbase = FALSE, keepProbbase.level = TRUE,  cond.prob.touse = NULL,datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, 
-	phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL){ 
+	phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE){ 
 	
 #############################################################################
 #############################################################################
@@ -805,6 +811,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 ##---------------------------------------------------------------------------------##
   	if(!is.null(cond.prob.touse)){
   		prob.orig <- cond.prob.touse
+  		exclude.impossible.cause <- FALSE
   	}
  #  	if(useInterVA == 2){
 	# 		va <- InterVA(as.matrix(data), HIV = HIV, Malaria = Malaria, write = FALSE)
@@ -831,6 +838,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   		subpop <- externals$subpop
   		prob.orig <- externals$prob.orig
   	}
+
 ##---------------------------------------------------------------------------------##
    	## check the missing list
    	##	 note: this step is after removing bad data and before data-checking
@@ -873,6 +881,22 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(S != dim(cond.prob.true)[1]) stop("Length of symptoms is not right")
 	## number of causes
 	C <- dim(cond.prob.true)[2]
+	##############################################################
+  	## check impossible pairs of symptoms and causes
+  	## check only first 9 symptoms (7 age + 2 gender)
+  	if(exclude.impossible.cause){
+	  	impossible <- NULL
+  		for(ss in 1:9){
+			for(cc in 1:C){
+				if(cond.prob.true[ss, cc] == 0){
+					impossible <- rbind(impossible, c(as.integer(cc-1), as.integer(ss-1)))
+				}
+			}
+		}
+		impossible <- as.matrix(impossible)	
+	}else{
+		impossible <- matrix(0, 1, 2)
+	}
 
 	## update 09/19/2015
 	## external causes have been removed before here...
@@ -1131,6 +1155,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     C.phy.j <- as.integer(C.phy)
     vacauses.broader.j <- .jarray(vacauses.broader+0.0, dispatch = TRUE)
 
+    # update Jan 16, 2016
+    impossible.j <- .jarray(as.matrix(impossible), dispatch = TRUE)
+
     if(is.null(subpop)){
 		N_sub.j <- as.integer(1)
 		subpop.j <- .jarray(as.integer(rep(0, N)), dispatch = TRUE)
@@ -1139,20 +1166,23 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
         subpop.j <- .jarray(as.integer(subpop.numeric), dispatch = TRUE)
 	}
 
+	dimensions <- c(N.j, S.j, C.j, N_sub.j, N_level.j)
+	dimensions.j <- .jarray(dimensions, dispatch = TRUE)
+
     isAdded <- FALSE
     mu.last.j <- .jarray(matrix(0, N_sub.j, C), dispatch = TRUE)
     sigma2.last.j <- .jarray(rep(0, N_sub.j), dispatch = TRUE)
 	theta.last.j <- .jarray(matrix(0, N_sub.j, C), dispatch = TRUE)
 
     ins  <- .jcall(obj, "[D", "Fit", 
-		N.j, S.j, C.j, N_sub.j, N_level.j, 
+		dimensions.j, 
 		probbase.j, probbase_order.j, level_values.j, 
 		prior_a.j, prior_b.j, jumprange.j, trunc_min.j, trunc_max.j, 
 		indic.j, subpop.j, contains_missing.j, pool.j, 
 		seed.j, N_gibbs.j, burn.j, thin.j, 
 		mu.j, sigma2.j, isUnix, useProbbase, 
 		isAdded, mu.last.j, sigma2.last.j, theta.last.j, 
-		C.phy.j, vacauses.broader.j, assignment.j) 
+		C.phy.j, vacauses.broader.j, assignment.j, impossible.j) 
     # one dimensional array is straightforward
     fit <- ins
     # fit <-  .jeval(ins, .jevalArray))
@@ -1193,14 +1223,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     		cat(paste("Increase chain length with another", N_gibbs.j, "iterations\n"))
     		obj <- .jnew("sampler/InsilicoSampler2")
     		ins  <- .jcall(obj, "[D", "Fit", 
-						N.j, S.j, C.j, N_sub.j, N_level.j, 
+						dimensions.j, 
 						probbase.j, probbase_order.j, level_values.j, 
 						prior_a.j, prior_b.j, jumprange.j, trunc_min.j, trunc_max.j, 
 						indic.j, subpop.j, contains_missing.j, pool.j, 
 						seed.j, N_gibbs.j, burn.j, thin.j, 
 						mu.j, sigma2.j, isUnix, useProbbase, 
 						TRUE, mu.last.j, sigma2.last.j, theta.last.j, 
-						C.phy.j, vacauses.broader.j, assignment.j)
+						C.phy.j, vacauses.broader.j, assignment.j, impossible.j)
     		# one dimensional array is straightforward
     		fit.add <- ins
     		# fit.add <-  t(sapply(ins, .jevalArray))

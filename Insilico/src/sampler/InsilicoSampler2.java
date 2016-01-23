@@ -189,13 +189,13 @@ public class InsilicoSampler2 {
      */
     public double[][] pnb(boolean contains_missing,
                           double[][] indic, double[][] csmf_sub,
-                          int[] subpop){
+                          int[] subpop, int[][] zero_matrix){
         // initialize p.nb matrix to p.hat
         double[][] nb = new double[this.N][this.C];
         // pnb_{nc} <- csmf_{subpop_n, c}
         for(int n = 0; n < this.N; n++){
             for(int c = 0; c < this.C; c++){
-                nb[n][c] =  csmf_sub[subpop[n]][c];
+                nb[n][c] =  csmf_sub[subpop[n]][c] * zero_matrix[n][c];
             }
         }
         // calculate posterior
@@ -224,7 +224,7 @@ public class InsilicoSampler2 {
      */
     public double[][] pnb(boolean contains_missing,
                           double[][] indic, double[][] csmf_sub,
-                          int[] subpop, int[] g_new){
+                          int[] subpop, int[] g_new, int[][] zero_matrix){
         // initialize p.nb matrix to p.hat
         double[][] nb = new double[this.N][this.C];
         // pnb_{nc} <- csmf_{subpop_n, c}
@@ -233,7 +233,7 @@ public class InsilicoSampler2 {
         //default to zero, update those with physician codes, normalize at the end
         for(int n = 0; n < this.N; n++){
             for(int c : this.catmap.get(g_new[n])){
-                nb[n][c] =  csmf_sub[subpop[n]][c];
+                nb[n][c] =  csmf_sub[subpop[n]][c] * zero_matrix[n][c];
             }
         }
 
@@ -591,7 +591,7 @@ public class InsilicoSampler2 {
      * mu: vector initialized in R
      * sigma2: value initialized in R
      */
-    public static double[] Fit(int N, int S, int C, int N_sub, int N_level,
+    public static double[] Fit(int[] dimensions,
                                double[][] probbase, double[][] probbase_order, double[] level_values,
                                double[] prior_a, double prior_b, double jumprange, double trunc_min, double trunc_max,
                                double[][] indic, int[] subpop, int contains_missing, int pool,
@@ -599,7 +599,7 @@ public class InsilicoSampler2 {
                                double[] mu, double sigma2, boolean this_is_Unix, boolean useProbbase,
                                boolean isAdded,
                                double[][] mu_continue, double[] sigma2_continue, double[][] theta_continue,
-                               int C_phy, double[] broader, double[][] assignment){
+                               int C_phy, double[] broader, double[][] assignment, int[][] impossible){
 //			public static void main(String[] args){
 //				int N = 5;
 //				int S = 3;
@@ -635,6 +635,12 @@ public class InsilicoSampler2 {
 //                double[][] assignment = {{1,0}, {0,1}, {0.5,0.5}, {1,0}, {0,1}};
 
         // initialization
+        int N = dimensions[0];
+        int S = dimensions[1];
+        int C = dimensions[2];
+        int N_sub = dimensions[3];
+        int N_level = dimensions[4];
+
         InsilicoSampler2 insilico = new InsilicoSampler2();
         boolean withPhy = (C_phy > 1);
 
@@ -709,15 +715,35 @@ public class InsilicoSampler2 {
             }
 
         }
+
+        // check impossible causes?
+        boolean check_impossible = impossible.length > 1;
+        int[][] zero_matrix = new int[N][C];
+        for(int i = 0; i < N; i++){
+            for(int j = 0; j < C; j++){
+                zero_matrix[i][j] = 1;
+            }
+        }
+        if(check_impossible){
+            for(int i = 0; i < N; i++){
+                for(int k = 0; k < impossible.length; k++){
+                    if(indic[i][impossible[k][1]] == 1){
+                        zero_matrix[i][impossible[k][0]] = 0;
+                    }
+                }
+            }
+        }
         // first time pnb (naive bayes probability) calculation, note it is inverse of R version
         //        double[][] pnb = new double[N][C];
         double[][] pnb;
         if(!withPhy){
-            pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop);
+            pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, zero_matrix);
         }else{
             int[] g_new = insilico.sampleY(assignment, rand);
-            pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, g_new);
+            pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, g_new, zero_matrix);
         }
+
+
 
         // start loop
         long start = System.currentTimeMillis();
@@ -781,9 +807,9 @@ public class InsilicoSampler2 {
             }
 
             if(!withPhy){
-                pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop);
+                pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, zero_matrix);
             }else{
-                pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, g_new);
+                pnb = insilico.pnb((contains_missing == 1), indic, p_now, subpop, g_new, zero_matrix);
             }
 
             // format output message

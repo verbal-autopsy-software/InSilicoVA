@@ -12,7 +12,8 @@ insilico(data, isNumeric = FALSE, useProbbase = FALSE,
   jump.scale = 0.1, levels.prior = NULL, levels.strength = 1,
   trunc.min = 1e-04, trunc.max = 0.9999, subpop = NULL,
   java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL,
-  phy.unknown = NULL, phy.external = NULL, phy.debias = NULL)
+  phy.unknown = NULL, phy.external = NULL, phy.debias = NULL,
+  exclude.impossible.cause = TRUE)
 }
 \arguments{
 \item{data}{The original data to be used. It is suggested to use similar
@@ -139,6 +140,8 @@ are assigned deterministically by the corresponding symptoms.}
 
 \item{phy.debias}{Fitted object from physician coding debias function (see
 \code{\link{physician_debias}}) that overwrites \code{phy.code}.}
+
+\item{exclude.impossible.cause}{logical indicator to exclude impossible causes based on the age and gender of the death.}
 }
 \value{
 \item{id}{A vector of death ID. Note the order of the ID is in
@@ -191,7 +194,6 @@ For more detail of model specification, see the paper on
 \url{http://arxiv.org/abs/1411.3042}.
 }
 \examples{
-\donttest{
 # load sample data together with sub-population list
 data(RandomVA1)
 # extract InterVA style input data
@@ -200,6 +202,12 @@ data <- RandomVA1$data
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
 subpop <- RandomVA1$subpop
 
+# very short toy chain for testing
+fit0<- insilico( data, subpop = NULL,
+              length.sim = 20, burnin = 10, thin = 1 , seed = 1,
+              external.sep = TRUE, keepProbbase.level = TRUE,
+				 auto.length = TRUE)
+\dontrun{
 # run without subpopulation
 fit1<- insilico( data, subpop = NULL,
               length.sim = 400, burnin = 200, thin = 10 , seed = 1,

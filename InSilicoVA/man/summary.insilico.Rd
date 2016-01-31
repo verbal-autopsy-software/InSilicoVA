@@ -28,7 +28,7 @@ cause of death distribution will be saved to the file.}
 \item{csmf}{ CSMF distribution and confidence interval for each cause.}
 \item{csmf.ordered}{ CSMF distribution and confidence interval for each cause, ordered by mean.}
 \item{condprob}{ Conditional probability matrix and confidence intervals.}
-\item{useProbbase}{Component of \code{"insilico"} object.}
+\item{updateCondProb}{Component of \code{"insilico"} object.}
 \item{keepProbbase.level}{Component of \code{"insilico"} object.}
 \item{datacheck}{Component of \code{"insilico"} object.}
 \item{length.sim}{Component of \code{"insilico"} object.}

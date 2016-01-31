@@ -19,7 +19,7 @@
 #' \item{csmf}{ CSMF distribution and confidence interval for each cause.} 
 #' \item{csmf.ordered}{ CSMF distribution and confidence interval for each cause, ordered by mean.} 
 #' \item{condprob}{ Conditional probability matrix and confidence intervals.}
-#' \item{useProbbase}{Component of \code{"insilico"} object.}
+#' \item{updateCondProb}{Component of \code{"insilico"} object.}
 #' \item{keepProbbase.level}{Component of \code{"insilico"} object.}
 #' \item{datacheck}{Component of \code{"insilico"} object.}
 #' \item{length.sim}{Component of \code{"insilico"} object.}
@@ -156,7 +156,7 @@ summary.insilico <- function(object, CI.csmf = 0.95, CI.cond = 0.95,
 				 csmf = csmf.out, 
 				 csmf.ordered = csmf.out.ordered,
 				 condprob = cond.out, 				
-				 useProbbase = object$useProbbase, 
+				 updateCondProb = object$updateCondProb, 
 				 keepProbbase.level = object$keepProbbase.level, 
 				 datacheck = object$datacheck,
 				 length.sim = object$length.sim, 

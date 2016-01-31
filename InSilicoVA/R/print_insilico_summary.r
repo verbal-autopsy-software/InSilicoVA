@@ -5,7 +5,7 @@ print.insilico_summary <- function(x, ...) {
 	cat(paste(x$length.sim, "iterations performed, with first", 
 			  x$burnin, "iterations discarded\n",
 			  trunc((x$length.sim - x$burnin)/x$thin), "iterations saved after thinning\n"))
-	if(x$useProbbase){
+	if(!x$updateCondProb){
 			cat("Fitted with InterVA4 conditional probability matrix\n")
 		}else if(x$keepProbbase.level){
 			cat("Fitted with re-estimated InterVA4 conditional probability level table\n")	

@@ -31,6 +31,7 @@
 #' @param phy.code see \code{\link{insilico}}
 #' @param phy.cat see \code{\link{insilico}}
 #' @param phy.unknown see \code{\link{insilico}}
+#' @param phy.external see \code{\link{insilico}}
 #' @param phy.debias see \code{\link{insilico}}
 #' @param exclude.impossible.cause see \code{\link{insilico}}
 #' @param customization.dev Logical indicator for customized variables
@@ -40,6 +41,7 @@
 #' @param table.num.dev The corresponding prior numerical values for each level in \code{probbase.dev}, in the same order as \code{table.dev}. Default to be NULL
 #' @param gstable.dev Table of gold standard causes for each death. Default to be NULL
 #' @param nlevel.dev number of levels in \code{probbase.dev}. Default to be NULL
+#' @param ... unused arguments
 
 #' @return 
 #' a insilico fit object, see see \code{\link{insilico}} for more detail.
@@ -72,7 +74,7 @@
 #' }
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, , exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL){ 
+insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, ...){ 
 	
 
 ##----------------------------------------------------------##
@@ -90,12 +92,12 @@ InterVA.table <- function(standard = TRUE, min = NULL, table.num.dev = NULL){
 # @values:
 # 		vector of interVA4 levels
 	if(standard){
-		if(is.null(min)){stop("Error, minimum level not specified")}
+		if(is.null(min)){stop("Minimum level not specified")}
 		return(c(1, 0.8, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 
 			  0.001, 0.0005, 0.0001, 0.00001, min))		
 	}else{
 		if(is.null(table.num.dev)){
-			stop("Error, numerical level table not specified")
+			stop("Numerical level table not specified")
 		}
 		if(min(table.num.dev) == 0){
 			table.num.dev[which.min(table.num.dev)] <- sort(table.num.dev, decreasing=FALSE)[2]/10			
@@ -157,7 +159,7 @@ change.inter <- function(x, order = FALSE, standard = TRUE, table.dev = NULL, ta
 	}else{
 		y <- matrix(0, a, b)
 	}  	
-	inter.table <- InterVA.table(standard = FALSE, table.num.dev = table.num.dev)
+	inter.table <- InterVA.table(standard = standard, table.num.dev = table.num.dev, min = 0)
 	if(is.null(table.dev)){
 		y[x == "I"] <- inter.table[1]
 	    y[x == "A+"] <- inter.table[2]
@@ -331,7 +333,7 @@ datacheck.interVA <- function(id, indic, missing.all, external.sep, warning.writ
 	        }
 	   Input[i, ] <- input.current          
 	}
-	Input
+	return(Input)
 }
 
 removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps){
@@ -724,7 +726,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		}
 		impossible <- as.matrix(impossible)	
 	}else{
-		impossible <- matrix(0, 1, 2)
+		impossible <- matrix(as.integer(0), 1, 2)
 	}
 
 	## external causes have been removed 
@@ -1044,7 +1046,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		prior_a.j, prior_b.j, jumprange.j, trunc_min.j, trunc_max.j, 
 		indic.j, subpop.j, contains_missing.j, pool.j, 
 		seed.j, N_gibbs.j, burn.j, thin.j, 
-		mu.j, sigma2.j, isUnix, keepCond.j, 
+		mu.j, sigma2.j, isUnix, keepProb.j, 
 		isAdded, mu.last.j, sigma2.last.j, theta.last.j, 
 		C.phy.j, vacauses.broader.j, assignment.j, impossible.j) 
     # one dimensional array is straightforward
@@ -1093,7 +1095,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 						prior_a.j, prior_b.j, jumprange.j, trunc_min.j, trunc_max.j, 
 						indic.j, subpop.j, contains_missing.j, pool.j, 
 						seed.j, N_gibbs.j, burn.j, thin.j, 
-						mu.j, sigma2.j, isUnix, keepCond.j, 
+						mu.j, sigma2.j, isUnix, keepProb.j, 
 						TRUE, mu.last.j, sigma2.last.j, theta.last.j, 
 						C.phy.j, vacauses.broader.j, assignment.j, impossible.j)
     		# one dimensional array is straightforward

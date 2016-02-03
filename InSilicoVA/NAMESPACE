@@ -3,6 +3,8 @@
 export(insilico)
 export(physician_debias)
 export(csmf.diag)
+export(stackplot)
+export(get.indiv)
 
 #export(plot.insilico)
 #export(print.insilico)

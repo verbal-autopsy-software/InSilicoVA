@@ -3,6 +3,7 @@
  */
 package sampler;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -717,7 +718,7 @@ public class InsilicoSampler2 {
         }
 
         // check impossible causes?
-        boolean check_impossible = impossible.length > 1;
+        boolean check_impossible = impossible[0].length == 2;
         int[][] zero_matrix = new int[N][C];
         for(int i = 0; i < N; i++){
             for(int j = 0; j < C; j++){
@@ -727,8 +728,8 @@ public class InsilicoSampler2 {
         if(check_impossible){
             for(int i = 0; i < N; i++){
                 for(int k = 0; k < impossible.length; k++){
-                    if(indic[i][impossible[k][1]] == 1){
-                        zero_matrix[i][impossible[k][0]] = 0;
+                    if(indic[i][impossible[k][1] - 1] == 1){
+                        zero_matrix[i][impossible[k][0] - 1] = 0;
                     }
                 }
             }
@@ -983,6 +984,133 @@ public class InsilicoSampler2 {
 
 //		return;
         return(parameters);
+    }
+
+    /**
+     *
+     * @param DontAsk: M by 8 matrix (java index + 1, 0 if not exist)
+     * @param AskIf: M by 2 matrix (java index + 1, 0 if not exist)
+     * @param data: N by M matrix
+     * @param warningfile: warning file
+     * @return
+     */
+    public static double[][] Datacheck(int[][] DontAsk, int[][] AskIf, double[][] data,
+                                       String[] ids, String[] symps, String warningfile)
+            throws FileNotFoundException, UnsupportedEncodingException {
+        PrintWriter writer = new PrintWriter(warningfile, "UTF-8");
+        writer.println("Warning log built for InSilicoVA");
+
+        for(int i = 0; i < data.length; i++){
+           for(int k = 0; k < 2; k++){
+               for(int j = 0; j < data[i].length; j++ ){
+                   if(data[i][j] == 1){
+                        for(int t = 0; t < DontAsk[j].length; t++){
+                            if(DontAsk[j][t] == 0){continue;}
+                            if(data[i][DontAsk[j][t] - 1] == 1){
+                                data[i][j] = 0;
+                                writer.println(ids[i] + " " + symps[j]+ " value inconsistent with " +
+                                        symps[DontAsk[j][t]] +
+                                        " - cleared in working file");
+                            }
+                        }
+                       for(int t = 0; t < AskIf[j].length; t++){
+                           if(AskIf[j][t] == 0){continue;}
+                           if(data[i][AskIf[j][t] - 1] != 1){
+                               data[i][AskIf[j][t]] = 1;
+                               writer.println(ids[i] + " " + symps[j]+ " not flagged in category " + symps[DontAsk[j][t]] +
+                                       " - updated in working file");
+                           }
+                       }
+                   }else if(data[i][j] == -1){
+                       for(int t = 0; t < DontAsk[j].length; t++){
+                           if(DontAsk[j][t] == 0){continue;}
+                           if(data[i][DontAsk[j][t] - 1] == 1){
+                               data[i][j] = 0;
+                               writer.println(ids[i] + " " + symps[j]+ " value inconsistent with " + symps[DontAsk[j][t]] +
+                                       " - set to No in working file");
+                           }
+                       }
+                   }
+               }
+           }
+        }
+        writer.close();
+        return(data);
+    }
+
+    /**
+     *
+     * @param DontAsk: M by 8 matrix (java index + 1, 0 if not exist)
+     * @param AskIf: M by 2 matrix (java index + 1, 0 if not exist)
+     * @param data: N by M matrix
+     * @return
+     */
+    public static double[][] Datacheck(int[][] DontAsk, int[][] AskIf, double[][] data) {
+        for(int i = 0; i < data.length; i++){
+            for(int k = 0; k < 2; k++){
+                for(int j = 0; j < data[i].length; j++ ){
+                    if(data[i][j] == 1){
+                        for(int t = 0; t < DontAsk[j].length; t++){
+                            if(DontAsk[j][t] == 0){continue;}
+                            if(data[i][DontAsk[j][t] - 1] == 1){
+                                data[i][j] = 0;
+                            }
+                        }
+                        for(int t = 0; t < AskIf[j].length; t++){
+                            if(AskIf[j][t] == 0){continue;}
+                            if(data[i][AskIf[j][t] - 1] != 1){
+                                data[i][AskIf[j][t]] = 1;
+                              }
+                        }
+                    }else if(data[i][j] == -1){
+                        for(int t = 0; t < DontAsk[j].length; t++){
+                            if(DontAsk[j][t] == 0){continue;}
+                            if(data[i][DontAsk[j][t] - 1] == 1){
+                                data[i][j] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return(data);
+    }
+
+    public static double[][] IndivProb(double[][] data, double[][] zero_matrix, double[][][]csmf, int[] subpop,
+                                       double[][][] condprob) {
+        int N = data.length;
+        int Nitr = condprob.length;
+        int S = condprob[0].length;
+        int C = condprob[0][0].length;
+
+        double[][][] allp = new double [Nitr][N][C];
+        for(int i = 0; i < Nitr; i++){
+            for(int j = 0; j < N; j++){
+
+                // get subpop index for death j
+                int sub = subpop[j] - 1;
+                /** ------------------------------------------------**/
+                double sum = 0;
+                for(int c = 0; c < C; c++){
+                    allp[i][j][c] *= csmf[sub][i][c] * zero_matrix[j][c];
+                    for(int s = 0; s < S; s++){
+                        if(data[i][s] == 1){
+                            allp[i][j][c] *= condprob[i][s][c];
+                        }else if(data[i][s] == 0){
+                            allp[i][j][c] *= 1 - condprob[i][s][c];
+                        }
+                    }
+                    sum += allp[i][j][c];
+                }
+                for(int c = 0; c < C; c++){
+                    allp[i][j][c] /= sum;
+                }
+                /** ------------------------------------------------**/
+            }
+        }
+
+
+        return(out);
     }
 
 }

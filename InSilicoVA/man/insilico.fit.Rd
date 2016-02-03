@@ -6,13 +6,13 @@
 \usage{
 insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
   keepProbbase.level = TRUE, CondProb = NULL, CondProbNum = NULL,
-  datacheck = TRUE, warning.write = FALSE, external.sep = TRUE,
-  length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE,
-  conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL,
-  levels.strength = 1, trunc.min = 1e-04, trunc.max = 0.9999,
-  subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL,
-  phy.cat = NULL, phy.unknown = NULL, phy.external = NULL,
-  phy.debias = NULL, exclude.impossible.cause = TRUE,
+  datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE,
+  external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000,
+  auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1,
+  levels.prior = NULL, levels.strength = 1, trunc.min = 1e-04,
+  trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1,
+  phy.code = NULL, phy.cat = NULL, phy.unknown = NULL,
+  phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE,
   customization.dev = FALSE, Probbase_by_symp.dev = FALSE,
   probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL,
   gstable.dev = NULL, nlevel.dev = NULL, ...)
@@ -31,6 +31,8 @@ insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
 \item{CondProbNum}{see \code{\link{insilico}}}
 
 \item{datacheck}{see \code{\link{insilico}}}
+
+\item{datacheck.missing}{see \code{\link{insilico}}}
 
 \item{warning.write}{see \code{\link{insilico}}}
 
@@ -95,23 +97,6 @@ a insilico fit object, see see \code{\link{insilico}} for more detail.
 }
 \description{
 This function implements InSilicoVA model. This is the lower level core function of InSilicoVA with more flexibility in customized input. For more detail of model specification, see the paper on \url{http://arxiv.org/abs/1411.3042} and the default function \code{\link{insilico}}.
-}
-\examples{
-\dontrun{
-# load sample data together with sub-population list
-data(RandomVA1)
-# extract InterVA style input data
-data <- RandomVA1$data
-# extract sub-population information.
-# The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-subpop <- RandomVA1$subpop
-
-# run without subpopulation
-fit1<- insilico( data, subpop = NULL,
-              length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-              external.sep = TRUE, keepProbbase.level = TRUE)
-
-}
 }
 \author{
 Zehang Li, Tyler McCormick, Sam Clark

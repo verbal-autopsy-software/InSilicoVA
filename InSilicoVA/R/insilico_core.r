@@ -13,6 +13,7 @@
 #' @param CondProb see \code{\link{insilico}}
 #' @param CondProbNum see \code{\link{insilico}}
 #' @param datacheck see \code{\link{insilico}}
+#' @param datacheck.missing see \code{\link{insilico}}
 #' @param warning.write see \code{\link{insilico}}
 #' @param external.sep see \code{\link{insilico}}
 #' @param length.sim see \code{\link{insilico}}
@@ -55,26 +56,9 @@
 #' \url{http://arxiv.org/abs/1411.3042} \cr \emph{Working paper no. 147, Center
 #' for Statistics and the Social Sciences, University of Washington}
 #' @keywords InSilicoVA
-#' @examples
-#' 
-#' \dontrun{
-#' # load sample data together with sub-population list
-#' data(RandomVA1)
-#' # extract InterVA style input data
-#' data <- RandomVA1$data
-#' # extract sub-population information. 
-#' # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
-#' subpop <- RandomVA1$subpop
-#' 
-#' # run without subpopulation
-#' fit1<- insilico( data, subpop = NULL,  
-#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
-#'               external.sep = TRUE, keepProbbase.level = TRUE)
-#' 
-#' }
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, ...){ 
+insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, ...){ 
 	
 
 ##----------------------------------------------------------##
@@ -271,70 +255,45 @@ removeBad <- function(data, is.numeric, subpop){
 	if(is.null(subpop)) return(list(data = data[-err, ], subpop = NULL))
 }
 
-datacheck.interVA <- function(id, indic, missing.all, external.sep, warning.write){
-###########################################################
-# function to perform data check as in InterVA4 
-# @param:
-#		id             : vector of IDs
-#		indic          : matrix of indicators
-#		missing.all    : as in main function
-#		external.sep   : as in main function
-#		warning.write  : as in main function
-# @values:
-# 		revised indic matrix	
-		if(warning.write){
-			cat(paste("Warning log built for InterVA", Sys.time(), "\n"),file="warnings.txt",append = FALSE) 
-		}
+datacheck.interVAJava <- function(data, obj, warning.write){
+		
 		data("probbase", envir = environment())
 		probbase <- get("probbase", envir  = environment())
-		data("causetext", envir = environment())
-		causetext <- get("causetext", envir  = environment())
 
-	    probbase <- as.matrix(probbase)
-	    Input <- as.matrix(indic)
-	    symps <- probbase[2:246, 2]
-	    if(external.sep){
-	    	symps <- symps[-c(211:222)]
-	    }
-	    if(!is.null(missing.all)){
-	    	symps <- symps[-missing.all]
-	    }
-	    colnames(Input) <- symps
-	    for(i in 1:dim(Input)[1]){
-	        input.current <- as.numeric(Input[i,])
-	        ## Repeat twice the check of "ask if" and "don't ask".
-	        ## If there is contradictory with "ask if" or "don't ask", follow the following rules:
-	        ## If B is the "don't ask" for A but B has value 1 --> make sure A has value 0;
-	        ## If B is the "ask if" for A but B has value 0 --> change B into value 1
-	        for(k in 1:2){
-	            for(j in 1:(dim(Input)[2] )){
-	                if(input.current[j] == 1 ){
-	                    Dont.ask <- probbase[j + 1, 4:11]
-	                    Ask.if <- probbase[j + 1, 12]
-	                    Dont.ask.list <- input.current[match(toupper(Dont.ask), toupper(colnames(Input)))]
-	                    Dont.ask.list[ is.na(Dont.ask.list)] <- 0
-	                    
-	                    if( max( Dont.ask.list ) > 0 ){
-	                    	input.current[j] <- 0
-	                    	if(warning.write){
-	                    		cat(id[i], "   ", paste(probbase[j+1, 2], "  value inconsistent with ", Dont.ask[which(Dont.ask.list > 0)], " - cleared in working file \n"), file="warnings.txt", append=TRUE)
-	                    	}
-	                    }
-	                    if( !is.na(match(Ask.if, colnames(Input)))  ){
-	                        if(input.current[match(Ask.if, colnames(Input) )] < 1){
-	                            input.current[match(Ask.if, colnames(Input) )] <- 1
-	                             if(warning.write){
-                            	    cat(id[i], "   ", paste(probbase[j+1, 2], "  not flagged in category ", Ask.if, " - updated in working file \n"), file="warnings.txt", append=TRUE)
-                           		 }
-	                        }
-	                    }
-	                }
-	            }
-	        }
-	   Input[i, ] <- input.current          
-	}
-	return(Input)
+		# get text matrix
+		dontask0 <- probbase[-1, 4:11]
+		askif0 <- probbase[-1, 12]
+
+		# get numerical matrix
+		symps <- colnames(data[, -1])
+		dontask <- match(as.vector(dontask0), symps)
+		dontask[is.na(dontask)] <- 0
+		dontask <- matrix(as.integer(dontask), dim(dontask0)[1], dim(dontask0)[2])
+		askif <- as.integer(match(askif0, symps))
+		askif[is.na(askif)] <- as.integer(0)
+		askif <- matrix(askif, ncol = 1)
+
+		data.num <- matrix(0, dim(data)[1], dim(data)[2] - 1)
+		for(j in 2:dim(data)[2]){
+			data.num[which(data[, j] == "Y"), j - 1] <- 1			
+			data.num[which(data[, j] == "."), j - 1] <- -1
+		}
+
+		dontask.j <- .jarray(dontask, dispatch = TRUE)
+		askif.j <- .jarray(askif, dispatch = TRUE)
+		data.j <- .jarray(data.num, dispatch = TRUE)
+
+		if(!warning.write){
+			checked  <- .jcall(obj, "[[D", "Datacheck", dontask.j, askif.j, data.j)
+		}else{
+			id.j <- .jarray(as.character(data[, 1]), dispatch = TRUE)
+			symps.j <- .jarray(colnames(data)[-1], dispatch = TRUE)
+			checked  <- .jcall(obj, "[[D", "Datacheck", dontask.j, askif.j, data.j, id.j, symps.j, "warning_insilico.txt")
+		}
+
+		return(do.call(rbind, lapply(checked, .jevalArray)))
 }
+
 
 removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps){
 ###########################################################
@@ -511,6 +470,10 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 ##       Helper functions all loaded                        ##
 ##----------------------------------------------------------##
 
+	if(is.null(java_option)) java_option = "-Xmx1g"
+	options( java.parameters = java_option )
+	obj <- .jnew("sampler/InsilicoSampler2")
+
 	time0 <- Sys.time()
 	# method <- tolower(method)
 	# restrict to only normal model for now
@@ -593,7 +556,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	    ## check the column names and give warning
 	    data("RandomVA1", envir = environment())
 	    RandomVA1 <- get("RandomVA1", envir  = environment())
-	    valabels <- colnames(RandomVA1$data)
+	    valabels <- colnames(RandomVA1)
 	    vacauses <- causetext[4:63,2]
 	    external.causes = seq(41, 51)
 	    external.symps = seq(211, 222)
@@ -642,7 +605,13 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	    vacauses <- gstable.dev
   	}
 
-  	
+  	# standardize to Upper case
+	data <- data.frame(lapply(data, as.character), 
+					   stringsAsFactors=FALSE)
+	for(j in 2:dim(data)[2]){
+		data[is.na(data[, j]), j] <- ""
+		data[, j] <- toupper(data[, j])
+	}
   	##----------------------------------------------------------##
   	## remove external causes
   	if(external.sep){
@@ -650,6 +619,17 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   		data <- externals$data
   		subpop <- externals$subpop
   		prob.orig <- externals$prob.orig
+  	}
+
+  	if(datacheck.missing && datacheck){
+		cat("Performing data consistency check...\n")
+		checked <- datacheck.interVAJava(data, obj, warning.write)
+		cat("Data check finished.\n")
+		## update in data with missing, nothing is updated into missing, so only changing Y and N
+		for(i in 1:(dim(data)[2]-1)){
+			data[which(checked[, i] == 1), i+1] <- "Y"
+			data[which(checked[, i] == -1), i+1] <- ""
+		}	
   	}
 	##----------------------------------------------------------##
    	## check the missing list
@@ -671,7 +651,23 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		data <- data[, -(missing.all + 1)]
 		prob.orig <- prob.orig[-missing.all, ]	
 	}	
-	
+
+	##----------------------------------------------------------##
+   	## check interVA rules, ignoring missing at this step,
+   	## since missing could be rewritten 
+   	if((!datacheck.missing) && datacheck){
+		cat("Performing data consistency check...\n")
+		checked <- datacheck.interVAJava(data, obj, warning.write)
+		cat("Data check finished.\n")
+		## update in data with missing, nothing is updated into missing, so only changing Y and N
+		for(i in 1:(dim(data)[2]-1)){
+			data[which(checked[, i] == 1), i+1] <- "Y"
+			data[which(checked[, i] == 0), i+1] <- ""
+		}	
+	}
+
+
+	##----------------------------------------------------------##	
 	# initiate numerical matrix "cond.prob.true"
 	# obtained from "prob.orig", which is could be one of the following: 
 	#	1. level matrix: if CondProbNum is NULL
@@ -687,7 +683,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	  		cond.prob.true <- change.inter(prob.orig, order = FALSE, standard = TRUE)
 	 	}else{
 	 		cond.prob.true <- prob.orig
-	 		prob.order <- NULL
+	 		prob.order <- matrix(1, dim(prob.orig)[1], dim(prob.orig)[2])
 	 	}
 	}else{
 		##----------------------------------------------------------##
@@ -712,29 +708,36 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	## number of causes
 	C <- dim(cond.prob.true)[2]
 
-	##----------------------------------------------------------##
-	## check impossible pairs of symptoms and causes
-  	## check only first 9 symptoms (7 age + 2 gender)
-  	if(exclude.impossible.cause && (!customization.dev)){
-	  	impossible <- NULL
-  		for(ss in 1:9){
-			for(cc in 1:C){
-				if(cond.prob.true[ss, cc] == 0){
-					impossible <- rbind(impossible, c(as.integer(cc-1), as.integer(ss-1)))
-				}
-			}
-		}
-		impossible <- as.matrix(impossible)	
-	}else{
-		impossible <- matrix(as.integer(0), 1, 2)
-	}
-
 	## external causes have been removed 
 	if(external.sep){
 		vacauses.current <- vacauses[-external.causes]
 	}else{
 		vacauses.current <- vacauses
 	}
+
+	##----------------------------------------------------------##
+	## check impossible pairs of symptoms and causes
+  	## check only first demographic symptoms (7 age + 2 gender)
+  	## also the value saved is the index (starting from 1)
+  	if(exclude.impossible.cause && (!customization.dev)){
+	  	impossible <- NULL
+	  	demog.set <- c("elder", "midage", "adult", "child", "under5", "infant", "neonate", "male", "female")
+	  	demog.index <- match(demog.set, colnames(data)[-1])
+	  	demog.index <- demog.index[!is.na(demog.index)]
+  		for(ss in demog.index){
+			for(cc in 1:C){
+				if(cond.prob.true[ss, cc] == 0){
+					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss)))
+				}
+			}
+		}
+		impossible <- as.matrix(impossible)	
+	}else{
+		# java checks if impossible has 2 columns
+		impossible <- matrix(as.integer(0), 1, 3)
+	}
+
+
 	
 	## physician debias data
 	if(!is.null(phy.debias)){
@@ -806,7 +809,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			phy.code <- phy.code[-which(is.na(matchid)), ]
 			matchid <- matchid[-which(is.na(matchid))]
 		}
-		assignment[matchid, ] <- phy.code[, -1]
+		assignment[matchid, ] <- as.matrix(phy.code[, -1])
 		
 		#normalize assignment
 		for(index in 1:dim(assignment)[1]){
@@ -873,7 +876,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		indic <- data[, -1]
 	}else{		
 		for(i in 1:S){
-			temp <- toupper(data[,i+1])
+			temp <- data[,i+1]
 			temp.ind <- which(temp == "Y")
 			indic[temp.ind, i] <- 1
 		}
@@ -905,13 +908,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			}			
 		}
 	}
-	##---------------------------------------------------------------##	
-	if(datacheck){
-		cat("Performing data consistency check...\n")
-		indic <- datacheck.interVA(id, indic, missing.all, external.sep, warning.write)
-		cat("Data check finished.\n")
-	}
-	indic.w.missing <- indic
+
 	##---------------------------------------------------------------##
 	## parameter initialization
 	# csmf.prior <- rep(1/C, C)
@@ -946,15 +943,13 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	
 	if(updateCondProb){
 		cond.prob <- cond.initiate(prob.order, expIni = TRUE, Inter.ini = TRUE, min = trunc.min, max = trunc.max)
-    }else{
+    }else if(is.null(CondProbNum)){
     	cond.prob <- change.inter(prob.orig, standard = TRUE)
+    }else{
+    	cond.prob <- prob.orig
     }
 
-    # library(rJava)
-	if(is.null(java_option)) java_option = "-Xmx1g"
-	options( java.parameters = java_option )
 
-	obj <- .jnew("sampler/InsilicoSampler2")
 
     N.j <- as.integer(N)
     S.j <- as.integer(S)
@@ -1218,12 +1213,15 @@ if(!updateCondProb){
 }
 out <- list(
 		id = id,
+		data = as.matrix(indic),
 	    indiv.prob = p.indiv, 
 		csmf = p.hat,
 		conditional.probs = probbase.gibbs,
+		probbase = prob.orig,
 		missing.symptoms = missing.all,
 		external = external.sep, 
-		
+		impossible.causes = impossible,
+	
 		updateCondProb = updateCondProb, 
 		keepProbbase.level = keepProbbase.level, 
 		datacheck = datacheck,

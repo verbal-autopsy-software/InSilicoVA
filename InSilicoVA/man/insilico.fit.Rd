@@ -15,7 +15,7 @@ insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
   phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE,
   customization.dev = FALSE, Probbase_by_symp.dev = FALSE,
   probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL,
-  gstable.dev = NULL, nlevel.dev = NULL, ...)
+  gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = 0.95, ...)
 }
 \arguments{
 \item{data}{see \code{\link{insilico}}}
@@ -89,6 +89,8 @@ insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
 \item{gstable.dev}{Table of gold standard causes for each death. Default to be NULL}
 
 \item{nlevel.dev}{number of levels in \code{probbase.dev}. Default to be NULL}
+
+\item{indiv.CI}{credible interval for individual probabilities}
 
 \item{...}{unused arguments}
 }

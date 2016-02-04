@@ -131,6 +131,8 @@
 #' @param phy.debias Fitted object from physician coding debias function (see
 #' \code{\link{physician_debias}}) that overwrites \code{phy.code}.
 #' @param exclude.impossible.cause logical indicator to exclude impossible causes based on the age and gender of the death.
+#' @param indiv.CI credible interval for individual probabilities
+#' 
 #' @return \item{id}{A vector of death ID. Note the order of the ID is in
 #' general different from the input file. See \code{report} for organizing the
 #' report.}
@@ -153,7 +155,11 @@
 #' \item{external}{Logical indicator of whether the model is fitted with
 #' external causes separated calculated.}
 #' \item{impossible.causes}{Impossible cause-symptom pairs, if any.}
-
+#' \item{indiv.CI}{The posterior credible interval to compute for individual COD probability distributions. If set to NULL, only the posterior mean of the individual COD probabilities will be produced. Default to be 0.95.}
+#' \item{indiv.prob.median}{median probability of each cause of death for each individual death.}
+#' \item{indiv.prob.lower}{lower CI bound for the probability of each cause of death for each individual death.}
+#' \item{indiv.prob.upper}{upper CI bound for the probability of each cause of death for each individual death.}
+#'  
 #' @author Zehang Li, Tyler McCormick, Sam Clark
 #' 
 #' Maintainer: Zehang Li <lizehang@@uw.edu>
@@ -165,144 +171,144 @@
 #' for Statistics and the Social Sciences, University of Washington}
 #' @keywords InSilicoVA
 #' @examples
-#'  # Toy example with 1000 VA deaths
-#'  data(RandomVA1) 
-#'  # CRAN has strict policy for running time of example codes,
-#'  # so only 20 iterations is used here for demonstration purpose.
-#'  # In practice, the model should be fitted with a large number of iterations.
-#'  fit0<- insilico(RandomVA1, subpop = NULL,  
-#'                  length.sim = 20, burnin = 10, thin = 1 , seed = 1,
-#' 				 auto.length = FALSE, datacheck = FALSE)
-#'  \dontrun{
-#'  ##
-#'  ## Scenario 1: standard input without sub-population specification
-#'  ##
-#'  fit1<- insilico(RandomVA1, subpop = NULL,  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#' 			   auto.length = FALSE)
-#'  summary(fit1)
-#'  plot(fit1)
-#'  
-#'  ##
-#'  ## Scenario 2: standard input with sub-population specification
-#'  ##
-#'  data(RandomVA2)
-#'  fit2<- insilico(RandomVA2, subpop = list("sex"),  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#' 			   auto.length = FALSE)
-#'  summary(fit2)
-#'  plot(fit2, type = "compare")
-#'  plot(fit2, which.sub = "")
-#'  ##
-#'  ## Scenario 3: standard input with multiple sub-population specification
-#'  ##
-#'  fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#' 			   auto.length = FALSE)
-#'  summary(fit3)
-#'  
-#'  ##
-#'  ## Scenario 3: standard input with multiple sub-population specification
-#'  ##
-#'  fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#' 			   auto.length = FALSE)
-#'  summary(fit3)
-#'  
-#'  ##
-#'  ## Scenario 5 - 7 are special situations rarely needed in practice,
-#'  ##   but included here for completeness. 
-#'  ##   The below examples use no sub-population or physician codes, 
-#'  ##   but specifying sub-population is still possible as in Scenario 2 - 4.
-#'  ## 
-#'  
-#'  ##
-#'  ## Scenario 5: skipping re-estimation of conditional probabilities
-#'  ##
-#'  # Though in practice the need for this situation is very unlikely, 
-#'  # only the default conditional probabilities without re-estimation
-#'  fit5<- insilico(RandomVA1, subpop = NULL,  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#'                updateCondProb = FALSE, 
-#' 			   auto.length = FALSE) 
-#'  summary(fit5)
-#'  
-#'  ##
-#'  ## Scenario 6: modify default conditional probability matrix
-#'  ##
-#'  # Load the default conditional probability matrix 
-#'  data(condprob)
-#'  # The conditional probabilities are given in levels such as I, A+, A, A-, etc.
-#'  condprob[1:5, 1:5]
-#'  # To modify certain cells 
-#'  new_cond_prob <- condprob
-#'  new_cond_prob["elder", "HIV/AIDS related death"] <- "C"
-#'  # or equivalently
-#'  new_cond_prob[1, 3] <- "C"
-#'  
-#'  fit6<- insilico(RandomVA1, subpop = NULL,  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#'                CondProb = new_cond_prob, 
-#' 			   auto.length = FALSE) 
-#'  # note: compare this with fit1 above, 
-#'  # to see the change induced by changing Pr(elder | HIV) from "C+" to "C".
-#'  summary(fit6)
-#'  
-#'  ##
-#'  ## Scenario 7: modify default numerical values in conditional probabilities directly
-#'  ##
-#'  # Load the default conditional probability matrix 
-#'  data(condprobnum)
-#'  # The conditional probabilities are given in numerical values in this dataset
-#'  condprobnum[1:5, 1:5]
-#'  # To modify certain cells, into any numerical values you want 
-#'  new_cond_prob_num <- condprobnum
-#'  new_cond_prob_num["elder", "HIV/AIDS related death"] <- 0.004
-#'  # or equivalently
-#'  new_cond_prob_num[1, 3] <- 0.005
-#'  
-#'  fit7<- insilico(RandomVA1, subpop = NULL,  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#'                CondProbNum = new_cond_prob_num, 
-#' 			   auto.length = FALSE) 
-#'  # note: compare this with fit1, fit5, and fit6
-#'  summary(fit7)
-#'  
-#'  ##
-#'  ## Scenario 8: physician coding
-#'  ## see also the examples in physician_debias() function section
-#'  ##
-#'  # Load sample input for physicians
-#'  data(RandomPhysician)
-#'  # The symptom section looks the same as standard input
-#'  head(RandomPhysician[, 1:5])
-#'  # At the end of file, including a few more columns of physician id and coded cause
-#'  head(RandomPhysician[, 245:250])
-#'  
-#'  # load Cause Grouping (if physician-coded causes are in larger categories)
-#'  data(SampleCategory)
-#'  head(SampleCategory)
-#'  
-#'  # existing doctor codes in the sample dataset
-#'  doctors <- paste0("doc", c(1:15))
-#'  causelist <- c("Communicable", "TB/AIDS", "Maternal",
-#'                 "NCD", "External", "Unknown")
-#'  phydebias <- physician_debias(RandomPhysician, phy.id = c("rev1", "rev2"), 
-#' 	     phy.code = c("code1", "code2"), phylist = doctors, causelist = causelist, 
-#'       tol = 0.0001, max.itr = 100)
-#'  
-#'  fit8 <- insilico(RandomVA1, subpop = NULL,  
-#'                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-#'                phy.debias = phydebias,
-#'                phy.cat = SampleCategory, 
-#'                phy.external = "External", phy.unknown = "Unknown",
-#' 			   auto.length = FALSE) 
-#'  summary(fit8)
-#'  
-
+#' \dontrun{
+#' data(RandomVA1) 
+#' fit0<- insilico(RandomVA1, subpop = NULL,  
+#'                 length.sim = 20, burnin = 10, thin = 1 , seed = 1,
+#' 			 auto.length = FALSE)
+#' summary(fit0)
+#' summary(fit0, id = "d199")
+#' 
+#' ##
+#' ## Scenario 1: standard input without sub-population specification
+#' ##
+#' fit1<- insilico(RandomVA1, subpop = NULL,  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#' 		   auto.length = FALSE)
+#' summary(fit1)
+#' plot(fit1)
+#' 
+#' ##
+#' ## Scenario 2: standard input with sub-population specification
+#' ##
+#' data(RandomVA2)
+#' fit2<- insilico(RandomVA2, subpop = list("sex"),  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#' 		   auto.length = FALSE)
+#' summary(fit2)
+#' plot(fit2, type = "compare")
+#' plot(fit2, which.sub = "Men")
+#' 
+#' ##
+#' ## Scenario 3: standard input with multiple sub-population specification
+#' ##
+#' fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#' 		   auto.length = FALSE)
+#' summary(fit3)
+#' 
+#' ##
+#' ## Scenario 3: standard input with multiple sub-population specification
+#' ##
+#' fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#' 		   auto.length = FALSE)
+#' summary(fit3)
+#' 
+#' ##
+#' ## Scenario 5 - 7 are special situations rarely needed in practice,
+#' ##   but included here for completeness. 
+#' ##   The below examples use no sub-population or physician codes, 
+#' ##   but specifying sub-population is still possible as in Scenario 2 - 4.
+#' ## 
+#' 
+#' ##
+#' ## Scenario 5: skipping re-estimation of conditional probabilities
+#' ##
+#' # Though in practice the need for this situation is very unlikely, 
+#' # use only the default conditional probabilities without re-estimation
+#' fit5<- insilico(RandomVA1, subpop = NULL,  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               updateCondProb = FALSE, 
+#' 		   auto.length = FALSE) 
+#' summary(fit5)
+#' 
+#' ##
+#' ## Scenario 6: modify default conditional probability matrix
+#' ##
+#' # Load the default conditional probability matrix 
+#' data(condprob)
+#' # The conditional probabilities are given in levels such as I, A+, A, A-, etc.
+#' condprob[1:5, 1:5]
+#' # To modify certain cells 
+#' new_cond_prob <- condprob
+#' new_cond_prob["elder", "HIV/AIDS related death"] <- "C"
+#' # or equivalently
+#' new_cond_prob[1, 3] <- "C"
+#' 
+#' fit6<- insilico(RandomVA1, subpop = NULL,  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               CondProb = new_cond_prob, 
+#' 		   auto.length = FALSE) 
+#' # note: compare this with fit1 above to see the change induced 
+#' #  by changing Pr(elder | HIV) from "C+" to "C".
+#' summary(fit6)
+#' 
+#' ##
+#' ## Scenario 7: modify default numerical values in conditional probabilities directly
+#' ##
+#' # Load the default conditional probability matrix 
+#' data(condprobnum)
+#' # The conditional probabilities are given in numerical values in this dataset
+#' condprobnum[1:5, 1:5]
+#' # To modify certain cells, into any numerical values you want 
+#' new_cond_prob_num <- condprobnum
+#' new_cond_prob_num["elder", "HIV/AIDS related death"] <- 0.004
+#' # or equivalently
+#' new_cond_prob_num[1, 3] <- 0.005
+#' 
+#' fit7<- insilico(RandomVA1, subpop = NULL,  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               CondProbNum = new_cond_prob_num, 
+#' 		   auto.length = FALSE) 
+#' # note: compare this with fit1, fit5, and fit6
+#' summary(fit7)
+#' 
+#' ##
+#' ## Scenario 8: physician coding
+#' ## see also the examples in physician_debias() function section
+#' ##
+#' # Load sample input for physicians
+#' data(RandomPhysician)
+#' # The symptom section looks the same as standard input
+#' head(RandomPhysician[, 1:5])
+#' # At the end of file, including a few more columns of physician id and coded cause
+#' head(RandomPhysician[, 245:250])
+#' 
+#' # load Cause Grouping (if physician-coded causes are in larger categories)
+#' data(SampleCategory)
+#' head(SampleCategory)
+#' 
+#' # existing doctor codes in the sample dataset
+#' doctors <- paste0("doc", c(1:15))
+#' causelist <- c("Communicable", "TB/AIDS", "Maternal",
+#'                "NCD", "External", "Unknown")
+#' phydebias <- physician_debias(RandomPhysician, 
+#'	phy.id = c("rev1", "rev2"), phy.code = c("code1", "code2"), 
+#'	phylist = doctors, causelist = causelist, 
+#'	tol = 0.0001, max.itr = 100)
+#' 
+#' fit8 <- insilico(RandomVA1, subpop = NULL,  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               phy.debias = phydebias,
+#'               phy.cat = SampleCategory, 
+#'               phy.external = "External", phy.unknown = "Unknown",
+#' 		   auto.length = FALSE) 
+#' summary(fit8)
+#' 
 #' }
 #' @export insilico
-insilico <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE){ 
+insilico <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95){ 
 	
 	fit <- insilico.fit(data = data, 
 						isNumeric = isNumeric, 
@@ -332,6 +338,7 @@ insilico <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbas
 						phy.unknown = phy.unknown, 
 						phy.external = phy.external, 
 						phy.debias = phy.debias, 
-						exclude.impossible.cause = exclude.impossible.cause)
+						exclude.impossible.cause = exclude.impossible.cause, 
+						indiv.CI = indiv.CI)
 	return(fit)  	
 } 

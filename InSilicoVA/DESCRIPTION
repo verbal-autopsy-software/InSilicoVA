@@ -1,7 +1,7 @@
 Package: InSilicoVA
 Type: Package
 Title: Probabilistic Verbal Autopsy Coding with InSilicoVA
-Version: 1.0
+Version: 1.1
 Date: 2015-02-06
 Author: Zehang Li, Tyler McCormick, Sam Clark
 Maintainer: Zehang Li <lizehang@uw.edu>

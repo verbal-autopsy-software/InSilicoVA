@@ -9,12 +9,12 @@ library(InSilicoVA)
 #---------------------------------------------------------------------#
 # Toy example with 1000 VA deaths
 data(RandomVA1) 
-# CRAN has strict policy for running time of example codes,
-# so only 20 iterations is used here for demonstration purpose.
-# In practice, the model should be fitted with a large number of iterations.
 fit0<- insilico(RandomVA1, subpop = NULL,  
                 length.sim = 20, burnin = 10, thin = 1 , seed = 1,
 			 auto.length = FALSE)
+summary(fit0)
+summary(fit0, id = "d199")
+
 ##
 ## Scenario 1: standard input without sub-population specification
 ##
@@ -86,7 +86,8 @@ fit6<- insilico(RandomVA1, subpop = NULL,
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProb = new_cond_prob, 
 		   auto.length = FALSE) 
-# note: compare this with fit1 above to see the change induced by changing Pr(elder | HIV) from "C+" to "C".
+# note: compare this with fit1 above to see the change 
+# induced by changing Pr(elder | HIV) from "C+" to "C".
 summary(fit6)
 
 ##
@@ -128,7 +129,10 @@ head(SampleCategory)
 doctors <- paste0("doc", c(1:15))
 causelist <- c("Communicable", "TB/AIDS", "Maternal",
                "NCD", "External", "Unknown")
-phydebias <- physician_debias(RandomPhysician, phy.id = c("rev1", "rev2"), phy.code = c("code1", "code2"), phylist = doctors, causelist = causelist, tol = 0.0001, max.itr = 100)
+phydebias <- physician_debias(RandomPhysician, 
+  phy.id = c("rev1", "rev2"), phy.code = c("code1", "code2"), 
+  phylist = doctors, causelist = causelist, 
+  tol = 0.0001, max.itr = 100)
 
 fit8 <- insilico(RandomVA1, subpop = NULL,  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
@@ -278,18 +282,20 @@ stackplot(fit2, type = "stack", grouping = SampleCategory,
 #-------------------------  get.indiv    ------------------------------#
 #---------------------------------------------------------------------#
 # Toy example with 1000 VA deaths
-data(RandomVA1) 
-# CRAN has strict policy for running time of example codes,
-# so only 20 iterations is used here for demonstration purpose.
-# In practice, the model should be fitted with a large number of iterations.
-# fit0<- insilico(RandomVA1, subpop = NULL,  
-#                 length.sim = 20, burnin = 10, thin = 1 , seed = 1,
-#                     auto.length = FALSE)
-##
-## Scenario 1: standard input without sub-population specification
-##
+data(RandomVA1)
 fit1<- insilico(RandomVA1, subpop = NULL,  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
               auto.length = FALSE)
-indiv <- get.indiv(fit1)
+summary(fit1, id = "d199")
+
+# update credible interval for individual probabilities to 90%
+indiv.new <- get.indiv(fit1, CI = 0.9)
+fit1$indiv.prob.lower <- indiv.new$lower
+fit1$indiv.prob.upper <- indiv.new$upper
+fit1$indiv.CI <- 0.9
+summary(fit1, id = "d199")
+
+
+
+
 

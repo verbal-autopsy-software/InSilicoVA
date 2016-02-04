@@ -86,8 +86,10 @@ stackplot <- function(x, grouping = NULL,
 	err_width = .4, err_size = .6, point_size = 2, 
 	border = "black", bw = FALSE, ...){
 	
+
 	if(is.null(grouping)){
 		data("SampleCategory", envir = environment())
+		SampleCategory <- get("SampleCategory", envir  = environment())
 		grouping <- SampleCategory
 		order.group <- c("TB/AIDS", 
 						"Communicable",
@@ -173,6 +175,7 @@ stackplot <- function(x, grouping = NULL,
 
 	rownames(csmf.group) <- NULL
 	toplot <- data.frame(csmf.group)
+	subpop <- Causes <- NULL
 	if(type == "stack" ){
 		toplot$Causes <- factor(group, levels = rev(order.group))
 	}else if(type == "dodge"){

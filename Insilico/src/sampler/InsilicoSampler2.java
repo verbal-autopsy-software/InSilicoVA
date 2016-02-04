@@ -1076,40 +1076,65 @@ public class InsilicoSampler2 {
         return(data);
     }
 
-    public static double[][] IndivProb(double[][] data, double[][] zero_matrix, double[][][]csmf, int[] subpop,
-                                       double[][][] condprob) {
+    public static double[][] IndivProb(double[][] data, int[][] impossible, double[][][]csmf, int[] subpop,
+                                       double[][][] condprob, double p0, double p1) {
         int N = data.length;
         int Nitr = condprob.length;
         int S = condprob[0].length;
         int C = condprob[0][0].length;
 
-        double[][][] allp = new double [Nitr][N][C];
-        for(int i = 0; i < Nitr; i++){
-            for(int j = 0; j < N; j++){
-
-                // get subpop index for death j
-                int sub = subpop[j] - 1;
-                /** ------------------------------------------------**/
-                double sum = 0;
-                for(int c = 0; c < C; c++){
-                    allp[i][j][c] *= csmf[sub][i][c] * zero_matrix[j][c];
-                    for(int s = 0; s < S; s++){
-                        if(data[i][s] == 1){
-                            allp[i][j][c] *= condprob[i][s][c];
-                        }else if(data[i][s] == 0){
-                            allp[i][j][c] *= 1 - condprob[i][s][c];
+        int[][] zero_matrix = new int[N][C];
+        for(int i = 0; i < N; i++){
+            for(int j = 0; j < C; j++){
+                zero_matrix[i][j] = 1;
+            }
+        }
+        if(impossible[0].length == 2){
+                for(int i = 0; i < N; i++){
+                    for(int k = 0; k < impossible.length; k++){
+                        if(data[i][impossible[k][1] - 1] == 1){
+                            zero_matrix[i][impossible[k][0] - 1] = 0;
                         }
                     }
-                    sum += allp[i][j][c];
                 }
-                for(int c = 0; c < C; c++){
-                    allp[i][j][c] /= sum;
+            }
+        double[][][] allp = new double [N][C][Nitr];
+
+        for(int i = 0; i < N; i++){
+            // get subpop index for death i
+            int sub = subpop[i] - 1;
+            for(int t = 0; t < Nitr; t++) {
+
+                /** ------------------------------------------------**/
+                double sum = 0;
+                for (int c = 0; c < C; c++) {
+                    allp[i][c][t] = csmf[sub][t][c] * zero_matrix[i][c];
+                    for (int s = 0; s < S; s++) {
+                        if (data[i][s] == 1) {
+                            allp[i][c][t] *= condprob[t][s][c];
+                        } else if (data[i][s] == 0) {
+                            allp[i][c][t] *= 1 - condprob[t][s][c];
+                        }
+                    }
+                    sum += allp[i][c][t];
+                }
+                for (int c = 0; c < C; c++) {
+                    allp[i][c][t] = (sum == 0) ? allp[i][c][t] : allp[i][c][t] / sum;
                 }
                 /** ------------------------------------------------**/
             }
         }
 
 
+        double[][] out = new double[N*4][C];
+        for(int i = 0; i < N; i++){
+            for(int c = 0; c < C; c++){
+                out[i][c] = MathUtil.getMean(allp[i][c]);
+                out[i + N][c] = MathUtil.getPercentile(allp[i][c], 0.5);
+                out[i + N * 2][c] = MathUtil.getPercentile(allp[i][c], p0);
+                out[i + N * 3][c] = MathUtil.getPercentile(allp[i][c], p1);
+            }
+        }
         return(out);
     }
 

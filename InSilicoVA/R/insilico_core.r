@@ -42,6 +42,7 @@
 #' @param table.num.dev The corresponding prior numerical values for each level in \code{probbase.dev}, in the same order as \code{table.dev}. Default to be NULL
 #' @param gstable.dev Table of gold standard causes for each death. Default to be NULL
 #' @param nlevel.dev number of levels in \code{probbase.dev}. Default to be NULL
+#' @param indiv.CI credible interval for individual probabilities
 #' @param ... unused arguments
 
 #' @return 
@@ -58,7 +59,7 @@
 #' @keywords InSilicoVA
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, ...){ 
+insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = 0.95, ...){ 
 	
 
 ##----------------------------------------------------------##
@@ -1211,15 +1212,21 @@ rownames(p.indiv) <- id
 if(!updateCondProb){
     	probbase.gibbs <- NULL
 }
+
+cleandata <- as.matrix(indic)
+# because the external deaths might be appended to the end
+rownames(cleandata) <- id[1:dim(cleandata)[1]]
+
 out <- list(
 		id = id,
-		data = as.matrix(indic),
+		data = cleandata,
 	    indiv.prob = p.indiv, 
 		csmf = p.hat,
 		conditional.probs = probbase.gibbs,
 		probbase = prob.orig,
 		missing.symptoms = missing.all,
 		external = external.sep, 
+		external.causes = external.causes,
 		impossible.causes = impossible,
 	
 		updateCondProb = updateCondProb, 
@@ -1234,7 +1241,17 @@ out <- list(
 		levels.strength = levels.strength, 
 		trunc.min = trunc.min, 
 		trunc.max = trunc.max, 
-		subpop = subpop)
-class(out) <- "insilico"		
+		subpop = subpop, 
+		indiv.CI = indiv.CI)
+
+# get also individual probabilities
+if(!is.null(indiv.CI)){
+	indiv <- get.indiv(out, indiv.CI)
+	out$indiv.prob.median <- indiv$median
+	out$indiv.prob.upper <- indiv$upper
+	out$indiv.prob.lower <- indiv$lower			
+}
+
+class(out) <- "insilico"
 return(out)  	
 } 

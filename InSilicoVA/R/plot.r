@@ -49,7 +49,43 @@
 #' @examples
 #' 
 #' \dontrun{
-
+#' data(RandomVA1) 
+#' ##
+#' ## Scenario 1: without sub-population specification
+#' ##
+#' fit1<- insilico(RandomVA1, subpop = NULL,  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               auto.length = FALSE)
+#' # basic line plot
+#' plot(fit1)
+#' # basic bar plot
+#' plot(fit1, type = "bar")
+#' # line plot with customized look
+#' plot(fit1, top = 15, horiz = FALSE, fill = "gold", 
+#'            bw = TRUE, title = "Top 15 CSMFs", angle = 70, 
+#'            err_width = .2, err_size = .6, point_size = 2)
+#' 
+#' ##
+#' ## Scenario 2: with sub-population specification
+#' ##
+#' data(RandomVA2)
+#' fit2<- insilico(RandomVA2, subpop = list("sex"),  
+#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               auto.length = FALSE)
+#' summary(fit2)
+#' # basic side-by-side line plot for all sub-populations
+#' plot(fit2, type = "compare", main = "Top 5 causes comparison")
+#' # basic line plot for specific sub-population
+#' plot(fit2, which.sub = "Women", main = "Top 5 causes for women")
+#' # customized plot with only specified causes
+#' # the cause names need not be exact as InterVA cause list
+#' # substrings in InterVA cause list is enough for specification
+#' # e.g. the following two specifications are the same
+#' some_causes_1 <- c("HIV/AIDS related death", "Pulmonary tuberculosis")
+#' some_causes_2 <- c("HIV", "Pulmonary")
+#' plot(fit2, type = "compare", horiz = FALSE,  causelist = some_causes_1,
+#'               title = "HIV and TB fractions in two sub-populations", 
+#'               angle = 20)
 #' }
 #' 
 #' @export plot.insilico

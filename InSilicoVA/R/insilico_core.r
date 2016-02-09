@@ -1246,7 +1246,7 @@ out <- list(
 
 # get also individual probabilities
 if(!is.null(indiv.CI)){
-	indiv <- get.indiv(out, indiv.CI)
+	indiv <- get.indiv(data = NULL, object = out, indiv.CI)
 	out$indiv.prob.median <- indiv$median
 	out$indiv.prob.upper <- indiv$upper
 	out$indiv.prob.lower <- indiv$lower			

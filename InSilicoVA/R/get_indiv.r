@@ -3,8 +3,11 @@
 #' This function calculates individual probabilities for each death and provide posterior credible intervals for each estimates. The default set up is to calculate the 95% C.I. when running the inSilicoVA model. If a different C.I. is desired after running the model, this function provides faster re-calculation without refitting the model.
 #' 
 #' 
+#' @param data data for the fitted \code{"insilico"} object. The first column of the data should be the ID that matches the \code{"insilico"} fitted model.
 #' @param object Fitted \code{"insilico"} object.
 #' @param CI Confidence interval for posterior estimates.
+#' @param is.aggregate logical indicator for constructing aggregated distribution rather than individual distributions.
+#' @param by list of column names to group by.
 #' @param java_option Option to initialize java JVM. Default to ``-Xmx1g'', which sets the maximum heap size to be 1GB.
 #' @param \dots Not used.
 #' @return
@@ -38,11 +41,65 @@
 #' summary(fit1, id = "d199")
 #' }
 #' @export get.indiv
-get.indiv <- function(object, CI = 0.95, java_option = "-Xmx1g", ...){
+get.indiv <- function(data = NULL, object, CI = 0.95, is.aggregate = FALSE, by = NULL, java_option = "-Xmx1g", ...){
 	if(is.null(java_option)) java_option = "-Xmx1g"
 	options( java.parameters = java_option )
 	id <- object$id
 	obj <- .jnew("sampler/InsilicoSampler2")
+
+	#-----------------------------------------------------------------#
+	# if grouping is provided
+	if(is.aggregate){
+		if(is.null(data)){
+			stop("Data not provided for grouping")
+		}
+		data <- data.frame(data)
+		# check by variable
+		if(is.null(by)){
+			cat("No groups specified, aggregate for all deaths\n")
+			data$sub <- "All"
+			col.index <- which(colnames(data) == "sub")
+		}else{
+			if(class(by) != "list"){
+				stop("Please specify by variable using list, see manual example for details.")
+			}else{
+				col.index <- match(by, colnames(data))
+				if(length(which(is.na(col.index))) > 0){
+					stop("Contains unknown grouping variables!")
+				}
+			}
+		}
+		# check id
+		if(colnames(data)[1] != "ID"){
+			colnames(data)[1] <- "ID"
+			warning("The first column of data is assumed to be ID")
+		}
+		n.match <- length(which(!is.na(match(data[, 1], object$id)))) 
+		if(length(n.match) == 0){
+			stop("No data has the matching ID as in the fitted insilico object")
+		}else{
+			cat(paste(n.match, "deaths matched from data to the fitted object\n"))
+		}
+
+		# get grouping vector and names for all data
+		datagroup.all <- data[, c(1, col.index)]
+		if(length(col.index) > 1){
+			datagroup.all$final.group<- apply(datagroup.all[, -1], 1, function(x){paste(x,collapse = ' ')})
+		}else{
+			datagroup.all$final.group <- datagroup.all[, -1]
+		}
+		# get the group name for subset in insilico fitted data
+		datagroup <- datagroup.all$final.group[match(rownames(object$data), datagroup.all[, 1])]
+		datagroup <- datagroup[!is.na(datagroup)]
+
+		allgroups <- sort(unique(datagroup))
+		datagroup <- match(datagroup, allgroups)
+		datagroup.all$final.group.num <- match(datagroup.all$final.group, allgroups)
+		datagroup.j <- .jarray(as.integer(datagroup), dispatch = TRUE)
+		Ngroup <- as.integer(length(allgroups))
+	}
+
+	#---------------------------------------------------------------#
 
 	# 3d array of csmf to be Nsub * Nitr * C
 	if(is.null(object$subpop)){
@@ -88,45 +145,132 @@ get.indiv <- function(object, CI = 0.95, java_option = "-Xmx1g", ...){
 	}
 	condprob.j <- .jarray(condprob, dispatch = TRUE)
 
-	cat("Calculating individual probabilities...\n")
-	indiv  <- .jcall(obj, "[[D", "IndivProb", 
+	#-------------------------------------------------------------------#
+	if(!is.aggregate){
+		cat("Calculating individual COD distributions...\n")
+		# return rbind(mean, median, low, up), (4N) * C matrix
+		indiv  <- .jcall(obj, "[[D", "IndivProb", 
 					 data.j, impossible.j, csmf.j, subpop.j, condprob.j, 
 					 (1 - CI)/2, 1-(1-CI)/2)
+		indiv <- do.call(rbind, lapply(indiv, .jevalArray))
+		data("causetext", envir = environment())
+		causetext<- get("causetext", envir  = environment())
+		
+		match.cause <- pmatch(causetext[, 1],  colnames(object$probbase))
+		index.cause <- order(match.cause)[1:sum(!is.na(match.cause))]
+		colnames(indiv) <- causetext[index.cause, 2]
 
-	indiv <- do.call(rbind, lapply(indiv, .jevalArray))
-	data("causetext", envir = environment())
-	causetext<- get("causetext", envir  = environment())
-	
-	match.cause <- pmatch(causetext[, 1],  colnames(object$probbase))
-	index.cause <- order(match.cause)[1:sum(!is.na(match.cause))]
-	colnames(indiv) <- causetext[index.cause, 2]
-
-	K <- dim(indiv)[1] / 4
+		K <- dim(indiv)[1] / 4
 
 
-	## add back all external cause death 41:51 in standard VA
-	if(object$external){
-		external.causes <- object$external.causes
-		C0 <- dim(indiv)[2]
-		ext.flag <- apply(object$indiv.prob[, external.causes], 1, sum)
-		ext.probs <- object$indiv.prob[which(ext.flag == 1), ]
+		## add back all external cause death 41:51 in standard VA
+		if(object$external){
+			external.causes <- object$external.causes
+			C0 <- dim(indiv)[2]
+			ext.flag <- apply(object$indiv.prob[, external.causes], 1, sum)
+			ext.probs <- object$indiv.prob[which(ext.flag == 1), ]
 
-		indiv <- cbind(indiv[, 1:(external.causes[1] - 1)], 
-			          matrix(0, dim(indiv)[1], length(external.causes)), 
-			          indiv[, external.causes[1]:C0])
-		colnames(indiv) <- colnames(object$indiv.prob)
-		id.out <- c(id[match(rownames(object$data), id)], id[which(ext.flag == 1)])
+			indiv <- cbind(indiv[, 1:(external.causes[1] - 1)], 
+				          matrix(0, dim(indiv)[1], length(external.causes)), 
+				          indiv[, external.causes[1]:C0])
+			colnames(indiv) <- colnames(object$indiv.prob)
+			id.out <- c(id[match(rownames(object$data), id)], id[which(ext.flag == 1)])
+		}else{
+			id.out <- id
+			ext.probs <- NULL
+		}
+
+		mean <- rbind(indiv[1:K, ], ext.probs)
+		median <- rbind(indiv[(K+1):(2*K), ], ext.probs)
+		lower <- rbind(indiv[(2*K+1):(3*K), ], ext.probs)
+		upper <- rbind(indiv[(3*K+1):(4*K), ], ext.probs)
+
+		rownames(mean) <- rownames(median) <- rownames(lower) <- rownames(upper) <- id.out
+		return(list(mean = mean, median = median, 
+					lower = lower, upper = upper))
+
+	#-------------------------------------------------------------------#
 	}else{
-		id.out <- id
-		ext.probs <- NULL
+		cat("Aggregating individual COD distributions...\n")
+		# return (4 x Ngroup) * (C + 1) matrix, last column is sample size
+		indiv  <- .jcall(obj, "[[D", "AggIndivProb", 
+					 data.j, impossible.j, csmf.j, subpop.j, condprob.j,
+					 datagroup.j, Ngroup, (1 - CI)/2, 1-(1-CI)/2)
+		indiv <- do.call(rbind, lapply(indiv, .jevalArray))
+		data("causetext", envir = environment())
+		causetext<- get("causetext", envir  = environment())
+		
+		weight <- indiv[, dim(indiv)[2]]
+		indiv <- indiv[, -dim(indiv)[2]]
+
+		match.cause <- pmatch(causetext[, 1],  colnames(object$probbase))
+		index.cause <- order(match.cause)[1:sum(!is.na(match.cause))]
+		colnames(indiv) <- causetext[index.cause, 2]
+
+		K <- dim(indiv)[1] / 4
+
+
+		## add back all external cause death 41:51 in standard VA
+		if(object$external){
+			external.causes <- object$external.causes
+			C0 <- dim(indiv)[2]
+			ext.flag <- apply(object$indiv.prob[, external.causes], 1, sum)
+			ext.probs <- data.frame(object$indiv.prob[which(ext.flag == 1), external.causes])
+			ext.probs$ID <- rownames(ext.probs)
+			ext.probs <- merge(ext.probs, datagroup.all[, c("ID", "final.group.num")])
+			probcolumns <- which(colnames(ext.probs) %in% c("ID", "final.group.num") == FALSE)
+
+			ext.probs.agg <- matrix(0, length(allgroups), length(probcolumns))
+			ext.weight <- rep(0, length(allgroups))
+
+			for(i in 1:length(allgroups)){
+				thisgroup <- which(ext.probs$final.group.num == i)
+				if(length(thisgroup) > 0){
+					ext.probs.agg[i, ] <- apply(ext.probs[thisgroup, probcolumns, drop=FALSE], 2, mean)	
+					
+					# get weight using the count instead of ratio
+					# easier for later manipulation when the total count is divided
+					ext.weight[i] <- length(thisgroup)
+					ext.probs.agg[i, ] <- ext.probs.agg[i, ] * ext.weight[i] 			
+				}
+			}
+			ext.probs.agg.4fold <- rbind(ext.probs.agg, ext.probs.agg,
+										 ext.probs.agg, ext.probs.agg)
+			# multiply group size
+			indiv <- indiv * weight
+
+			indiv <- cbind(indiv[, 1:(external.causes[1] - 1)], 
+				          ext.probs.agg.4fold, 
+				          indiv[, external.causes[1]:C0])
+
+			# divide by full size
+			indiv <- indiv / (weight + rep(ext.weight, 4))
+
+			colnames(indiv) <- colnames(object$indiv.prob)
+		}else{
+			id.out <- id
+			ext.probs <- NULL
+		}
+
+		mean <- indiv[1:K, ]
+		median <- indiv[(K+1):(2*K), ]
+		lower <- indiv[(2*K+1):(3*K), ]
+		upper <- indiv[(3*K+1):(4*K), ]
+
+
+		
+		# if no grouping, return a matrix
+		if(is.null(by)){
+			out <- data.frame(cbind(mean, median, lower, upper))
+			colnames(out) <- c("Mean", "Median", "Lower", "Upper")
+			return(out)
+		}else{
+			rownames(mean) <- rownames(median) <- rownames(lower) <- rownames(upper) <- allgroups
+			return(list(mean = t(mean), median = t(median), 
+					lower = t(lower), upper = t(upper)))
+		}
+		
 	}
 
-	mean <- rbind(indiv[1:K, ], ext.probs)
-	median <- rbind(indiv[(K+1):(2*K), ], ext.probs)
-	lower <- rbind(indiv[(2*K+1):(3*K), ], ext.probs)
-	upper <- rbind(indiv[(3*K+1):(4*K), ], ext.probs)
 
-	rownames(mean) <- rownames(median) <- rownames(lower) <- rownames(upper) <- id.out
-	return(list(mean = mean, median = median, 
-				lower = lower, upper = upper))
 }

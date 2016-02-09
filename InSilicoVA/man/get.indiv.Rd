@@ -4,12 +4,19 @@
 \alias{get.indiv}
 \title{Get individual COD probabilities from InSilicoVA Model Fits}
 \usage{
-get.indiv(object, CI = 0.95, java_option = "-Xmx1g", ...)
+get.indiv(data = NULL, object, CI = 0.95, is.aggregate = FALSE,
+  by = NULL, java_option = "-Xmx1g", ...)
 }
 \arguments{
+\item{data}{data for the fitted \code{"insilico"} object. The first column of the data should be the ID that matches the \code{"insilico"} fitted model.}
+
 \item{object}{Fitted \code{"insilico"} object.}
 
 \item{CI}{Confidence interval for posterior estimates.}
+
+\item{is.aggregate}{logical indicator for constructing aggregated distribution rather than individual distributions.}
+
+\item{by}{list of column names to group by.}
 
 \item{java_option}{Option to initialize java JVM. Default to ``-Xmx1g'', which sets the maximum heap size to be 1GB.}
 

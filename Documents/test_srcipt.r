@@ -1,6 +1,6 @@
 
 # test script and all example functions in InSilicoVA package
-install.packages("~/Bitbucket-repos/InSilicoVA-beta/InSilicoVA_1.0.tar.gz", repos = NULL, type = "source")
+install.packages("~/Bitbucket-repos/InSilicoVA-beta/InSilicoVA_1.1.tar.gz", repos = NULL, type = "source")
 library(InSilicoVA)
 
 
@@ -40,7 +40,7 @@ plot(fit2, which.sub = "Men")
 ##
 fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-		   auto.length = FALSE)
+		          auto.length = FALSE)
 summary(fit3)
 
 ##
@@ -48,7 +48,7 @@ summary(fit3)
 ##
 fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-		   auto.length = FALSE)
+		          auto.length = FALSE)
 summary(fit3)
 
 ##
@@ -66,7 +66,7 @@ summary(fit3)
 fit5<- insilico(RandomVA1, subpop = NULL,  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
               updateCondProb = FALSE, 
-		   auto.length = FALSE) 
+		          auto.length = FALSE) 
 summary(fit5)
 
 ##
@@ -85,7 +85,7 @@ new_cond_prob[1, 3] <- "C"
 fit6<- insilico(RandomVA1, subpop = NULL,  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProb = new_cond_prob, 
-		   auto.length = FALSE) 
+		          auto.length = FALSE) 
 # note: compare this with fit1 above to see the change 
 # induced by changing Pr(elder | HIV) from "C+" to "C".
 summary(fit6)
@@ -106,7 +106,7 @@ new_cond_prob_num[1, 3] <- 0.005
 fit7<- insilico(RandomVA1, subpop = NULL,  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProbNum = new_cond_prob_num, 
-		   auto.length = FALSE) 
+		          auto.length = FALSE) 
 # note: compare this with fit1, fit5, and fit6
 summary(fit7)
 
@@ -139,7 +139,7 @@ fit8 <- insilico(RandomVA1, subpop = NULL,
               phy.debias = phydebias,
               phy.cat = SampleCategory, 
               phy.external = "External", phy.unknown = "Unknown",
-		   auto.length = FALSE) 
+		          auto.length = FALSE) 
 summary(fit8)
 
 #########################################################################
@@ -279,7 +279,8 @@ stackplot(fit2, type = "stack", grouping = SampleCategory,
           sample.size.print = TRUE, angle = 0)
 
 #---------------------------------------------------------------------#
-#-------------------------  get.indiv    ------------------------------#
+#-------------------------  get.indiv    -----------------------------#
+#-------------------------  indiv.plot   -----------------------------#
 #---------------------------------------------------------------------#
 # Toy example with 1000 VA deaths
 data(RandomVA1)
@@ -296,6 +297,58 @@ fit1$indiv.CI <- 0.9
 summary(fit1, id = "d199")
 
 
+# get empirical aggregated COD distribution 
+agg.csmf <- get.indiv(data = RandomVA2, fit1, CI = 0.95, 
+                      is.aggregate = TRUE, by = NULL)
+head(agg.csmf)
 
+# aggregate individual COD distribution by sex and age
+# note the model was fitted assuming the same CSMF for all deaths
+# this aggregation provides an approximate CSMF for each sub-groups
+agg.by.sex.age <- get.indiv(data = RandomVA2, fit1, CI = 0.95, 
+                            is.aggregate = TRUE, by = list("sex", "age"))
+head(agg.by.sex.age$mean)
+
+# plot of aggregated individual COD distribution
+# 0. plot for all data
+indivplot(agg.csmf, top = 10)
+# 1. plot for specific one group
+indivplot(agg.by.sex.age, which.plot = "Men 60-", top = 10)
+# 2. comparing multiple groups
+indivplot(agg.by.sex.age, which.plot = list("Men 60+", "Men 60-"), 
+                          top = 5)
+# 3. comparing multiple groups on selected causes
+indivplot(agg.by.sex.age, which.plot = list("Men 60-", "Women 60-"), 
+                          top = 0, causelist = c(
+                            "HIV/AIDS related death", 
+                            "Pulmonary tuberculosis", 
+                            "Other and unspecified infect dis", 
+                            "Other and unspecified NCD"))
+
+ 
+# head(agg.by.sex.age$"Men 60+")
+# head(agg.by.sex.age$"Men 60-")
+
+# round(agg.by.sex.age$"Men 60-"[c(3, 9,20), ], 4)
+# round(agg.by.sex.age$"Men 60+"[c(3, 9,20), ], 4)
+# round(agg.by.sex.age$"Women 60-"[c(3, 9,20), ], 4)
+# round(agg.by.sex.age$"Women 60+"[c(3, 9,20), ], 4)
+
+# round(summary(fit3)$csmf[["Men 60-"]][c(3, 9,20), ], 4)
+# round(summary(fit3)$csmf[["Men 60+"]][c(3, 9,20), ], 4)
+# round(summary(fit3)$csmf[["Women 60-"]][c(3, 9,20), ], 4)
+# round(summary(fit3)$csmf[["Women 60+"]][c(3, 9,20), ], 4)
+
+# par(mfrow = c(2, 3))
+# plot(apply(fit1$csmf, 2, mean), apply(fit1$indiv.prob, 2, mean))
+# abline(a=0,b=1,col="red")
+# plot(apply(fit1$csmf, 2, quantile, 0.025), apply(fit1$indiv.prob.low, 2, mean))
+# abline(a=0,b=1,col="red")
+# plot(apply(fit1$csmf, 2, quantile, 0.975), apply(fit1$indiv.prob.up, 2, mean))
+# abline(a=0,b=1,col="red")
+
+# hist(apply(fit1$csmf, 2, mean)- apply(fit1$indiv.prob, 2, mean))
+# hist(apply(fit1$csmf, 2, quantile, 0.025)-apply(fit1$indiv.prob.low, 2, mean))
+# hist(apply(fit1$csmf, 2, quantile, 0.975)-apply(fit1$indiv.prob.up, 2, mean))
 
 

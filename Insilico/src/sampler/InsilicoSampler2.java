@@ -1138,4 +1138,74 @@ public class InsilicoSampler2 {
         return(out);
     }
 
+    public static double[][] AggIndivProb(double[][] data, int[][] impossible, double[][][]csmf, int[] subpop,
+                                       double[][][] condprob, int[] group, int Ngroup, double p0, double p1) {
+        int N = data.length;
+        int Nitr = condprob.length;
+        int S = condprob[0].length;
+        int C = condprob[0][0].length;
+
+        int[][] zero_matrix = new int[N][C];
+        for(int i = 0; i < N; i++){
+            for(int j = 0; j < C; j++){
+                zero_matrix[i][j] = 1;
+            }
+        }
+        if(impossible[0].length == 2){
+            for(int i = 0; i < N; i++){
+                for(int k = 0; k < impossible.length; k++){
+                    if(data[i][impossible[k][1] - 1] == 1){
+                        zero_matrix[i][impossible[k][0] - 1] = 0;
+                    }
+                }
+            }
+        }
+        double[][][] allp = new double [Ngroup][C][Nitr];
+        int[] size = new int[Ngroup];
+
+        for(int i = 0; i < N; i++){
+            // get subpop index for death i
+            int sub = subpop[i] - 1;
+            int g = group[i] - 1;
+            size[g] ++;
+
+            for(int t = 0; t < Nitr; t++) {
+                double[] tmp = new double[C];
+                /** ------------------------------------------------**/
+                double sum = 0;
+                for (int c = 0; c < C; c++) {
+                    tmp[c] = csmf[sub][t][c] * zero_matrix[i][c];
+                    for (int s = 0; s < S; s++) {
+                        if (data[i][s] == 1) {
+                            tmp[c] *= condprob[t][s][c];
+                        } else if (data[i][s] == 0) {
+                            tmp[c] *= 1 - condprob[t][s][c];
+                        }
+                    }
+                    sum += tmp[c];
+                }
+                for (int c = 0; c < C; c++) {
+                    allp[g][c][t] += (sum == 0) ? tmp[c] : tmp[c] / sum;
+                }
+                /** ------------------------------------------------**/
+            }
+        }
+
+
+        double[][] out = new double[Ngroup*4][C+1];
+        for(int i = 0; i < Ngroup; i++){
+            for(int c = 0; c < C; c++){
+                out[i][c] = MathUtil.getMean(allp[i][c]) / (size[i] + 0.0);
+                out[i + Ngroup][c] = MathUtil.getPercentile(allp[i][c], 0.5) / (size[i] + 0.0);
+                out[i + Ngroup * 2][c] = MathUtil.getPercentile(allp[i][c], p0) / (size[i] + 0.0);
+                out[i + Ngroup * 3][c] = MathUtil.getPercentile(allp[i][c], p1) / (size[i] + 0.0);
+            }
+            out[i][C] = size[i];
+            out[i + Ngroup][C] = size[i];
+            out[i + Ngroup * 2][C] = size[i];
+            out[i + Ngroup * 3][C] = size[i];
+        }
+        return(out);
+    }
+
 }

@@ -36,7 +36,7 @@
 #' @param phy.debias see \code{\link{insilico}}
 #' @param exclude.impossible.cause see \code{\link{insilico}}
 #' @param customization.dev Logical indicator for customized variables
-#' @param Probbase_by_symp.dev TODO
+#' @param Probbase_by_symp.dev Not tested yet.
 #' @param probbase.dev The customized conditional probabilities of symptoms given causes, which could be in a different format than InterVA default, but it should consist of \code{nlevel.dev} levels rather than numerical values.
 #' @param table.dev The table of level names in \code{probbase.dev}. Default to be NULL
 #' @param table.num.dev The corresponding prior numerical values for each level in \code{probbase.dev}, in the same order as \code{table.dev}. Default to be NULL
@@ -133,7 +133,7 @@ change.inter <- function(x, order = FALSE, standard = TRUE, table.dev = NULL, ta
 # 	x      : alphabetic matrix 
 #	order  : whether to change the matrix into order matrix
 #   standard: whether to use the standard table
-#   table.dev: new table of level names used
+#   table.dev: new table of level names used high to low
 #   table.num.dev: new table of numerical values correspond to table.dev
 # @values:
 #	numeric matrix by InterVA probbase rules, or the order matrix
@@ -516,6 +516,33 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	data("causetext", envir = environment())
 	causetext<- get("causetext", envir  = environment())
 	
+	
+	##----------------------------------------------------------##
+	## Extract sub-populations		
+	##----------------------------------------------------------##
+	# get subpopulation if it's a columnname
+  	if(class(subpop) == "list" || length(subpop) == 1){
+  		col.index <- match(subpop, colnames(data))
+  		if(length(which(is.na(col.index))) > 0){
+  			stop("error: invalid sub-population name specification")
+  		}
+  		if(length(col.index) == 1){
+  			subpop <- data[, col.index]
+  		}else{
+  			subpop <- data[, col.index]
+  			subpop <- apply(subpop, 1, function(x){paste(x, collapse = ' ')})
+  		}
+  	}
+  	# the subpop either from specification above, or vector input
+  	# make sure they are not factors but characters
+  	if(!is.null(subpop)){
+  		subpop <- as.character(subpop)
+  	} 
+  	if(length(unique(subpop)) == 1){
+  			subpop <- NULL
+  			warning("Only one level in subpopulation, running the dataset as one population")
+  	}
+
 	##----------------------------------------------------------##
 	## without developer customization		
 	##----------------------------------------------------------##
@@ -523,27 +550,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		# get interVA probbase
 	  	prob.orig <- probbase[2:246,17:76]
 	  	
-	  	# get subpopulation if it's a columnname
-	  	if(class(subpop) == "list" || length(subpop) == 1){
-	  		col.index <- match(subpop, colnames(data))
-	  		if(length(which(is.na(col.index))) > 0){
-	  			stop("error: invalid sub-population name specification")
-	  		}
-	  		if(length(col.index) == 1){
-	  			subpop <- data[, col.index]
-	  		}else{
-	  			subpop <- data[, col.index]
-	  			subpop <- apply(subpop, 1, function(x){paste(x, collapse = ' ')})
-	  		}
-	  	}
-	  	if(!is.null(subpop)){
-	  		subpop <- as.character(subpop)
-	  	} 
-	  	if(length(unique(subpop)) == 1){
-	  			subpop <- NULL
-	  			warning("Only one level in subpopulation, running the dataset as one population")
-	  	}
-
+	  	
 	  	if(dim(data)[2] != dim(probbase)[1] ){
 	  		correct_names <- probbase[2:246, 2]
 	  		exist <- correct_names %in% colnames(data)
@@ -601,9 +608,19 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		##----------------------------------------------------------##
 		## with developer customization		
 		##----------------------------------------------------------##	
-  		prob.orig <- probbase.dev	
+		# only match columns exactly as in probbase
+	  	correct_names <- rownames(probbase.dev)
+	  	exist <- correct_names %in% colnames(data)
+	  	if(sum(exist) == 0){
+		    stop("error: invalid data input, no matching symptoms found")
+	  	}else{
+	  		data <- data[, c(1, match(correct_names, colnames(data)))]
+	  	}
+	    
+	    prob.orig <- probbase.dev	
   		valabels <- colnames(data)
 	    vacauses <- gstable.dev
+	    external.causes <- NULL
   	}
 
   	# standardize to Upper case
@@ -643,10 +660,12 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			missing.all <- sort(c(missing.all, i))
 		}
 	}
-	warning(paste(length(missing.all), "symptom missing completely and added to missing list", 
-		"\nList of missing symptoms: \n", 
-		paste( probbase[missing.all + 1, 2], collapse = ", ")), 
-	call. = FALSE, immediate. = TRUE)
+	if(length(missing.all) > 0){
+		warning(paste(length(missing.all), "symptom missing completely and added to missing list", 
+			"\nList of missing symptoms: \n", 
+			paste( probbase[missing.all + 1, 2], collapse = ", ")), 
+		call. = FALSE, immediate. = TRUE)		
+	}
 	## remove all missing symptoms from both data and probbase
 	if(!is.null(missing.all)){	
 		data <- data[, -(missing.all + 1)]
@@ -695,9 +714,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	  	# 		prob.order <- prob.order.dev
 	  	# 		cond.prob.true <- prob.orig
 	  	# 	}else{
-  		prob.order <- change.inter(prob.orig, order = TRUE, standard = FALSE, table.dev = table.dev, table.num.dev = table.num.dev)
-  		cond.prob.true <- change.inter(prob.orig, order = FALSE, standard = FALSE, table.dev = table.dev, table.num.dev = table.num.dev)
-	 } 	
+	  	if(updateCondProb){
+	 		prob.order <- change.inter(prob.orig, order = TRUE, standard = FALSE, table.dev = table.dev, table.num.dev = table.num.dev)
+	  		cond.prob.true <- change.inter(prob.orig, order = FALSE, standard = FALSE, table.dev = table.dev, table.num.dev = table.num.dev)
+	  	}else{
+	  		cond.prob.true <- prob.orig
+	 		prob.order <- matrix(1, dim(prob.orig)[1], dim(prob.orig)[2])
+	  	}
+ 	 } 	
 	##----------------------------------------------------------##
   	# get data dimensions
   	## number of data
@@ -747,7 +771,6 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	
 	## physician codes
 	if(!is.null(phy.code)){
-		#TODO: make assignment sum up to 1, and first column is unknown
 
 		# also remove external causes too if needed
 		if(external.sep){
@@ -971,12 +994,12 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     		dist <- InterVA.table(standard = TRUE, min = 0)
     	}
     	# check existence of each level's index in prob.order
-    	exist <- seq(1:length(dist)) %in% unique(as.vector(prob.order))
+    	level.exist <- seq(1:length(dist)) %in% unique(as.vector(prob.order))
     	
     	# update order matrix
     	prob.order.new <- prob.order
     	for(i in 1:length(dist)){
-    		if(!exist[i]){
+    		if(!level.exist[i]){
     			# I is 1, N is 15
     			# if a level is missing, all level after should minus 1
     			prob.order.new[which(prob.order > i)] <- prob.order.new[which(prob.order > i)] - 1
@@ -985,10 +1008,11 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     	prob.order <- prob.order.new
     	probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
     	# update level vector
-    	dist <- dist[exist]
-    	levels.prior <- levels.prior[exist]
-    	N_level.j <- as.integer(sum(exist))
+    	dist <- dist[level.exist]
+    	levels.prior <- levels.prior[level.exist]
+    	N_level.j <- as.integer(sum(level.exist))
     }else{
+    	level.exist <- rep(TRUE, nlevel)
     	probbase_order.j <- .jarray(as.matrix(prob.order), dispatch = TRUE)
     	N_level.j <- as.integer(nlevel)
     	dist <- InterVA.table(standard = TRUE, min = 0)
@@ -1178,25 +1202,29 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     	id <- c(id, externals$ext.id)
     	subpop <- c(subpop, externals$ext.sub)
    }
-##---------------------------------------------------------------------------------##    	
+##---------------------------------------------------------------##    	
 ## add column names to outcome
 if(pool.j != 0){
+	##======= CHECK THIS CHUNK ===========##
 	if(external.sep){
 		# remove column "ID"
 		valabels <- valabels[-1]
 		# remove external
 		valabels <- valabels[-external.symps]
 		vacauses.ext <- vacauses[-external.causes]
-	    # remove missing
+	    # remove missing, sequential deleting since that's 
+	    #   how we obtained the indices before
 		valabels <- valabels[-missing.all]
-	}
-	dimnames(probbase.gibbs)[[2]] <- valabels
-	dimnames(probbase.gibbs)[[3]] <- vacauses.ext		
-}else{
-	if(customization.dev && is.null(nlevel.dev)){
-		colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")[exist]
+		dimnames(probbase.gibbs)[[2]] <- valabels
+		dimnames(probbase.gibbs)[[3]] <- vacauses.ext		
 	}else{
-		colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")
+		dimnames(probbase.gibbs)[[2]] <- valabels
+		dimnames(probbase.gibbs)[[3]] <- vacauses
+	}
+	##======= CHECK THIS CHUNK ===========##
+}else{
+	if(customization.dev){
+		colnames(levels.gibbs) <- rev(table.dev[level.exist])
 	}
 	probbase.gibbs <- levels.gibbs
 } 
@@ -1242,7 +1270,8 @@ out <- list(
 		trunc.min = trunc.min, 
 		trunc.max = trunc.max, 
 		subpop = subpop, 
-		indiv.CI = indiv.CI)
+		indiv.CI = indiv.CI, 
+		is.customized = customization.dev)
 
 # get also individual probabilities
 if(!is.null(indiv.CI)){

@@ -1,9 +1,13 @@
 # exportPattern("^[[:alpha:]]+")
 
+export(insilico.fit)
 export(insilico)
+export(insilico.train)
+export(extract.prob)
 export(physician_debias)
 export(csmf.diag)
 export(stackplot)
+export(indivplot)
 export(get.indiv)
 
 #export(plot.insilico)

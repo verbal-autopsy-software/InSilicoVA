@@ -3,8 +3,8 @@
 #' This function calculates individual probabilities for each death and provide posterior credible intervals for each estimates. The default set up is to calculate the 95% C.I. when running the inSilicoVA model. If a different C.I. is desired after running the model, this function provides faster re-calculation without refitting the model.
 #' 
 #' 
-#' @param data data for the fitted \code{"insilico"} object. The first column of the data should be the ID that matches the \code{"insilico"} fitted model.
 #' @param object Fitted \code{"insilico"} object.
+#' @param data data for the fitted \code{"insilico"} object. The first column of the data should be the ID that matches the \code{"insilico"} fitted model.
 #' @param CI Confidence interval for posterior estimates.
 #' @param is.aggregate logical indicator for constructing aggregated distribution rather than individual distributions.
 #' @param by list of column names to group by.
@@ -41,7 +41,7 @@
 #' summary(fit1, id = "d199")
 #' }
 #' @export get.indiv
-get.indiv <- function(data = NULL, object, CI = 0.95, is.aggregate = FALSE, by = NULL, java_option = "-Xmx1g", ...){
+get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by = NULL, java_option = "-Xmx1g", ...){
 	if(is.null(java_option)) java_option = "-Xmx1g"
 	options( java.parameters = java_option )
 	id <- object$id
@@ -89,7 +89,11 @@ get.indiv <- function(data = NULL, object, CI = 0.95, is.aggregate = FALSE, by =
 			datagroup.all$final.group <- datagroup.all[, -1]
 		}
 		# get the group name for subset in insilico fitted data
-		datagroup <- datagroup.all$final.group[match(rownames(object$data), datagroup.all[, 1])]
+		index.tmp <- match(rownames(object$data), datagroup.all[, 1])
+		if(length(which(!is.na(index.tmp))) == 0){
+			stop("no matching ID found in the data")
+		}
+		datagroup <- datagroup.all$final.group[index.tmp]
 		datagroup <- datagroup[!is.na(datagroup)]
 
 		allgroups <- sort(unique(datagroup))
@@ -114,18 +118,27 @@ get.indiv <- function(data = NULL, object, CI = 0.95, is.aggregate = FALSE, by =
 		subpop <- as.integer(match(object$subpop, names(object$csmf)))
 	}	
 
+
 	if(object$external){
 		csmf <- csmf[, , -object$external.causes, drop = FALSE]
+		csmf <- apply(csmf, c(1, 2), function(x){
+			if(sum(x) != 0){
+				return(x/sum(x))
+			}else{
+				return(x)
+			}})
+		csmf <- aperm(csmf, c(2, 3, 1))
 	}
 
-	csmf.j <- .jarray(csmf, dispatch = TRUE)
 	data.j <- .jarray(object$data, dispatch = TRUE)
 	subpop.j <- .jarray(subpop, dispatch = TRUE)
 	impossible.j <- .jarray(object$impossible.causes, dispatch = TRUE)
 	# get condprob to be Nitr * S * C array
 	if(object$updateCondProb == FALSE){
-		condprob <- array(0, dim = c(1, dim(object$probbase)[1], dim(object$probbase)[2]))
-		condprob[1, , ] <- object$probbase
+		condprob <- array(0, dim = c(dim(csmf)[2], dim(object$probbase)[1], dim(object$probbase)[2]))
+		for(itr in 1:dim(csmf)[2]){
+			condprob[itr, , ] <- object$probbase
+		}
 	}else{
 		if(object$keepProbbase.level){
 			condprob <- array(0, dim = c(dim(object$conditional.probs)[1], dim(object$probbase)[1], dim(object$probbase)[2]))
@@ -143,22 +156,44 @@ get.indiv <- function(data = NULL, object, CI = 0.95, is.aggregate = FALSE, by =
 			condprob <- object$conditional.probs
 		}
 	}
-	condprob.j <- .jarray(condprob, dispatch = TRUE)
 
+	# rJava package (0.9-8) currently has a bug with multi-dimension array
+	# value passed to java contains 0's not in the original array
+	# to bypass this open issue, condprob and csmf are transformed 
+	# 	into vectors:
+	# dim(csmf) = Nsub * Nitr * C 
+	# dim(condprob) = Nitr * S * C
+	# after transformation (i, j, k) -> (k-1)*d1*d2 + (j-1)*d1 + i
+	Nsub <- as.integer(dim(csmf)[1])
+	Nitr <- as.integer(dim(csmf)[2])
+	C <- as.integer(dim(csmf)[3])
+	S <- as.integer(dim(condprob)[2])
+
+	condprob <- as.vector(condprob)
+	csmf <- as.vector(csmf)
+	condprob.j <- .jarray(condprob, dispatch = TRUE)
+	csmf.j <- .jarray(csmf, dispatch = TRUE)
 	#-------------------------------------------------------------------#
 	if(!is.aggregate){
 		cat("Calculating individual COD distributions...\n")
 		# return rbind(mean, median, low, up), (4N) * C matrix
 		indiv  <- .jcall(obj, "[[D", "IndivProb", 
 					 data.j, impossible.j, csmf.j, subpop.j, condprob.j, 
-					 (1 - CI)/2, 1-(1-CI)/2)
+					 (1 - CI)/2, 1-(1-CI)/2, 
+					 Nsub, Nitr, C, S)
 		indiv <- do.call(rbind, lapply(indiv, .jevalArray))
-		data("causetext", envir = environment())
-		causetext<- get("causetext", envir  = environment())
 		
-		match.cause <- pmatch(causetext[, 1],  colnames(object$probbase))
-		index.cause <- order(match.cause)[1:sum(!is.na(match.cause))]
-		colnames(indiv) <- causetext[index.cause, 2]
+		# if not customized probbase, use longer cause names for output
+		if(!object$is.customized){
+			data("causetext", envir = environment())
+			causetext<- get("causetext", envir  = environment())
+			
+			match.cause <- pmatch(causetext[, 1],  colnames(object$probbase))
+			index.cause <- order(match.cause)[1:sum(!is.na(match.cause))]
+			colnames(indiv) <- causetext[index.cause, 2]
+		}else{
+			colnames(indiv) <- colnames(object$probbase)
+		}
 
 		K <- dim(indiv)[1] / 4
 
@@ -195,7 +230,8 @@ get.indiv <- function(data = NULL, object, CI = 0.95, is.aggregate = FALSE, by =
 		# return (4 x Ngroup) * (C + 1) matrix, last column is sample size
 		indiv  <- .jcall(obj, "[[D", "AggIndivProb", 
 					 data.j, impossible.j, csmf.j, subpop.j, condprob.j,
-					 datagroup.j, Ngroup, (1 - CI)/2, 1-(1-CI)/2)
+					 datagroup.j, Ngroup, (1 - CI)/2, 1-(1-CI)/2, 
+					 Nsub, Nitr, C, S)
 		indiv <- do.call(rbind, lapply(indiv, .jevalArray))
 		data("causetext", envir = environment())
 		causetext<- get("causetext", envir  = environment())

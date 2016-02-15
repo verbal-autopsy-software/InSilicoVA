@@ -1076,12 +1076,30 @@ public class InsilicoSampler2 {
         return(data);
     }
 
-    public static double[][] IndivProb(double[][] data, int[][] impossible, double[][][]csmf, int[] subpop,
-                                       double[][][] condprob, double p0, double p1) {
+    public static double[][] IndivProb(double[][] data, int[][] impossible, double[]csmf0, int[] subpop,
+                                       double[] condprob0, double p0, double p1,
+                                       int Nsub, int Nitr, int C, int S) {
         int N = data.length;
-        int Nitr = condprob.length;
-        int S = condprob[0].length;
-        int C = condprob[0][0].length;
+
+        /**   --------------- to bypass bug in rJava package  ----------------------- **/
+        // reconstruct csmf and condprob csmf[i, j, k] <-> csmf0[k*d1*d2 + j*d1 + i]
+        double[][][] csmf = new double[Nsub][Nitr][C];
+        double[][][] condprob = new double[Nitr][S][C];
+        for(int i = 0; i < Nsub; i++){
+            for(int j = 0; j < Nitr; j++){
+                for(int k = 0; k < C; k++){
+                    csmf[i][j][k] = csmf0[k * Nsub * Nitr + j * Nsub + i];
+                }
+            }
+        }
+        for(int i = 0; i < Nitr; i++){
+            for(int j = 0; j < S; j++){
+                for(int k = 0; k < C; k++){
+                    condprob[i][j][k] = condprob0[k * Nitr * S + j * Nitr + i];
+                }
+            }
+        }
+        /**   --------------- reconstruction done ----------------------- **/
 
         int[][] zero_matrix = new int[N][C];
         for(int i = 0; i < N; i++){
@@ -1110,6 +1128,8 @@ public class InsilicoSampler2 {
                 for (int c = 0; c < C; c++) {
                     allp[i][c][t] = csmf[sub][t][c] * zero_matrix[i][c];
                     for (int s = 0; s < S; s++) {
+                        if(condprob[t][s][c] == 0){System.out.print(".");}
+
                         if (data[i][s] == 1) {
                             allp[i][c][t] *= condprob[t][s][c];
                         } else if (data[i][s] == 0) {
@@ -1138,12 +1158,30 @@ public class InsilicoSampler2 {
         return(out);
     }
 
-    public static double[][] AggIndivProb(double[][] data, int[][] impossible, double[][][]csmf, int[] subpop,
-                                       double[][][] condprob, int[] group, int Ngroup, double p0, double p1) {
+    public static double[][] AggIndivProb(double[][] data, int[][] impossible, double[]csmf0, int[] subpop,
+                                          double[] condprob0, int[] group, int Ngroup, double p0, double p1,
+                                          int Nsub, int Nitr, int C, int S) {
         int N = data.length;
-        int Nitr = condprob.length;
-        int S = condprob[0].length;
-        int C = condprob[0][0].length;
+
+        /**   --------------- to bypass bug in rJava package  ----------------------- **/
+        // reconstruct csmf and condprob csmf[i, j, k] <-> csmf0[k*d1*d2 + j*d1 + i]
+        double[][][] csmf = new double[Nsub][Nitr][C];
+        double[][][] condprob = new double[Nitr][S][C];
+        for(int i = 0; i < Nsub; i++){
+            for(int j = 0; j < Nitr; j++){
+                for(int k = 0; k < C; k++){
+                    csmf[i][j][k] = csmf0[k * Nsub * Nitr + j * Nsub + i];
+                }
+            }
+        }
+        for(int i = 0; i < Nitr; i++){
+            for(int j = 0; j < S; j++){
+                for(int k = 0; k < C; k++){
+                    condprob[i][j][k] = condprob0[k * Nitr * S + j * Nitr + i];
+                }
+            }
+        }
+        /**   --------------- reconstruction done ----------------------- **/
 
         int[][] zero_matrix = new int[N][C];
         for(int i = 0; i < N; i++){

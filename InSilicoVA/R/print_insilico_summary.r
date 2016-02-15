@@ -9,7 +9,7 @@ print.insilico_summary <- function(x, ...) {
 	# print population summary
 	}else{
 		cat("InSilicoVA Call: \n")
-		cat(paste(length(x$id), "death processed\n"))
+		cat(paste(length(x$id.all), "death processed\n"))
 		cat(paste(x$length.sim, "iterations performed, with first", 
 				  x$burnin, "iterations discarded\n",
 				  trunc((x$length.sim - x$burnin)/x$thin), "iterations saved after thinning\n"))

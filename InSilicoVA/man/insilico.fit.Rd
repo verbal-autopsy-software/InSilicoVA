@@ -78,7 +78,7 @@ insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
 
 \item{customization.dev}{Logical indicator for customized variables}
 
-\item{Probbase_by_symp.dev}{TODO}
+\item{Probbase_by_symp.dev}{Not tested yet.}
 
 \item{probbase.dev}{The customized conditional probabilities of symptoms given causes, which could be in a different format than InterVA default, but it should consist of \code{nlevel.dev} levels rather than numerical values.}
 

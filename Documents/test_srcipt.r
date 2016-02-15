@@ -11,7 +11,7 @@ library(InSilicoVA)
 data(RandomVA1) 
 fit0<- insilico(RandomVA1, subpop = NULL,  
                 length.sim = 20, burnin = 10, thin = 1 , seed = 1,
-			 auto.length = FALSE)
+			           auto.length = FALSE)
 summary(fit0)
 summary(fit0, id = "d199")
 
@@ -20,7 +20,7 @@ summary(fit0, id = "d199")
 ##
 fit1<- insilico(RandomVA1, subpop = NULL,  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-		   auto.length = FALSE)
+		          auto.length = FALSE)
 summary(fit1)
 plot(fit1)
 
@@ -30,7 +30,7 @@ plot(fit1)
 data(RandomVA2)
 fit2<- insilico(RandomVA2, subpop = list("sex"),  
               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
-		   auto.length = FALSE)
+		          auto.length = FALSE)
 summary(fit2)
 plot(fit2, type = "compare")
 plot(fit2, which.sub = "Men")

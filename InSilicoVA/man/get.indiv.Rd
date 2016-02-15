@@ -4,13 +4,13 @@
 \alias{get.indiv}
 \title{Get individual COD probabilities from InSilicoVA Model Fits}
 \usage{
-get.indiv(data = NULL, object, CI = 0.95, is.aggregate = FALSE,
+get.indiv(object, data = NULL, CI = 0.95, is.aggregate = FALSE,
   by = NULL, java_option = "-Xmx1g", ...)
 }
 \arguments{
-\item{data}{data for the fitted \code{"insilico"} object. The first column of the data should be the ID that matches the \code{"insilico"} fitted model.}
-
 \item{object}{Fitted \code{"insilico"} object.}
+
+\item{data}{data for the fitted \code{"insilico"} object. The first column of the data should be the ID that matches the \code{"insilico"} fitted model.}
 
 \item{CI}{Confidence interval for posterior estimates.}
 

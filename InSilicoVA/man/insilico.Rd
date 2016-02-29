@@ -14,7 +14,7 @@ insilico(data, isNumeric = FALSE, updateCondProb = TRUE,
   trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1,
   phy.code = NULL, phy.cat = NULL, phy.unknown = NULL,
   phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE,
-  indiv.CI = 0.95)
+  indiv.CI = 0.95, ...)
 }
 \arguments{
 \item{data}{The original data to be used. It is suggested to use similar
@@ -142,6 +142,8 @@ are assigned deterministically by the corresponding symptoms.}
 \item{exclude.impossible.cause}{logical indicator to exclude impossible causes based on the age and gender of the death.}
 
 \item{indiv.CI}{credible interval for individual probabilities}
+
+\item{...}{not used}
 }
 \value{
 \item{id}{A vector of death ID. Note the order of the ID is in

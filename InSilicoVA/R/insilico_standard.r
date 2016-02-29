@@ -132,6 +132,7 @@
 #' \code{\link{physician_debias}}) that overwrites \code{phy.code}.
 #' @param exclude.impossible.cause logical indicator to exclude impossible causes based on the age and gender of the death.
 #' @param indiv.CI credible interval for individual probabilities
+#' @param ... not used
 #' 
 #' @return \item{id}{A vector of death ID. Note the order of the ID is in
 #' general different from the input file. See \code{report} for organizing the
@@ -308,7 +309,7 @@
 #' 
 #' }
 #' @export insilico
-insilico <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95){ 
+insilico <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95, ...){ 
 	
 	fit <- insilico.fit(data = data, 
 						isNumeric = isNumeric, 

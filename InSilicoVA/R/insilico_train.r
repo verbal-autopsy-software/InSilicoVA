@@ -26,7 +26,7 @@
 #' and contains one additional column (see \code{cause} below) specifying known
 #' cause of death. The first column is also assumed to be death ID. 
 #' @param cause the name of the column in \code{train} that contains cause of death.
-#' @param cause.table The list of causes of death used in training data.
+#' @param causes.table The list of causes of death used in training data.
 #' @param thre a numerical value between 0 to 1. It specifies the maximum rate of
 #' missing for any symptoms to be considered in the model. Default value is set to
 #' 0.95, meaning if a symptom has more than 95\% missing in the training data, it
@@ -69,6 +69,7 @@
 #' @param phy.debias see \code{\link{insilico}} for more detail.
 #' @param exclude.impossible.cause Not Implemented
 #' @param indiv.CI see \code{\link{insilico}} for more detail.
+#' @param ... not used
 #'
 #' @return \code{insilico} object
 #' @export insilico.train
@@ -77,11 +78,12 @@
 #' \dontrun{
 #' x <- 1
 #' }
-insilico.train <- function(data, train, cause, cause.table, thre = 0.95, type = c("quantile", "fixed")[1], isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95){ 
+insilico.train <- function(data, train, cause, causes.table, thre = 0.95, type = c("quantile", "fixed")[2], isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95, ...){ 
+	
 	
 	prob.learn <- extract.prob(train = train, 
 							  gs = cause, 
-							  gstable = cause.table, 
+							  gstable = causes.table, 
 							  thre = thre, 
 							  type = type, 
 							  isNumeric = isNumeric)

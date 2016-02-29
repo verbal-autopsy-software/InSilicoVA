@@ -4,8 +4,8 @@
 \alias{extract.prob}
 \title{Obtain conditional probabilities from training data}
 \usage{
-extract.prob(train, gs, gstable, thre = 0.95, type = c("quantile",
-  "fixed")[1], isNumeric = FALSE)
+extract.prob(train, gs, gstable, thre = 0.95, type = c("quantile", "fixed",
+  "empirical")[1], isNumeric = FALSE)
 }
 \arguments{
 \item{train}{Training data, it should be in the same format as the testing data
@@ -21,11 +21,11 @@ missing for any symptoms to be considered in the model. Default value is set to
 0.95, meaning if a symptom has more than 95\% missing in the training data, it
 will be removed.}
 
-\item{type}{Two types of learning conditional probabilities are provided: ``quantile''
+\item{type}{Three types of learning conditional probabilities are provided: ``quantile''
 or ``fixed''. Since InSilicoVA works with ranked conditional probabilities P(S|C), ``quantile''
 means the rankings of the P(S|C) are obtained by matching the same quantile distributions
 in the default InterVA P(S|C), and ``fixed'' means P(S|C) are matched to the closest values
-in the default InterVA P(S|C) table. Empirically both types of rankings produce similar results.}
+in the default InterVA P(S|C) table. Empirically both types of rankings produce similar results. The third option ``empirical'' means no rankings are calculated, only the raw P(S|C) values are returned.}
 
 \item{isNumeric}{Indicator if the input is already in numeric form. If the
 input is coded numerically such that 1 for ``present'', 0 for ``absent'',

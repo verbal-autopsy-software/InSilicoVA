@@ -4,8 +4,8 @@
 \alias{insilico.train}
 \title{Implement InSilicoVA methods}
 \usage{
-insilico.train(data, train, cause, cause.table, thre = 0.95,
-  type = c("quantile", "fixed")[1], isNumeric = FALSE,
+insilico.train(data, train, cause, causes.table, thre = 0.95,
+  type = c("quantile", "fixed")[2], isNumeric = FALSE,
   updateCondProb = TRUE, keepProbbase.level = TRUE, CondProb = NULL,
   CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE,
   warning.write = FALSE, external.sep = TRUE, length.sim = 4000,
@@ -14,7 +14,7 @@ insilico.train(data, train, cause, cause.table, thre = 0.95,
   trunc.min = 1e-04, trunc.max = 0.9999, subpop = NULL,
   java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL,
   phy.unknown = NULL, phy.external = NULL, phy.debias = NULL,
-  exclude.impossible.cause = TRUE, indiv.CI = 0.95)
+  exclude.impossible.cause = TRUE, indiv.CI = 0.95, ...)
 }
 \arguments{
 \item{data}{The original data to be used. It is suggested to use similar
@@ -36,7 +36,7 @@ cause of death. The first column is also assumed to be death ID.}
 
 \item{cause}{the name of the column in \code{train} that contains cause of death.}
 
-\item{cause.table}{The list of causes of death used in training data.}
+\item{causes.table}{The list of causes of death used in training data.}
 
 \item{thre}{a numerical value between 0 to 1. It specifies the maximum rate of
 missing for any symptoms to be considered in the model. Default value is set to
@@ -110,6 +110,8 @@ re-estimating conditional probabilities.}
 \item{exclude.impossible.cause}{Not Implemented}
 
 \item{indiv.CI}{see \code{\link{insilico}} for more detail.}
+
+\item{...}{not used}
 }
 \value{
 \code{insilico} object

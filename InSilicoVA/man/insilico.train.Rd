@@ -5,12 +5,12 @@
 \title{Implement InSilicoVA methods}
 \usage{
 insilico.train(data, train, cause, causes.table, thre = 0.95,
-  type = c("quantile", "fixed")[2], isNumeric = FALSE,
+  type = c("quantile", "fixed", "empirical")[1], isNumeric = FALSE,
   updateCondProb = TRUE, keepProbbase.level = TRUE, CondProb = NULL,
   CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE,
   warning.write = FALSE, external.sep = TRUE, length.sim = 4000,
   thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02,
-  jump.scale = 0.1, levels.prior = NULL, levels.strength = 1,
+  jump.scale = 0.1, levels.prior = NULL, levels.strength = NULL,
   trunc.min = 1e-04, trunc.max = 0.9999, subpop = NULL,
   java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL,
   phy.unknown = NULL, phy.external = NULL, phy.debias = NULL,
@@ -43,11 +43,11 @@ missing for any symptoms to be considered in the model. Default value is set to
 0.95, meaning if a symptom has more than 95\% missing in the training data, it
 will be removed.}
 
-\item{type}{Two types of learning conditional probabilities are provided: ``quantile''
+\item{type}{Three types of learning conditional probabilities are provided: ``empirical'', ``quantile''
 or ``fixed''. Since InSilicoVA works with ranked conditional probabilities P(S|C), ``quantile''
 means the rankings of the P(S|C) are obtained by matching the same quantile distributions
 in the default InterVA P(S|C), and ``fixed'' means P(S|C) are matched to the closest values
-in the default InterVA P(S|C) table. Empirically both types of rankings produce similar results.}
+in the default InterVA P(S|C) table. Empirically both types of rankings produce similar results. ``empirical'', on the other hand, means no ranking is calculated, but use the empirical conditional probabilities directly. If ``empirical'', \code{updateCondProb} will be forced to be FALSE.}
 
 \item{isNumeric}{Indicator if the input is already in numeric form. If the
 input is coded numerically such that 1 for ``present'', 0 for ``absent'',

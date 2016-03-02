@@ -7,7 +7,7 @@ To install on mac, linux, and some Windows machine, run the script in R
 ```r
 install.packages("ggplot2")
 install.packages("coda")
-install.pckages("rJava")
+install.packages("rJava")
 install.packages("InSilicoVA_1.0.tar.gz", type = "source", repos = NULL)
 ```
 

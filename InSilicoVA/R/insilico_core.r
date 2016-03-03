@@ -16,7 +16,7 @@
 #' @param datacheck.missing see \code{\link{insilico}}
 #' @param warning.write see \code{\link{insilico}}
 #' @param external.sep see \code{\link{insilico}}
-#' @param length.sim see \code{\link{insilico}}
+#' @param Nsim see \code{\link{insilico}}
 #' @param thin see \code{\link{insilico}}
 #' @param burnin see \code{\link{insilico}}
 #' @param auto.length see \code{\link{insilico}}
@@ -59,8 +59,13 @@
 #' @keywords InSilicoVA
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = 0.95, ...){ 
-	
+insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = 0.95, ...){ 
+  # handling changes throughout time
+  args <- as.list(match.call())
+  if(!is.null(args$length.sim)){
+  	Nsim <- args$length.sim
+  	cat("length.sim argument is replaced with Nsim argument, will remove in later versions.\n")
+  }
 
 ##----------------------------------------------------------##
 ##       Helper functions                                   ##
@@ -492,7 +497,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	}
 
 	##----------------------------------------------------------##
-	if(is.null(length.sim) || is.null(thin) || is.null(burnin)){
+	if(is.null(Nsim) || is.null(thin) || is.null(burnin)){
 		stop("Length of chain/thinning/burn-in not specified")
 	}
 	
@@ -1030,7 +1035,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     # 					  0 - pool to table; 1 - by cause; 2 - by symptom
     pool.j <- as.integer(!keepProbbase.level) + as.integer(Probbase_by_symp.dev)
     seed.j <- as.integer(seed)
-    N_gibbs.j <- as.integer(length.sim)
+    N_gibbs.j <- as.integer(Nsim)
     burn.j <- as.integer(burnin)
     thin.j <- as.integer(thin)
     mu.j <- .jarray(mu, dispatch = TRUE)
@@ -1100,8 +1105,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     		theta.last.j <- .jarray(as.matrix(results$theta.last), dispatch = TRUE)
     		# same length as previous chain if added the first time
     		# double the length	if the second time
-    		length.sim <- length.sim * 2 
-    		burnin <- length.sim / 2
+    		Nsim <- Nsim * 2 
+    		burnin <- Nsim / 2
     		N_gibbs.j <- as.integer(trunc(N_gibbs.j * (2^(add-1))))
 			burn.j <- as.integer(0)
 			keepProb.j <- !updateCondProb
@@ -1225,6 +1230,8 @@ if(pool.j != 0){
 }else{
 	if(customization.dev){
 		colnames(levels.gibbs) <- rev(table.dev[level.exist])
+	}else{
+		colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")
 	}
 	probbase.gibbs <- levels.gibbs
 } 
@@ -1260,7 +1267,7 @@ out <- list(
 		updateCondProb = updateCondProb, 
 		keepProbbase.level = keepProbbase.level, 
 		datacheck = datacheck,
-		length.sim = length.sim, 
+		Nsim = Nsim, 
 		thin = thin, 
 		burnin = burnin, 
 	

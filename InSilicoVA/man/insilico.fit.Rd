@@ -7,7 +7,7 @@
 insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
   keepProbbase.level = TRUE, CondProb = NULL, CondProbNum = NULL,
   datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE,
-  external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000,
+  external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000,
   auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1,
   levels.prior = NULL, levels.strength = 1, trunc.min = 1e-04,
   trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1,
@@ -38,7 +38,7 @@ insilico.fit(data, isNumeric = FALSE, updateCondProb = TRUE,
 
 \item{external.sep}{see \code{\link{insilico}}}
 
-\item{length.sim}{see \code{\link{insilico}}}
+\item{Nsim}{see \code{\link{insilico}}}
 
 \item{thin}{see \code{\link{insilico}}}
 

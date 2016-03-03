@@ -51,7 +51,7 @@
 #' # Toy example with 1000 VA deaths
 #' data(RandomVA1)
 #' fit1<- insilico(RandomVA1, subpop = NULL,  
-#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 #'               auto.length = FALSE)
 #' summary(fit1, id = "d199")
 #' 

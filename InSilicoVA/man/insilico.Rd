@@ -8,7 +8,7 @@
 insilico(data, isNumeric = FALSE, updateCondProb = TRUE,
   keepProbbase.level = TRUE, CondProb = NULL, CondProbNum = NULL,
   datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE,
-  external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000,
+  external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000,
   auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1,
   levels.prior = NULL, levels.strength = 1, trunc.min = 1e-04,
   trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1,
@@ -63,7 +63,7 @@ estimate external causes, e.g., traffic accident, accidental fall, suicide,
 etc., by checking the corresponding indicator only without considering other
 medical symptoms. It is strongly suggested to set to be TRUE.}
 
-\item{length.sim}{Number of iterations to run. Default to be 4000.}
+\item{Nsim}{Number of iterations to run. Default to be 4000.}
 
 \item{thin}{Proportion of thinning for storing parameters. For example, if
 thin = k, the output parameters will only be saved every k iterations.
@@ -108,7 +108,7 @@ vectors of names.}
 which sets the maximum heap size to be 1GB. If R produces
 ``java.lang.OutOfMemoryError: Java heap space'' error message, consider
 increasing heap size using this option, or one of the following: (1)
-decreasing \code{length.sim}, (2) increasing \code{thin}, or (3) disabling
+decreasing \code{Nsim}, (2) increasing \code{thin}, or (3) disabling
 \code{auto.length}.}
 
 \item{seed}{Seed used for initializing sampler. The algorithm will produce
@@ -204,7 +204,7 @@ For more detail of model specification, see the paper on
 \dontrun{
 data(RandomVA1)
 fit0<- insilico(RandomVA1, subpop = NULL,
-                length.sim = 20, burnin = 10, thin = 1 , seed = 1,
+                Nsim = 20, burnin = 10, thin = 1 , seed = 1,
 			 auto.length = FALSE)
 summary(fit0)
 summary(fit0, id = "d199")
@@ -213,7 +213,7 @@ summary(fit0, id = "d199")
 ## Scenario 1: standard input without sub-population specification
 ##
 fit1<- insilico(RandomVA1, subpop = NULL,
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		   auto.length = FALSE)
 summary(fit1)
 plot(fit1)
@@ -223,7 +223,7 @@ plot(fit1)
 ##
 data(RandomVA2)
 fit2<- insilico(RandomVA2, subpop = list("sex"),
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		   auto.length = FALSE)
 summary(fit2)
 plot(fit2, type = "compare")
@@ -233,7 +233,7 @@ plot(fit2, which.sub = "Men")
 ## Scenario 3: standard input with multiple sub-population specification
 ##
 fit3<- insilico(RandomVA2, subpop = list("sex", "age"),
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		   auto.length = FALSE)
 summary(fit3)
 
@@ -241,7 +241,7 @@ summary(fit3)
 ## Scenario 3: standard input with multiple sub-population specification
 ##
 fit3<- insilico(RandomVA2, subpop = list("sex", "age"),
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		   auto.length = FALSE)
 summary(fit3)
 
@@ -258,7 +258,7 @@ summary(fit3)
 # Though in practice the need for this situation is very unlikely,
 # use only the default conditional probabilities without re-estimation
 fit5<- insilico(RandomVA1, subpop = NULL,
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               updateCondProb = FALSE,
 		   auto.length = FALSE)
 summary(fit5)
@@ -277,7 +277,7 @@ new_cond_prob["elder", "HIV/AIDS related death"] <- "C"
 new_cond_prob[1, 3] <- "C"
 
 fit6<- insilico(RandomVA1, subpop = NULL,
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProb = new_cond_prob,
 		   auto.length = FALSE)
 # note: compare this with fit1 above to see the change induced
@@ -298,7 +298,7 @@ new_cond_prob_num["elder", "HIV/AIDS related death"] <- 0.004
 new_cond_prob_num[1, 3] <- 0.005
 
 fit7<- insilico(RandomVA1, subpop = NULL,
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProbNum = new_cond_prob_num,
 		   auto.length = FALSE)
 # note: compare this with fit1, fit5, and fit6
@@ -329,7 +329,7 @@ phydebias <- physician_debias(RandomPhysician,
 	tol = 0.0001, max.itr = 100)
 
 fit8 <- insilico(RandomVA1, subpop = NULL,
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               phy.debias = phydebias,
               phy.cat = SampleCategory,
               phy.external = "External", phy.unknown = "Unknown",

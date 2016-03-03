@@ -63,7 +63,7 @@ Produce bar plot of the CSMFs for a fitted \code{"insilico"} object in broader g
   ## Scenario 1: without sub-population specification
   ##
   fit1<- insilico(RandomVA1, subpop = NULL,
-                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+                Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
                 auto.length = FALSE)
   # stack bar plot for grouped causes
   # the default grouping could be seen from
@@ -75,7 +75,7 @@ Produce bar plot of the CSMFs for a fitted \code{"insilico"} object in broader g
   ##
   data(RandomVA2)
   fit2<- insilico(RandomVA2, subpop = list("sex"),
-                length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+                Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
                 auto.length = FALSE)
   stackplot(fit2, type = "stack", angle = 0)
   stackplot(fit2, type = "dodge", angle = 0)

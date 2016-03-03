@@ -54,7 +54,7 @@
 #' ## Scenario 1: without sub-population specification
 #' ##
 #' fit1<- insilico(RandomVA1, subpop = NULL,  
-#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 #'               auto.length = FALSE)
 #' # basic line plot
 #' plot(fit1)
@@ -70,7 +70,7 @@
 #' ##
 #' data(RandomVA2)
 #' fit2<- insilico(RandomVA2, subpop = list("sex"),  
-#'               length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+#'               Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 #'               auto.length = FALSE)
 #' summary(fit2)
 #' # basic side-by-side line plot for all sub-populations

@@ -49,7 +49,7 @@
 #' @param datacheck.missing Not Implemented.
 #' @param warning.write Not Implemented.
 #' @param external.sep Not Implemented.
-#' @param length.sim see \code{\link{insilico}} for more detail.
+#' @param Nsim see \code{\link{insilico}} for more detail.
 #' @param thin see \code{\link{insilico}} for more detail.
 #' @param burnin see \code{\link{insilico}} for more detail.
 #' @param auto.length see \code{\link{insilico}} for more detail.
@@ -74,12 +74,15 @@
 #' @return \code{insilico} object
 #' @export insilico.train
 #'
-#' @examples
-#' \dontrun{
-#' x <- 1
-#' }
-insilico.train <- function(data, train, cause, causes.table, thre = 0.95, type = c("quantile", "fixed", "empirical")[1], isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, length.sim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = NULL, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95, ...){ 
+insilico.train <- function(data, train, cause, causes.table, thre = 0.95, type = c("quantile", "fixed", "empirical")[1], isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = NULL, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, indiv.CI = 0.95, ...){ 
 	  
+	  # handling changes throughout time
+	  args <- as.list(match.call())
+	  if(!is.null(args$length.sim)){
+	  	Nsim <- args$length.sim
+	  	cat("length.sim argument is replaced with Nsim argument, will remove in later versions.\n")
+	  }
+
 	prob.learn <- extract.prob(train = train, 
 							  gs = cause, 
 							  gstable = causes.table, 
@@ -128,7 +131,7 @@ insilico.train <- function(data, train, cause, causes.table, thre = 0.95, type =
 						datacheck.missing = FALSE, 
 						warning.write = FALSE, 
 						external.sep = FALSE, 
-						length.sim = length.sim, 
+						Nsim = Nsim, 
 						thin = thin, 
 						burnin = burnin, 
 						auto.length = auto.length, 

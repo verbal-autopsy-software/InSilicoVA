@@ -23,7 +23,7 @@
 #' \item{updateCondProb}{Component of \code{"insilico"} object.}
 #' \item{keepProbbase.level}{Component of \code{"insilico"} object.}
 #' \item{datacheck}{Component of \code{"insilico"} object.}
-#' \item{length.sim}{Component of \code{"insilico"} object.}
+#' \item{Nsim}{Component of \code{"insilico"} object.}
 #' \item{thin}{Component of \code{"insilico"} object.} \item{burnin}{Component
 #' of \code{"insilico"} object.} 
 #' \item{jump.scale}{Component of \code{"insilico"} object.}
@@ -53,7 +53,7 @@
 #' 
 #' # run without subpopulation
 #' fit1<- insilico( data, subpop = NULL, 
-#'               length.sim = 400, burnin = 200, thin = 10 , seed = 1,
+#'               Nsim = 400, burnin = 200, thin = 10 , seed = 1,
 #'               external.sep = TRUE, keepProbbase.level = TRUE)
 #' summary(fit1)
 #' summary(fit1, top = 10)
@@ -173,7 +173,7 @@ summary.insilico <- function(object, CI.csmf = 0.95, CI.cond = 0.95,
 				 updateCondProb = object$updateCondProb, 
 				 keepProbbase.level = object$keepProbbase.level, 
 				 datacheck = object$datacheck,
-				 length.sim = object$length.sim, 
+				 Nsim = object$Nsim, 
 				 thin = object$thin, 
 				 burnin = object$burnin, 
 				 HIV = object$HIV, 

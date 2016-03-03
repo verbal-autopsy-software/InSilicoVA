@@ -10,9 +10,9 @@ print.insilico_summary <- function(x, ...) {
 	}else{
 		cat("InSilicoVA Call: \n")
 		cat(paste(length(x$id.all), "death processed\n"))
-		cat(paste(x$length.sim, "iterations performed, with first", 
+		cat(paste(x$Nsim, "iterations performed, with first", 
 				  x$burnin, "iterations discarded\n",
-				  trunc((x$length.sim - x$burnin)/x$thin), "iterations saved after thinning\n"))
+				  trunc((x$Nsim - x$burnin)/x$thin), "iterations saved after thinning\n"))
 		if(!x$updateCondProb){
 				cat("Fitted with fixed conditional probability matrix\n")
 			}else if(x$keepProbbase.level){

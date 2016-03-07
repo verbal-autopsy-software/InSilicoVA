@@ -13,6 +13,7 @@
 #' @param sample.size.print Logical indicator for printing also the sample size for each sub-population labels.
 #' @param xlab Labels for the causes.
 #' @param ylab Labels for the CSMF values.
+#' @param ylim Range of y-axis.
 #' @param title Title of the plot.
 #' @param horiz Logical indicator indicating if the bars are plotted
 #' horizontally.
@@ -80,7 +81,7 @@ stackplot <- function(x, grouping = NULL,
     type = c("stack", "dodge")[1], 
     order.group = NULL, order.sub = NULL,
     err = TRUE, CI = 0.95, sample.size.print = FALSE,
-	xlab = "Group", ylab = "CSMF", 
+	xlab = "Group", ylab = "CSMF", ylim = NULL, 
 	title = "CSMF by broader cause categories", 
 	horiz = FALSE, angle = 60,  
 	err_width = .4, err_size = .6, point_size = 2, 
@@ -151,11 +152,14 @@ stackplot <- function(x, grouping = NULL,
 		colnames(csmf.group.temp) <- order.group
 
 		for(i in 1:length(order.group)){
-			which <- which(grouping[, 2] == order.group[i])
+			which.names <- grouping[which(grouping[, 2] == order.group[i]), 1]
+			which <- which(colnames(csmf[[index]]) %in% which.names)
 			if(length(which) > 1){
 				csmf.tmp <- apply(csmf[[index]][, which], 1, sum)
-			}else{
+			}else if(length(which) == 1){
 				csmf.tmp <- csmf[[index]][, which]
+			}else{
+				csmf.tmp <- 0
 			}
 			csmf.group.temp[, i] <- csmf.tmp
 		}	
@@ -198,6 +202,9 @@ stackplot <- function(x, grouping = NULL,
 		g <- g + geom_errorbar(aes(ymin = csmf.lower, ymax = csmf.upper), size = err_size, width = err_width,  position = position_dodge(.9))
 	}
 	g <- g + xlab(xlab) + ylab(ylab) 
+	if(!is.null(ylim)){
+		g <- g + ylim(ylim)
+	}
 	g <- g + ggtitle(title)
 	if(horiz) g <- g + coord_flip()
 	if(bw) g <- g + theme_bw()

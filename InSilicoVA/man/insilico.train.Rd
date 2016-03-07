@@ -127,9 +127,4 @@ input format and training data.
 For more detail of model specification, see the paper on
 \url{http://arxiv.org/abs/1411.3042}.
 }
-\examples{
-\dontrun{
-x <- 1
-}
-}
 

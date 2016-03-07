@@ -10,7 +10,7 @@ library(InSilicoVA)
 # Toy example with 1000 VA deaths
 data(RandomVA1) 
 fit0<- insilico(RandomVA1, subpop = NULL,  
-                length.sim = 20, burnin = 10, thin = 1 , seed = 1,
+                Nsim = 20, burnin = 10, thin = 1 , seed = 1,
 			           auto.length = FALSE)
 summary(fit0)
 summary(fit0, id = "d199")
@@ -19,7 +19,7 @@ summary(fit0, id = "d199")
 ## Scenario 1: standard input without sub-population specification
 ##
 fit1<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		          auto.length = FALSE)
 summary(fit1)
 plot(fit1)
@@ -29,7 +29,7 @@ plot(fit1)
 ##
 data(RandomVA2)
 fit2<- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		          auto.length = FALSE)
 summary(fit2)
 plot(fit2, type = "compare")
@@ -39,7 +39,7 @@ plot(fit2, which.sub = "Men")
 ## Scenario 3: standard input with multiple sub-population specification
 ##
 fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		          auto.length = FALSE)
 summary(fit3)
 
@@ -47,7 +47,7 @@ summary(fit3)
 ## Scenario 3: standard input with multiple sub-population specification
 ##
 fit3<- insilico(RandomVA2, subpop = list("sex", "age"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
 		          auto.length = FALSE)
 summary(fit3)
 
@@ -64,7 +64,7 @@ summary(fit3)
 # Though in practice the need for this situation is very unlikely, 
 # use only the default conditional probabilities without re-estimation
 fit5<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               updateCondProb = FALSE, 
 		          auto.length = FALSE) 
 summary(fit5)
@@ -83,7 +83,7 @@ new_cond_prob["elder", "HIV/AIDS related death"] <- "C"
 new_cond_prob[1, 3] <- "C"
 
 fit6<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProb = new_cond_prob, 
 		          auto.length = FALSE) 
 # note: compare this with fit1 above to see the change 
@@ -104,7 +104,7 @@ new_cond_prob_num["elder", "HIV/AIDS related death"] <- 0.004
 new_cond_prob_num[1, 3] <- 0.005
 
 fit7<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProbNum = new_cond_prob_num, 
 		          auto.length = FALSE) 
 # note: compare this with fit1, fit5, and fit6
@@ -135,7 +135,7 @@ phydebias <- physician_debias(RandomPhysician,
   tol = 0.0001, max.itr = 100)
 
 fit8 <- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               phy.debias = phydebias,
               phy.cat = SampleCategory, 
               phy.external = "External", phy.unknown = "Unknown",
@@ -146,21 +146,21 @@ summary(fit8)
 ###      More test                                                   ####
 #########################################################################
 fit2.p <- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               phy.debias = phydebias,
               phy.cat = SampleCategory, 
               phy.external = "External", phy.unknown = "Unknown",
 		   auto.length = FALSE) 
 summary(fit2.p)
 fit3.p <- insilico(RandomVA2, subpop = list("sex", "age"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               phy.debias = phydebias,
               phy.cat = SampleCategory, 
               phy.external = "External", phy.unknown = "Unknown",
 		   auto.length = FALSE) 
 summary(fit3.p)
 fit4.p <- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               updateCondProb = FALSE, 
 		   phy.debias = phydebias,
               phy.cat = SampleCategory, 
@@ -168,7 +168,7 @@ fit4.p <- insilico(RandomVA2, subpop = list("sex"),
 		   auto.length = FALSE) 
 summary(fit4.p)
 fit5.p <- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProb = new_cond_prob, 
 		   phy.debias = phydebias,
               phy.cat = SampleCategory, 
@@ -176,7 +176,7 @@ fit5.p <- insilico(RandomVA2, subpop = list("sex"),
 		   auto.length = FALSE) 
 summary(fit5.p)
 fit6.p <- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProb = new_cond_prob, updateCondProb = FALSE,
 		   phy.debias = phydebias,
               phy.cat = SampleCategory, 
@@ -184,7 +184,7 @@ fit6.p <- insilico(RandomVA2, subpop = list("sex"),
 		   auto.length = FALSE) 
 summary(fit6.p)
 fit7.p <- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               CondProbNum = new_cond_prob_num, 
 		   phy.debias = phydebias,
               phy.cat = SampleCategory, 
@@ -201,7 +201,7 @@ data(RandomVA1)
 ## Scenario 1: without sub-population specification
 ##
 fit1<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               auto.length = FALSE)
 # basic line plot
 plot(fit1)
@@ -217,7 +217,7 @@ plot(fit1, top = 15, horiz = FALSE, fill = "gold",
 ##
 data(RandomVA2)
 fit2<- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               auto.length = FALSE)
 summary(fit2)
 # basic side-by-side line plot for all sub-populations
@@ -244,7 +244,7 @@ data(RandomVA1)
 ## Scenario 1: without sub-population specification
 ##
 fit1<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               auto.length = FALSE)
 # stack bar plot for grouped causes
 # the default grouping could be seen from
@@ -256,7 +256,7 @@ stackplot(fit1, type = "dodge", xlab = "")
 ##
 data(RandomVA2)
 fit2<- insilico(RandomVA2, subpop = list("sex"),  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               auto.length = FALSE)
 stackplot(fit2, type = "stack", angle = 0)
 stackplot(fit2, type = "dodge", angle = 0)
@@ -285,7 +285,7 @@ stackplot(fit2, type = "stack", grouping = SampleCategory,
 # Toy example with 1000 VA deaths
 data(RandomVA1)
 fit1<- insilico(RandomVA1, subpop = NULL,  
-              length.sim = 1000, burnin = 500, thin = 10 , seed = 1,
+              Nsim = 1000, burnin = 500, thin = 10 , seed = 1,
               auto.length = FALSE)
 summary(fit1, id = "d199")
 

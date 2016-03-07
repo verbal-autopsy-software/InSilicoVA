@@ -102,6 +102,10 @@ stackplot <- function(x, grouping = NULL,
 	if(is.null(order.group)){
 		order.group <- unique(grouping[, 2])
 	}
+    # to fix dodge and stack gives reverse ordering
+    if(type == "dodge"){
+      order.group <- rev(order.group)
+    }
 
 	csmf <- NULL
 	
@@ -122,7 +126,9 @@ stackplot <- function(x, grouping = NULL,
 		}
 	}else if(class(x) == "insilico"){
 		if(is.null(x$subpop)){
-				title <- paste(title, "\n", "n = ", length(x$id), sep = "")
+				if(sample.size.print){
+					title <- paste(title, "\n", "n = ", length(x$id), sep = "")
+				}
 				csmf[[1]] <- x$csmf
 				names(csmf)[1] <- " "
 				# avoid adding one more counts at xlab

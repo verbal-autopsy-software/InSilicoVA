@@ -56,7 +56,7 @@ below for more detail.
 \dontrun{
 # load sample data together with sub-population list
 data(RandomVA1)
-# extract INterVA style input data
+# extract InterVA style input data
 data <- RandomVA1$data
 # extract sub-population information.
 # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".

@@ -45,7 +45,7 @@
 #' \dontrun{
 #' # load sample data together with sub-population list
 #' data(RandomVA1)
-#' # extract INterVA style input data
+#' # extract InterVA style input data
 #' data <- RandomVA1$data
 #' # extract sub-population information. 
 #' # The groups are "HIV Positive", "HIV Negative" and "HIV status unknown".
@@ -157,10 +157,18 @@ summary.insilico <- function(object, CI.csmf = 0.95, CI.cond = 0.95,
 			stop("Invalid ID, not exist in data.")
 		}
 		whichtoprint <- order(object$indiv.prob[id, ], decreasing = TRUE)[1:top]
+
+		if(is.null(object$indiv.prob.lower)){
+			warning("C.I. for individual probabilities have not been calculated. Please use get.indiv() function to update C.I. first.\n")
+			indiv.prob <- cbind(object$indiv.prob[id, whichtoprint], NA, NA, NA)
+
+		}else{		
 		indiv.prob <- cbind(object$indiv.prob[id, whichtoprint], 
 							object$indiv.prob.lower[id, whichtoprint], 
 							object$indiv.prob.median[id, whichtoprint], 
 							object$indiv.prob.upper[id, whichtoprint])
+
+		}
 		colnames(indiv.prob) = c("Mean", "Lower", "Median", "Upper")	
 	}else{
 		indiv.prob <- NULL

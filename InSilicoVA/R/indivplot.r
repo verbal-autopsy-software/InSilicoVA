@@ -1,8 +1,7 @@
 #' plot aggregated COD distribution
 #' 
-#' Produce a bar plot of the CSMFs for a fitted \code{"insilico"} object.
+#' Produce a bar plot of the aggregated COD distribution as approximate CSMFs for a fitted \code{"insilico"} object.
 #' 
-#' To-do
 #' 
 #' @param x object from \code{get.indiv} function. 
 #' @param type An indicator of the type of chart to plot. "errorbar" for line

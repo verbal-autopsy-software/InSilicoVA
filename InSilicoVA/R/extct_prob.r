@@ -1,5 +1,7 @@
 #' Obtain conditional probabilities from training data
 #'
+#' This is the function internally used in \code{insilico.train} function.
+#' 
 #' @param train Training data, it should be in the same format as the testing data
 #' and contains one additional column (see \code{cause} below) specifying known
 #' cause of death. The first column is also assumed to be death ID. 
@@ -27,10 +29,6 @@
 #' 	\item{symps.train}{training data after removing symptoms with too high missing rate.}
 #' @export extract.prob
 #'
-#' @examples
-#' \dontrun{
-#' x <- 1
-#' }
 extract.prob <- function(train, gs, gstable, thre = 0.95, type = c("quantile", "fixed", "empirical")[1], isNumeric = FALSE){
 
 	## help functions to count vector contents

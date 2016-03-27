@@ -40,11 +40,6 @@ conversion to standard InterVA format.}
 	\item{symps.train}{training data after removing symptoms with too high missing rate.}
 }
 \description{
-Obtain conditional probabilities from training data
-}
-\examples{
-\dontrun{
-x <- 1
-}
+This is the function internally used in \code{insilico.train} function.
 }
 

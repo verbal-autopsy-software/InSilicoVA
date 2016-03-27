@@ -61,10 +61,7 @@ and white.}
 \item{\dots}{Not used.}
 }
 \description{
-Produce a bar plot of the CSMFs for a fitted \code{"insilico"} object.
-}
-\details{
-To-do
+Produce a bar plot of the aggregated COD distribution as approximate CSMFs for a fitted \code{"insilico"} object.
 }
 \examples{
 \dontrun{

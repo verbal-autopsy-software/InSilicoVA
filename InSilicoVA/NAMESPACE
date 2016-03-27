@@ -9,7 +9,7 @@ export(csmf.diag)
 export(stackplot)
 export(indivplot)
 export(get.indiv)
-export(update.indiv)
+export(updateIndiv)
 
 #export(plot.insilico)
 #export(print.insilico)

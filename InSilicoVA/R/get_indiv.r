@@ -19,7 +19,7 @@
 #' @author Zehang Li, Tyler McCormick, Sam Clark
 #' 
 #' Maintainer: Zehang Li <lizehang@@uw.edu>
-#' @seealso \code{\link{insilico}}, \code{\link{update.indiv}}, \code{\link{plot.insilico}}
+#' @seealso \code{\link{insilico}}, \code{\link{updateIndiv}}, \code{\link{plot.insilico}}
 #' @references Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C.
 #' Crampin, Kathleen Kahn and Samuel J. Clark Probabilistic cause-of-death
 #' assignment using verbal autopsies, \emph{arXiv preprint arXiv:1411.3042}
@@ -342,11 +342,12 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 #' summary(fit1a, id = "d199")
 #' 
 #' # The following script updates credible interval for individual 
-#' fit1b <- update.indiv(fit1a, CI = 0.95)
+#' fit1b <- updateIndiv(fit1a, CI = 0.95)
 #' summary(fit1b, id = "d199")
 #' }
-#' @export update.indiv
-update.indiv <- function(object, CI = 0.95, java_option = "-Xmx1g", ...){
+#' @export updateIndiv 
+
+updateIndiv <- function(object, CI = 0.95, java_option = "-Xmx1g", ...){
 		
 	 indiv  <- get.indiv(object, CI = CI, ...)
 	 object$indiv.prob.lower <- indiv$lower

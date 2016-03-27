@@ -61,6 +61,6 @@ assignment using verbal autopsies, \emph{arXiv preprint arXiv:1411.3042}
 \url{http://arxiv.org/abs/1411.3042} (2014)
 }
 \seealso{
-\code{\link{insilico}}, \code{\link{update.indiv}}, \code{\link{plot.insilico}}
+\code{\link{insilico}}, \code{\link{updateIndiv}}, \code{\link{plot.insilico}}
 }
 

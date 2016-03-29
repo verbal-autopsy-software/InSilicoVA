@@ -13,6 +13,8 @@ Tyler McCormick, Zehang Li, Clara Calvert, Amelia Crampin, Kathleen Kahn, and Sa
 
 
 ## What's New
+#### version 1.1.2
+- Bug fix for function csmf.diag()
 
 #### version 1.1.1
 - New function: updateIndiv(): Now the C.I. for individual COD distribution is not calculated by default, in order to save computation time. But instead it is updated using this new function. 

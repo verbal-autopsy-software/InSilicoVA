@@ -1229,7 +1229,8 @@ if(pool.j != 0){
 	##======= CHECK THIS CHUNK ===========##
 }else{
 	if(customization.dev){
-		colnames(levels.gibbs) <- rev(table.dev[level.exist])
+		# colnames(levels.gibbs) <- rev(table.dev[level.exist])
+		colnames(levels.gibbs) <- table.dev[level.exist]		
 	}else{
 		colnames(levels.gibbs) <- c("I", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E", "N")
 	}

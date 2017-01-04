@@ -10,6 +10,9 @@
 \section{Changes in version 1.1.3 (2017-01-02)}{
   \itemize{ 
     \item Fix issue with label order in probbase output.
+    \item Allow input "Yes" to be denoted with either "y" or "Y".
+    \item Default data checking rules to be consistent with InterVA-4.03 instead of the previous version.
     \item Fix typo in document.
+
     }
 }

@@ -18,7 +18,7 @@
 
 #' @author Zehang Li, Tyler McCormick, Sam Clark
 #' 
-#' Maintainer: Zehang Li <lizehang@@uw.edu>
+#' Maintainer: Zehang Li <lizehang@uw.edu>
 #' @seealso \code{\link{insilico}}, \code{\link{updateIndiv}}, \code{\link{plot.insilico}}
 #' @references Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C.
 #' Crampin, Kathleen Kahn and Samuel J. Clark Probabilistic cause-of-death

@@ -7,6 +7,12 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
+\section{Changes in version 1.1.5 (2017-09-19)}{
+ \itemize{
+   \item Fix issue for data without external causes.
+   \item Fix issue with print methods after last update.
+ }
+}
 \section{Changes in version 1.1.4 (2017-01-24)}{
  \itemize{
    \item Fix issue with sub-population specification and output labels of non-standard InterVA-4 input.

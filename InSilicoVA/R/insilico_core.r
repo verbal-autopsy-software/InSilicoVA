@@ -369,10 +369,11 @@ removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, ex
 	# delete death confirmed external
 	if(length(ext.where) > 0){
 		data <- data[-ext.where, ]
-		# delete the causes from probbase
-		prob.orig <- prob.orig[ -(extSymps), -(extCauses)]
 	}	
 	if(length(extSymps) > 0) data <- data[, -(extSymps + 1)]
+	# delete the causes from probbase
+	prob.orig <- prob.orig[ -(extSymps), -(extCauses)]
+
 	if(!is.null(subpop)){
 		ext.csmf <- vector("list", length(subpop_order_list))
 		for(i in 1:length(ext.csmf)){

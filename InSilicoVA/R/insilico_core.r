@@ -325,7 +325,7 @@ removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, ex
 		pos <- "Y"
 	}
 	ext.where <- which(apply(extData, 1, function(x){
-									length(which(x == pos)) }) > 0)
+									length(which(x == pos)) }) > 0)	
 	extData <- as.matrix(extData[ext.where, ])
 	ext.id <- data[ext.where, 1]
 	ext.sub <- subpop[ext.where]
@@ -1210,7 +1210,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     						  p.indiv[, (ext1:C.j)])
     	
     	p.indiv.ext <- matrix(0, nrow = length(externals$ext.id), ncol = C.j + length(external.causes) )
-    	for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}
+    	if(length(externals$ext.id) > 0){
+	    	for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}    		
+    	}
     	p.indiv <- rbind(p.indiv, p.indiv.ext) 
     	id <- c(id, externals$ext.id)
     	subpop <- c(subpop, externals$ext.sub)

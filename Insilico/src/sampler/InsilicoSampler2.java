@@ -994,40 +994,51 @@ public class InsilicoSampler2 {
      * @param warningfile: warning file
      * @return
      */
-    public static double[][] Datacheck(int[][] DontAsk, int[][] AskIf, double[][] data,
-                                       String[] ids, String[] symps, String warningfile)
+    public static double[][] Datacheck(int[][] DontAsk, int[][] AskIf, int[] zero_to_missing_list,  double[][] data, String[] ids, String[] symps, String warningfile)
             throws FileNotFoundException, UnsupportedEncodingException {
-        PrintWriter writer = new PrintWriter(warningfile, "UTF-8");
-        writer.println("Warning log built for InSilicoVA");
 
+        boolean is_this_missing;
+        boolean write = ids.length > 1;
+        boolean[] set_to_missing = new boolean[data[0].length];
+        if(zero_to_missing_list[0] != 0){
+            for(int i : zero_to_missing_list){
+                set_to_missing[i-1] = true;
+            }
+        }
+
+        PrintWriter writer = new PrintWriter(warningfile, "UTF-8");
+        if(write){
+            writer.println("Warning log built for InSilicoVA");
+        }
         for(int i = 0; i < data.length; i++){
            for(int k = 0; k < 2; k++){
                for(int j = 0; j < data[i].length; j++ ){
-                   if(data[i][j] == 1){
+                   if(data[i][j] != -1){
                         for(int t = 0; t < DontAsk[j].length; t++){
                             if(DontAsk[j][t] == 0){continue;}
                             if(data[i][DontAsk[j][t] - 1] == 1){
-                                data[i][j] = 0;
-                                writer.println(ids[i] + " " + symps[j]+ " value inconsistent with " +
-                                        symps[DontAsk[j][t]] +
-                                        " - cleared in working file");
+                                /** set to missing only if (a) Dont ask is an demographic indicator, and (b) this symptom is not an demographic indicator **/
+                                is_this_missing = set_to_missing[DontAsk[j][t] - 1] ;//& (! set_to_missing[j]);
+                                data[i][j] = is_this_missing ? -1 : 0;
+                                if(write) writer.println(ids[i] + " " + symps[j]+ " value inconsistent with " +  symps[DontAsk[j][t]] + " - cleared or set to missing in working file");
+                                // break if specified to set to missing
+                                if(is_this_missing) break;
                             }
                         }
                        for(int t = 0; t < AskIf[j].length; t++){
-                           if(AskIf[j][t] == 0){continue;}
-                           if(data[i][AskIf[j][t] - 1] != 1){
-                               data[i][AskIf[j][t]] = 1;
-                               writer.println(ids[i] + " " + symps[j]+ " not flagged in category " + symps[DontAsk[j][t]] +
-                                       " - updated in working file");
-                           }
+                           if(AskIf[j][t] == 0 | data[i][j] != 1){continue;}
+                           data[i][AskIf[j][t] - 1] = 1;
+                           if(write) writer.println(ids[i] + " " + symps[j]+ " not flagged in category " + symps[DontAsk[j][t]] + " - updated in working file");
                        }
                    }else if(data[i][j] == -1){
                        for(int t = 0; t < DontAsk[j].length; t++){
                            if(DontAsk[j][t] == 0){continue;}
                            if(data[i][DontAsk[j][t] - 1] == 1){
-                               data[i][j] = 0;
-                               writer.println(ids[i] + " " + symps[j]+ " value inconsistent with " + symps[DontAsk[j][t]] +
-                                       " - set to No in working file");
+                               is_this_missing = set_to_missing[DontAsk[j][t] - 1] ;//& (! set_to_missing[j]);
+                               data[i][j] = is_this_missing ? -1 : 0;
+                               if(write) writer.println(ids[i] + " " + symps[j]+ " value inconsistent with " + symps[DontAsk[j][t]] + " - set to No or Missing in working file");
+                               // break if specified to set to missing
+                               if(is_this_missing) break;
                            }
                        }
                    }
@@ -1045,35 +1056,11 @@ public class InsilicoSampler2 {
      * @param data: N by M matrix
      * @return
      */
-    public static double[][] Datacheck(int[][] DontAsk, int[][] AskIf, double[][] data) {
-        for(int i = 0; i < data.length; i++){
-            for(int k = 0; k < 2; k++){
-                for(int j = 0; j < data[i].length; j++ ){
-                    if(data[i][j] == 1){
-                        for(int t = 0; t < DontAsk[j].length; t++){
-                            if(DontAsk[j][t] == 0){continue;}
-                            if(data[i][DontAsk[j][t] - 1] == 1){
-                                data[i][j] = 0;
-                            }
-                        }
-                        for(int t = 0; t < AskIf[j].length; t++){
-                            if(AskIf[j][t] == 0){continue;}
-                            if(data[i][AskIf[j][t] - 1] != 1){
-                                data[i][AskIf[j][t]] = 1;
-                              }
-                        }
-                    }else if(data[i][j] == -1){
-                        for(int t = 0; t < DontAsk[j].length; t++){
-                            if(DontAsk[j][t] == 0){continue;}
-                            if(data[i][DontAsk[j][t] - 1] == 1){
-                                data[i][j] = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return(data);
+    public static double[][] Datacheck(int[][] DontAsk, int[][] AskIf, int[] zero_to_missing_list, double[][] data) throws FileNotFoundException, UnsupportedEncodingException {
+        String[] ids = new String[0];
+        String[] symps = new String[0];
+        String warningfile = "warnings.txt";
+        return(Datacheck(DontAsk, AskIf, zero_to_missing_list, data, ids, symps, warningfile));
     }
 
     public static double[][] IndivProb(double[][] data, int[][] impossible, double[]csmf0, int[] subpop,

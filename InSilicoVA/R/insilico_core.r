@@ -59,7 +59,7 @@
 #' @keywords InSilicoVA
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, ...){ 
+insilico.fit <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, ...){ 
   # handling changes throughout time
   args <- as.list(match.call())
   if(!is.null(args$length.sim)){
@@ -261,11 +261,19 @@ removeBad <- function(data, is.numeric, subpop){
 	if(is.null(subpop)) return(list(data = data[-err, ], subpop = NULL))
 }
 
+## Update: for the first 9 symptoms (age and gender) instead of imputing 0, we impute NA
+##         this can also be customized to set to more symptoms...
 datacheck.interVAJava <- function(data, obj, warning.write){
 		
 		# this has been updated to correspond to the 4.03 version probbase which contains minor changes from before.
 		data("probbase3", envir = environment())
 		probbase <- get("probbase3", envir  = environment())
+
+		# if no symptoms should be checked to be missing...
+		# zero_to_missing_list <- 0
+		# if only symptoms not asked due to demographics are set to missing...
+		# zero_to_missing_list <- 1:9
+		zero_to_missing_list <- 1 : (dim(data)[2] - 1)
 
 		# get text matrix
 		dontask0 <- probbase[-1, 4:11]
@@ -289,13 +297,14 @@ datacheck.interVAJava <- function(data, obj, warning.write){
 		dontask.j <- .jarray(dontask, dispatch = TRUE)
 		askif.j <- .jarray(askif, dispatch = TRUE)
 		data.j <- .jarray(data.num, dispatch = TRUE)
+		zero_to_missing_list.j = .jarray(as.integer(zero_to_missing_list), dispatch = TRUE)
 
 		if(!warning.write){
-			checked  <- .jcall(obj, "[[D", "Datacheck", dontask.j, askif.j, data.j)
+			checked  <- .jcall(obj, "[[D", "Datacheck", dontask.j, askif.j, zero_to_missing_list.j, data.j)
 		}else{
 			id.j <- .jarray(as.character(data[, 1]), dispatch = TRUE)
 			symps.j <- .jarray(colnames(data)[-1], dispatch = TRUE)
-			checked  <- .jcall(obj, "[[D", "Datacheck", dontask.j, askif.j, data.j, id.j, symps.j, "warning_insilico.txt")
+			checked  <- .jcall(obj, "[[D", "Datacheck", dontask.j, askif.j, zero_to_missing_list.j, data.j, id.j, symps.j, "warning_insilico.txt")
 		}
 
 		return(do.call(rbind, lapply(checked, .jevalArray)))
@@ -479,6 +488,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 ##----------------------------------------------------------##
 ##       Helper functions all loaded                        ##
 ##----------------------------------------------------------##
+	if(no.is.missing){
+		data[data == ""] <- "."
+	}
 
 	if(is.null(java_option)) java_option = "-Xmx1g"
 	options( java.parameters = java_option )
@@ -648,14 +660,15 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   		prob.orig <- externals$prob.orig
   	}
 
-  	if(datacheck.missing && datacheck){
+  	if(datacheck){
 		cat("Performing data consistency check...\n")
 		checked <- datacheck.interVAJava(data, obj, warning.write)
 		cat("Data check finished.\n")
 		## update in data with missing, nothing is updated into missing, so only changing Y and N
 		for(i in 1:(dim(data)[2]-1)){
 			data[which(checked[, i] == 1), i+1] <- "Y"
-			data[which(checked[, i] == -1), i+1] <- ""
+			data[which(checked[, i] == 0), i+1] <- ""
+			data[which(checked[, i] == -1), i+1] <- "."
 		}	
   	}
 	##----------------------------------------------------------##
@@ -685,14 +698,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
    	## check interVA rules, ignoring missing at this step,
    	## since missing could be rewritten 
    	if((!datacheck.missing) && datacheck){
-		cat("Performing data consistency check...\n")
-		checked <- datacheck.interVAJava(data, obj, warning.write)
-		cat("Data check finished.\n")
-		## update in data with missing, nothing is updated into missing, so only changing Y and N
-		for(i in 1:(dim(data)[2]-1)){
-			data[which(checked[, i] == 1), i+1] <- "Y"
-			data[which(checked[, i] == 0), i+1] <- ""
-		}	
+		cat("check missing after removing symptoms are disabled...\n")
 	}
 
 

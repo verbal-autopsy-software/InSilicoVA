@@ -11,6 +11,7 @@
  \itemize{
    \item Fix issue for data without external causes.
    \item Fix issue with print methods after last update.
+   \item Change data check steps to update symptoms to be missing instead of absence. 
  }
 }
 \section{Changes in version 1.1.4 (2017-01-24)}{

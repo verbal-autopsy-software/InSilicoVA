@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
+
+import cern.colt.Arrays;
 import utils.MathUtil;
 import utils.ProgressPopup;
 import utils.ProgressBar;
@@ -281,9 +283,10 @@ public class InsilicoSampler2 {
     /*
      * function to update theta
      * input (dimensions): jumprange, mu (C) sigma, theta (C), Y(C), N, jump.prop(NOT USING), rngN, rngU
+     * new input: zero_vector: define which causes are set to zero
      */
     public double[] thetaBlockUpdate(double jumprange, double[] mu, double sigma2, double[] theta,
-                                     int[] Y, boolean jump_prop, Normal rngN, Random rand){
+                                     int[] Y, boolean jump_prop, Normal rngN, Random rand, int[] zero_vector){
         // initialize jump range, use the same value for all causes
         double[] jump = new double[this.C];
         for(int c = 0; c < this.C; c++) jump[c] = jumprange;
@@ -294,15 +297,22 @@ public class InsilicoSampler2 {
 
         // initialize new theta
         double[] theta_new = new double[this.C];
-        // fix first theta
-        theta_new[0] = 1.0;
+        // fix first theta (not removed)
+        int fix = 0;
+        for(int i = 0; i < zero_vector.length; i++){
+            if(zero_vector[i] != 0){
+                fix = i;
+                break;
+            }
+        }
+        theta_new[fix] = 1.0;
         // calculate sum(exp(theta)), the normalizing constant
         double expsum = Math.exp(1.0);
         double expsum_new = Math.exp(1.0);
 
         // sample new theta proposal
-        for(int c = 1; c < this.C; c++){
-            theta_new[c] = rngN.nextDouble(theta[c], jump[c]);
+        for(int c = fix + 1; c < this.C; c++){
+            theta_new[c] = rngN.nextDouble(theta[c], jump[c]) * zero_vector[c];
             expsum += Math.exp(theta[c]);
             expsum_new += Math.exp(theta_new[c]);
         }
@@ -311,10 +321,12 @@ public class InsilicoSampler2 {
         double logTrans = 0;
         // l = Y * (theta_new - theta - log(expsum_new/expsum)) - ((theta_new - mu)^2 - (theta - mu)^2 ) / (2*sigma^2)
         for(int c = 0; c < this.C; c++){
-            double diffquad = (theta_new[c] - mu[c])*(theta_new[c] - mu[c])
-                    - (theta[c]-mu[c])*(theta[c]-mu[c]);
-            logTrans += Y[c] * (theta_new[c] - theta[c] - Math.log(expsum_new / expsum))
-                    - 1/(2*sigma2) * diffquad;
+            if(zero_vector[c] > 0){
+                double diffquad = (theta_new[c] - mu[c])*(theta_new[c] - mu[c])
+                        - (theta[c]-mu[c])*(theta[c]-mu[c]);
+                logTrans += Y[c] * (theta_new[c] - theta[c] - Math.log(expsum_new / expsum))
+                        - 1/(2*sigma2) * diffquad;
+            }
         }
 
         // accept or reject
@@ -734,6 +746,61 @@ public class InsilicoSampler2 {
                 }
             }
         }
+        // check if specific causes are impossible for a whole subpopulation
+        int[][] zero_group_matrix = new int[N_sub][C];
+        int[] remove_causes = new int[N_sub];
+        if(check_impossible){
+            for(int j = 0; j < C; j++){
+                for(int i = 0; i < N; i++){
+                    zero_group_matrix[subpop[i]][j] += zero_matrix[i][j];
+                }
+            }
+            for(int j = 0; j < C; j++){
+                for(int i = 0; i < N_sub; i++){
+                    zero_group_matrix[i][j] = zero_group_matrix[i][j] == 0 ? 0 : 1;
+                    remove_causes[i] += 1 - zero_group_matrix[i][j];
+                }
+            }
+        }else{
+            for(int i = 0; i < N_sub; i++){
+                for(int j = 0; j < C; j++){
+                    zero_group_matrix[i][j] = 1;
+                }
+            }
+        }
+
+        // reinitiate after checking impossible
+        if(!isAdded){
+            // initialize values
+            for(int sub  = 0; sub < N_sub; sub++){
+                int fix = 0;
+                for(int c = 1; c < C; c++){
+                    if(zero_group_matrix[sub][c] > 0){
+                        fix = c;
+                        break;
+                    }
+                }
+                theta_now[sub][fix] = 1;
+                double expsum = Math.exp(1.0);
+                for(int c = fix + 1; c < C; c++){
+                    theta_now[sub][c] = Math.log(rand.nextDouble() * 100.0);
+                    expsum += Math.exp(theta_now[sub][c]) * zero_group_matrix[sub][c];
+                }
+                for(int c = 0; c < C; c++){
+                    p_now[sub][c] = Math.exp(theta_now[sub][c]) * zero_group_matrix[sub][c] / expsum;
+                }
+            }
+        }
+        // check if specific causes are impossible for all subpopulations
+//        int[] zero_pop_vec = new int[C];
+//        for(int j = 0; j < C; j++){
+//            for(int i = 0; i < N_sub; i++){
+//                zero_pop_vec[j] += zero_group_matrix[i][j];
+//            }
+//            zero_pop_vec[j] = (zero_pop_vec[j] == 0) ? 0 : 1;
+//        }
+
+
         // first time pnb (naive bayes probability) calculation, note it is inverse of R version
         //        double[][] pnb = new double[N][C];
         double[][] pnb;
@@ -767,30 +834,31 @@ public class InsilicoSampler2 {
                 // sample mu
                 double mu_mean = 0;
                 for(int c = 0; c<C; c++) mu_mean += theta_now[sub][c];
-                mu_mean = mu_mean / (C+0.0);
-                mu_mean = rngN.nextDouble(mu_mean, Math.sqrt(sigma2_now[sub]/ (C+0.0)));
+                mu_mean = mu_mean / (C-remove_causes[sub]+0.0);
+                mu_mean = rngN.nextDouble(mu_mean, Math.sqrt(sigma2_now[sub]/ (C-remove_causes[sub]+0.0)));
                 for(int c = 0; c < C; c++){
                     mu_now[sub][c] = mu_mean;
                 }
 
                 // sample sigma2
-                double shape = (C-1.0)/2;
+                double shape = (C-remove_causes[sub]-1.0)/2;
                 double rate2 = 0;
-                for(int c = 0 ; c < C; c++) rate2 += Math.pow(theta_now[sub][c] - mu_now[sub][c], 2);
+                for(int c = 0 ; c < C; c++) rate2 += Math.pow(theta_now[sub][c] - mu_now[sub][c] *
+                        zero_group_matrix[sub][c], 2);
                 sigma2_now[sub] = 1 / rngG.nextDouble( shape, rate2/2 );
                 // sample theta
                 double[] theta_prev = theta_now[sub];
                 theta_now[sub] = insilico.thetaBlockUpdate(jumprange, mu_now[sub],
-                        sigma2_now[sub], theta_prev, Y[sub], false, rngN, rand);
+                        sigma2_now[sub], theta_prev, Y[sub], false, rngN, rand, zero_group_matrix[sub]);
                 if(theta_now[sub][1] != theta_prev[1]) naccept[sub] += 1;
 
                 // calculate phat
                 double expsum = 0.0;
                 for(int c = 0; c < C; c++){
-                    expsum += Math.exp(theta_now[sub][c]);
+                    expsum += Math.exp(theta_now[sub][c]) * zero_group_matrix[sub][c];
                 }
                 for(int c = 0; c < C; c++){
-                    p_now[sub][c] = Math.exp(theta_now[sub][c]) / expsum;
+                    p_now[sub][c] = Math.exp(theta_now[sub][c]) * zero_group_matrix[sub][c] / expsum;
                 }
             }
 

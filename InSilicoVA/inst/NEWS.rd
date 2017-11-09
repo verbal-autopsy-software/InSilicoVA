@@ -7,11 +7,12 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
-\section{Changes in version 1.1.5 (2017-09-19)}{
+\section{Changes in version 1.1.5 (2017-11-09)}{
  \itemize{
    \item Fix issue for data without external causes.
    \item Fix issue with print methods after last update.
-   \item Change data check steps to update symptoms to be missing instead of absence. 
+   \item Change data check steps to update symptoms to be missing instead of absence to introduce symptom dependence structures. 
+   \item Automatic remove impossible causes from CSMF based on subpopulation gender and age. 
  }
 }
 \section{Changes in version 1.1.4 (2017-01-24)}{

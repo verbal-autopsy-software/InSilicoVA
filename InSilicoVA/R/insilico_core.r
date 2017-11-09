@@ -35,6 +35,7 @@
 #' @param phy.external see \code{\link{insilico}}
 #' @param phy.debias see \code{\link{insilico}}
 #' @param exclude.impossible.cause see \code{\link{insilico}}
+#' @param no.is.missing see \code{\link{insilico}}
 #' @param customization.dev Logical indicator for customized variables
 #' @param Probbase_by_symp.dev Not tested yet.
 #' @param probbase.dev The customized conditional probabilities of symptoms given causes, which could be in a different format than InterVA default, but it should consist of \code{nlevel.dev} levels rather than numerical values.
@@ -269,10 +270,14 @@ datacheck.interVAJava <- function(data, obj, warning.write){
 		data("probbase3", envir = environment())
 		probbase <- get("probbase3", envir  = environment())
 
-		# if no symptoms should be checked to be missing...
+		
+		# THIS STEP CHECKS HOW 'STRUCTURED MISSING' ARE IMPLEMENTED, SEE VIGNETT FOR DETAILS.
+		# 1. if no symptoms should be checked to be missing...
 		# zero_to_missing_list <- 0
-		# if only symptoms not asked due to demographics are set to missing...
+		# 2. if only symptoms not asked due to demographics are set to missing...
 		# zero_to_missing_list <- 1:9
+		# 3. if all symptoms not asked are set to missing ---> DEFAULT 
+		# zero_to_missing_list <- 1 : (dim(data)[2] - 1)
 		zero_to_missing_list <- 1 : (dim(data)[2] - 1)
 
 		# get text matrix

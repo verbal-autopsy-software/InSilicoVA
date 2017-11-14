@@ -657,13 +657,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		data[, j] <- toupper(data[, j])
 	}
   	##----------------------------------------------------------##
-  	## remove external causes
-  	if(external.sep){
-  		externals <- removeExt(data,prob.orig, isNumeric, subpop, subpop_order_list, external.causes, external.symps)
-  		data <- externals$data
-  		subpop <- externals$subpop
-  		prob.orig <- externals$prob.orig
-  	}
+
 
   	if(datacheck){
 		cat("Performing data consistency check...\n")
@@ -676,6 +670,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			data[which(checked[, i] == -1), i+1] <- "."
 		}	
   	}
+  	## remove external causes
+  	if(external.sep){
+  		externals <- removeExt(data,prob.orig, isNumeric, subpop, subpop_order_list, external.causes, external.symps)
+  		data <- externals$data
+  		subpop <- externals$subpop
+  		prob.orig <- externals$prob.orig
+  	}
+
 	##----------------------------------------------------------##
    	## check the missing list
    	## this step is after removing bad data and before data-checking

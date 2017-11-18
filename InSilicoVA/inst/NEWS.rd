@@ -11,8 +11,9 @@
  \itemize{
    \item Fix issue for data without external causes.
    \item Fix issue with print methods after last update.
-   \item Change data check steps to update symptoms to be missing instead of absence to introduce symptom dependence structures. 
-   \item Automatic remove impossible causes from CSMF based on subpopulation gender and age. 
+   \item Fix issue with neonate and child death assigned to impossible external causes.
+  \item Change data check steps to update symptoms to be missing instead of absence to introduce symptom dependence structures. 
+    \item Automatic remove impossible causes from CSMF based on subpopulation gender and age. 
  }
 }
 \section{Changes in version 1.1.4 (2017-01-24)}{

@@ -5,3 +5,5 @@ sudo: false
 cache: packages
 before_install:
  - cd InSilicoVA
+notifications:
+ email: false

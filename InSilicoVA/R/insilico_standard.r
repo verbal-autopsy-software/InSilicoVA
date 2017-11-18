@@ -310,11 +310,16 @@
 #' 
 #' }
 #' @export insilico
-insilico <- function(data, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, 
-	external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, 
-	trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, 
-	phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, 
-	no.is.missing = FALSE, indiv.CI = NULL, ...){ 
+insilico <- function(data, isNumeric = FALSE, 
+  updateCondProb = TRUE, keepProbbase.level = TRUE,
+  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, 
+  warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, 
+  auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, 
+  levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, 
+  subpop = NULL, java_option = "-Xmx1g", seed = 1, 
+  phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, 
+  phy.debias = NULL, exclude.impossible.cause = TRUE, 
+  no.is.missing = FALSE, indiv.CI = NULL, ...){ 
 	
 	# handling changes throughout time
 	  args <- as.list(match.call())

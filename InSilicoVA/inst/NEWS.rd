@@ -7,7 +7,7 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
-\section{Changes in version 1.1.5 (2017-11-09)}{
+\section{Changes in version 1.1.5 (2017-11-17)}{
  \itemize{
    \item Fix issue for data without external causes.
    \item Fix issue with print methods after last update.

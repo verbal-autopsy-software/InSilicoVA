@@ -13,8 +13,8 @@ insilico(data, isNumeric = FALSE, updateCondProb = TRUE,
   levels.prior = NULL, levels.strength = 1, trunc.min = 1e-04,
   trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1,
   phy.code = NULL, phy.cat = NULL, phy.unknown = NULL,
-  phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, no.is.missing = FALSE, 
-  indiv.CI = NULL, ...)
+  phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, 
+  no.is.missing = FALSE, indiv.CI = NULL, ...)
 }
 \arguments{
 \item{data}{The original data to be used. It is suggested to use similar

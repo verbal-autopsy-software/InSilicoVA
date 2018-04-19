@@ -393,7 +393,7 @@ datacheck.interVA5 <- function(data, obj, warning.write){
 	        checked[i, ] <- input.current
 	    }
 
-		return(list(checked=checked[,-1], warning = warning))
+		return(list(checked=checked, warning = warning))
 }
 
 

@@ -1547,7 +1547,8 @@ out <- list(
 		subpop = subpop, 
 		indiv.CI = indiv.CI, 
 		is.customized = customization.dev,
-		errors = errorlog)
+		errors = errorlog,
+		warning = warning)
 
 # get also individual probabilities
 if(!is.null(indiv.CI)){

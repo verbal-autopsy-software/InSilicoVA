@@ -12,6 +12,8 @@
    \item Add WHO 2016 support using InterVA5 input
    \item Add option to allow group code in output
    \item Add warning and error logs in the InSilico object, so that removed observations can be traced back
+   \item Make probbase consistent with InterVA-4.03 instead of 4.02. Changes should be minimum, but good to be consistent.
+   \item Allow user defined impossible causes to be removed
  }
 }
 

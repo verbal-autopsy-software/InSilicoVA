@@ -14,10 +14,11 @@ insilico.fit(data, data.type = c("WHO2012", "WHO2016")[1],
   subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL,
   phy.cat = NULL, phy.unknown = NULL, phy.external = NULL,
   phy.debias = NULL, exclude.impossible.cause = TRUE,
-  no.is.missing = FALSE, customization.dev = FALSE,
-  Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL,
-  table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL,
-  indiv.CI = NULL, groupcode = FALSE, ...)
+  impossible.combination = NULL, no.is.missing = FALSE,
+  customization.dev = FALSE, Probbase_by_symp.dev = FALSE,
+  probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL,
+  gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL,
+  groupcode = FALSE, ...)
 }
 \arguments{
 \item{data}{see \code{\link{insilico}}}
@@ -79,6 +80,8 @@ insilico.fit(data, data.type = c("WHO2012", "WHO2016")[1],
 \item{phy.debias}{see \code{\link{insilico}}}
 
 \item{exclude.impossible.cause}{see \code{\link{insilico}}}
+
+\item{impossible.combination}{see \code{\link{insilico.train}}}
 
 \item{no.is.missing}{see \code{\link{insilico}}}
 

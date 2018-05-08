@@ -36,6 +36,7 @@
 #' @param phy.external see \code{\link{insilico}}
 #' @param phy.debias see \code{\link{insilico}}
 #' @param exclude.impossible.cause see \code{\link{insilico}}
+#' @param impossible.combination see \code{\link{insilico.train}}
 #' @param no.is.missing see \code{\link{insilico}}
 #' @param customization.dev Logical indicator for customized variables
 #' @param Probbase_by_symp.dev Not tested yet.
@@ -62,7 +63,7 @@
 #' @keywords InSilicoVA
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1],isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, groupcode=FALSE, ...){ 
+insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1],isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = TRUE, impossible.combination = NULL, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, groupcode=FALSE, ...){ 
   # handling changes throughout time
   args <- as.list(match.call())
   if(!is.null(args$length.sim)){
@@ -720,8 +721,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	## initialize key data dependencies
 	##----------------------------------------------------------##	
 	if(data.type == "WHO2012"){
-		data("probbase", envir = environment())
-		probbase<- get("probbase", envir  = environment())
+		data("probbase3", envir = environment())
+		probbase<- get("probbase3", envir  = environment())
 		data("causetext", envir = environment())
 		causetext<- get("causetext", envir  = environment())		
 	}else{
@@ -860,6 +861,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		## with developer customization		
 		##----------------------------------------------------------##	
 		# only match columns exactly as in probbase
+		Sys_Prior <- rep(1, dim(probbase.dev)[2])
 	  	correct_names <- rownames(probbase.dev)
 	  	exist <- correct_names %in% colnames(data)
 	  	if(sum(exist) == 0){
@@ -872,6 +874,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   		valabels <- colnames(data)
 	    vacauses <- gstable.dev
 	    external.causes <- NULL
+	    errorlog <- NULL
   	}
 
   	# standardize to Upper case
@@ -904,6 +907,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			data[which(checked[, i] == -1), i+1] <- "." # for 2012
 			data[which(is.na(checked[, i])), i+1] <- "." # for 2016
 		}	
+  	}else{
+  		warning <- NULL
   	}
   	## remove external causes
   	if(external.sep){
@@ -1024,8 +1029,18 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			}
 		}
 		impossible <- as.matrix(impossible)	
+	}else if(!is.null(impossible.combination) && exclude.impossible.cause){
+		impossible <- NULL
+		for(ii in 1:dim(impossible.combination)){
+			ss <- match(impossible.combination[ii, 1], rownames(prob.orig))
+			cc <- match(impossible.combination[ii, 2], colnames(prob.orig))
+			if((!is.na(ss)) && (!is.na(cc))){
+					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss)))
+			}
+		}
 	}else{
 		# java checks if impossible has 2 columns
+		# and set check impossible cause flag to false if it has 3 columns...
 		impossible <- matrix(as.integer(0), 1, 3)
 	}
 

@@ -7,6 +7,13 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
+\section{Changes in version 1.2.1 (2018-07-06)}{
+ \itemize{
+   \item Fix typo in processing WHO 2016 input.
+   \item Fix inconsistency from symptom name change (sk\_les and skin\_les)
+ }
+}
+
 \section{Changes in version 1.2.0 (2018-04-20)}{
  \itemize{
    \item Add WHO 2016 support using InterVA5 input

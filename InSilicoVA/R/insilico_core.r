@@ -320,8 +320,8 @@ datacheck.interVAJava <- function(data, obj, warning.write){
 		# this has been updated to correspond to the 4.03 version probbase which contains minor changes from before.
 		data("probbase3", envir = environment())
 		probbase <- get("probbase3", envir  = environment())
-
-		
+		# fix symptom name that has been changed in 4.03
+		probbase[which(probbase=="sk_les")] <- "skin_les"
 		# THIS STEP CHECKS HOW 'STRUCTURED MISSING' ARE IMPLEMENTED, SEE VIGNETT FOR DETAILS.
 		# 1. if no symptoms should be checked to be missing...
 		# zero_to_missing_list <- 0
@@ -388,7 +388,7 @@ datacheck.interVA5 <- function(data, obj, warning.write){
 		checked <- data.num
 		warning <- NULL
 		for(i in 1:dim(data)[1]){
-			tmp <- InterVA5::DataCheck5(data.num[i,], id=data[i,1], probbaseV5=probbaseV5, write=warning.write)
+			tmp <- InterVA5::DataCheck5(data.num[i,], id=data[i,1], probbaseV5=probbaseV5, InSilico_check = TRUE, write=warning.write)
 	        input.current <- tmp$Output
 	        warning[[i]] <- rbind(tmp$firstPass, tmp$secondPass)
 	        checked[i, ] <- input.current
@@ -673,7 +673,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			data[, i] <- as.character(data[, i])
 			data[data[,i]=="n", i] <- ""
 			data[data[,i]=="N", i] <- ""
-			data[data[,i]=="-", i] <- "."
+			misstmp <- which(data[,i] %in% c("Y", "y", "N", "n") == FALSE)
+			if(length(misstmp) > 0) data[misstmp, i] <- "."
 		}
 	} 
 	if(no.is.missing){
@@ -723,6 +724,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(data.type == "WHO2012"){
 		data("probbase3", envir = environment())
 		probbase<- get("probbase3", envir  = environment())
+		# fix symptom name that has been changed in 4.03
+		probbase[which(probbase=="sk_les")] <- "skin_les"
 		data("causetext", envir = environment())
 		causetext<- get("causetext", envir  = environment())		
 	}else{

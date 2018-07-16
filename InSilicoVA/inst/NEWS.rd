@@ -7,10 +7,20 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
+\section{Changes in version 1.2.2 (2018-07-13)}{
+ \itemize{
+   \item Fix typo in checking WHO 2016 input using InterVA5 rules.
+   \item Fix the issue that sometimes 0 acceptance rate is displayed when the chain is in fact moving.
+   \item Fix inconsistent names in InterVA5 default input.
+   \item Removed most of the cat() calls and replaced them with message().
+
+ }
+}
+
 \section{Changes in version 1.2.1 (2018-07-06)}{
  \itemize{
    \item Fix typo in processing WHO 2016 input.
-   \item Fix inconsistency from symptom name change (sk\_les and skin\_les)
+   \item Fix inconsistency from symptom name change (sk\_les and skin\_les).
  }
 }
 

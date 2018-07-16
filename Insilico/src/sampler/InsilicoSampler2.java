@@ -850,7 +850,13 @@ public class InsilicoSampler2 {
                 double[] theta_prev = theta_now[sub];
                 theta_now[sub] = insilico.thetaBlockUpdate(jumprange, mu_now[sub],
                         sigma2_now[sub], theta_prev, Y[sub], false, rngN, rand, zero_group_matrix[sub]);
-                if(theta_now[sub][1] != theta_prev[1]) naccept[sub] += 1;
+
+                for(int j = 0; j < theta_prev.length; j++){
+                        if(theta_now[sub][j] != theta_prev[j]){
+                            naccept[sub] += 1;
+                            break;
+                        }
+                  }
 
                 // calculate phat
                 double expsum = 0.0;

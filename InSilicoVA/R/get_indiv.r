@@ -57,7 +57,7 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 		data <- data.frame(data)
 		# check by variable
 		if(is.null(by)){
-			cat("No groups specified, aggregate for all deaths\n")
+			message("No groups specified, aggregate for all deaths\n")
 			data$sub <- "All"
 			col.index <- which(colnames(data) == "sub")
 		}else{
@@ -79,7 +79,7 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 		if(length(n.match) == 0){
 			stop("No data has the matching ID as in the fitted insilico object")
 		}else{
-			cat(paste(n.match, "deaths matched from data to the fitted object\n"))
+			message(paste(n.match, "deaths matched from data to the fitted object\n"))
 		}
 
 		# get grouping vector and names for all data
@@ -176,7 +176,7 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 	csmf.j <- .jarray(csmf, dispatch = TRUE)
 	#-------------------------------------------------------------------#
 	if(!is.aggregate){
-		cat("Calculating individual COD distributions...\n")
+		message("Calculating individual COD distributions...\n")
 		# return rbind(mean, median, low, up), (4N) * C matrix
 		indiv  <- .jcall(obj, "[[D", "IndivProb", 
 					 data.j, impossible.j, csmf.j, subpop.j, condprob.j, 
@@ -227,7 +227,7 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 
 	#-------------------------------------------------------------------#
 	}else{
-		cat("Aggregating individual COD distributions...\n")
+		message("Aggregating individual COD distributions...\n")
 		# return (4 x Ngroup) * (C + 1) matrix, last column is sample size
 		indiv  <- .jcall(obj, "[[D", "AggIndivProb", 
 					 data.j, impossible.j, csmf.j, subpop.j, condprob.j,

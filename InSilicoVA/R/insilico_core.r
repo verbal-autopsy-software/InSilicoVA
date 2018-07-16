@@ -68,7 +68,12 @@ insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1],isNumeric 
   args <- as.list(match.call())
   if(!is.null(args$length.sim)){
   	Nsim <- args$length.sim
-  	cat("length.sim argument is replaced with Nsim argument, will remove in later versions.\n")
+  	message("length.sim argument is replaced with Nsim argument, will remove in later versions.\n")
+  }
+
+  if(data.type == "WHO2016" & "i183o" %in% colnames(data)){
+  	colnames(data)[which(colnames(data) == "i183o")] <- "i183a"
+  	message("Due to the inconsistent names in the early version of InterVA5, the indicator 'i183o' has been renamed as 'i183a'.")
   }
 
 ##----------------------------------------------------------##
@@ -376,22 +381,25 @@ datacheck.interVA5 <- function(data, obj, warning.write){
 
 		data.num <- matrix(0, dim(data)[1], dim(data)[2] - 1)
 		for(j in 2:dim(data)[2]){
-			data.num[which(toupper(data[, j]) == "Y"), j - 1] <- 1			
-			data.num[which(data[, j] == "."), j - 1] <- NA
+			data.num[which(toupper(data[, j]) == "Y"), j - 1] <- 1
+			data.num[which(data[, j] %in% c("N", "n", "Y", "y") == FALSE), j - 1] <- NA
 		}
+		# to be consistent with InterVA5, adding first column
+		data.num <- cbind(NA, data.num)
+		checked <- data.num
 
 		# S <- dim(probbaseV5)[1]
 		# subst.vector <- rep(NA, length=S)
         # subst.vector[probbaseV5[,6]=="N"] <- 0
         # subst.vector[probbaseV5[,6]=="Y"] <- 1
 
-		checked <- data.num
 		warning <- NULL
 		for(i in 1:dim(data)[1]){
 			tmp <- InterVA5::DataCheck5(data.num[i,], id=data[i,1], probbaseV5=probbaseV5, InSilico_check = TRUE, write=warning.write)
 	        input.current <- tmp$Output
 	        warning[[i]] <- rbind(tmp$firstPass, tmp$secondPass)
 	        checked[i, ] <- input.current
+	        if(i %% 10 == 0) cat(".")
 	    }
 
 		return(list(checked=checked, warning = warning))
@@ -891,7 +899,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 
 
   	if(datacheck){
-		cat("Performing data consistency check...\n")
+		message("Performing data consistency check...\n")
 		if(data.type == "WHO2012"){
 			# code missing as -1
 			checked <- datacheck.interVAJava(data, obj, warning.write)
@@ -902,7 +910,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			warning <- checked$warning
 			checked <- checked$checked
 		}
-		cat("Data check finished.\n")
+		message("Data check finished.\n")
 		## update in data with missing, nothing is updated into missing, so only changing Y and N
 		for(i in 1:(dim(data)[2]-1)){
 			data[which(checked[, i] == 1), i+1] <- "Y"
@@ -954,7 +962,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
    	## check interVA rules, ignoring missing at this step,
    	## since missing could be rewritten 
    	if((!datacheck.missing) && datacheck){
-		cat("check missing after removing symptoms are disabled...\n")
+		message("check missing after removing symptoms are disabled...\n")
 	}
 
 
@@ -1126,10 +1134,10 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		}
 		
 		if(external.sep){
-			cat(paste(length(matchid), 
+			message(paste(length(matchid), 
 				"deaths found known physician coding after removing deaths from external causes.\n"))			
 		}else{
-			cat(paste(length(matchid), 
+			message(paste(length(matchid), 
  				"deaths found known physician coding.\n"))
 		}
 	}else{
@@ -1391,8 +1399,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			burn.j <- as.integer(0)
 			keepProb.j <- !updateCondProb
 
-			cat(paste("Not all causes with CSMF >", conv.csmf, "are convergent.\n"))
-    		cat(paste("Increase chain length with another", N_gibbs.j, "iterations\n"))
+			message(paste("Not all causes with CSMF >", conv.csmf, "are convergent.\n"))
+    		message(paste("Increase chain length with another", N_gibbs.j, "iterations\n"))
     		obj <- .jnew("sampler/InsilicoSampler2")
     		ins  <- .jcall(obj, "[D", "Fit", 
 						dimensions.j, 
@@ -1422,7 +1430,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     }
     ## if still not convergent 
     if(!conv){
-    	cat(paste("Not all causes with CSMF >", conv.csmf, "are convergent.\n",
+    	message(paste("Not all causes with CSMF >", conv.csmf, "are convergent.\n",
     			  "Please check using csmf.diag() for more information.\n"))
     }
     csmf.sub  <- results$csmf.sub 

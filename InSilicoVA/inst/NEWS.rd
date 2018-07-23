@@ -13,6 +13,7 @@
    \item Fix the issue that sometimes 0 acceptance rate is displayed when the chain is in fact moving.
    \item Fix inconsistent names in InterVA5 default input.
    \item Removed most of the cat() calls and replaced them with message().
+   \item Add subpop selection option for 'compare' plots.
 
  }
 }

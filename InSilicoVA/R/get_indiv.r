@@ -116,7 +116,7 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 		for(i in 1:length(object$csmf)){
 			csmf[i, , ] <- object$csmf[[i]]
 		}
-		subpop <- as.integer(match(object$subpop, names(object$csmf)))
+		subpop <- as.integer(pmatch(object$subpop, names(object$csmf), duplicates.ok=T))
 	}	
 
 
@@ -186,9 +186,13 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 		
 		# if not customized probbase, use longer cause names for output
 		if(!object$is.customized){
-			data("causetext", envir = environment())
-			causetext<- get("causetext", envir  = environment())
-			
+			if(object$data.type == "WHO2012"){
+				data("causetext", envir = environment())
+				causetext<- get("causetext", envir  = environment())
+			}else{
+				data("causetextV5", envir = environment())
+				causetext<- get("causetextV5", envir  = environment())
+			}			
 			match.cause <- pmatch(causetext[, 1],  colnames(object$probbase))
 			index.cause <- order(match.cause)[1:sum(!is.na(match.cause))]
 			colnames(indiv) <- causetext[index.cause, 2]
@@ -234,9 +238,13 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 					 datagroup.j, Ngroup, (1 - CI)/2, 1-(1-CI)/2, 
 					 Nsub, Nitr, C, S)
 		indiv <- do.call(rbind, lapply(indiv, .jevalArray))
-		data("causetext", envir = environment())
-		causetext<- get("causetext", envir  = environment())
-		
+		if(object$data.type == "WHO2012"){
+				data("causetext", envir = environment())
+				causetext<- get("causetext", envir  = environment())
+		}else{
+			data("causetextV5", envir = environment())
+			causetext<- get("causetextV5", envir  = environment())
+		}		
 		weight <- indiv[, dim(indiv)[2]]
 		indiv <- indiv[, -dim(indiv)[2]]
 

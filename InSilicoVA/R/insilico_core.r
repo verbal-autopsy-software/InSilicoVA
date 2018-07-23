@@ -1583,7 +1583,7 @@ if(!is.null(indiv.CI)){
 	out$indiv.prob.upper <- indiv$upper
 	out$indiv.prob.lower <- indiv$lower			
 }
-
+out$data.type <- data.type
 class(out) <- "insilico"
 return(out)  	
 } 

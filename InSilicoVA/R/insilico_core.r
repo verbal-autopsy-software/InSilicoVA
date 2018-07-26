@@ -507,12 +507,12 @@ removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, ex
 				ext.csmf = ext.csmf))
 }
 
-removeExtV5 <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps){
+removeExtV5 <- function(data, prob.orig, csmf.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps){
 ###########################################################
 # function to remove external causes/symps and assign deterministic deaths
 # @param:
 #	   data
-#      prob.orig: directly from InterVA4
+#      prob.orig: directly from InterVA5
 # @values:
 #	   data: after removing external death
 #	   prob.orig: after deleting external symptoms
@@ -526,7 +526,7 @@ removeExtV5 <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, 
 		neg <- 0
 		pos <- 1
 	}else{
-		neg <- ""
+		neg <- "N"
 		pos <- "Y"
 	}
 	ext.where <- which(apply(extData, 1, function(x){
@@ -534,33 +534,46 @@ removeExtV5 <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, 
 	extData <- as.matrix(extData[ext.where, ])
 	ext.id <- data[ext.where, 1]
 	ext.sub <- subpop[ext.where]
+	probsub <- change.inter(prob.orig[external.symps, external.causes])
+	csmfsub <- change.inter(csmf.orig[external.causes])
+
 	# a smaller scale datacheck for external causes
-	extData[which(extData[,2] == pos), c(3, 5, 7, 10, 11, 13)] <- neg
-	extData[which(extData[,3] == pos), c(2, 5, 7, 10, 11, 13)] <- neg
-	extData[which(extData[,4] == pos), c(5, 7, 11, 13)] <- neg
-	extData[which(extData[,5] == pos), c(2,3,4,8,9,15)] <- neg
-	extData[which(extData[,6] == pos), c(5,9,13,15)] <- neg
-	extData[which(extData[,7] == pos), c(2,3,5,6,8,9,11,15)] <- neg
-	extData[which(extData[,8] == pos), c(5,7,9,11,15)] <- neg
-	extData[which(extData[,9] == pos),c(5,7,8,11,12,13,14,15)] <- neg
-	extData[which(extData[,15] == pos),c(5,7,8)] <- neg
-	extData[which(extData[,18] == pos),c(15)] <- neg
-	extData[which(extData[,19] == pos),c(3,15)] <- neg
+	# extData[which(extData[,2] == pos), c(3, 5, 7, 10, 11, 13)] <- neg
+	# extData[which(extData[,3] == pos), c(2, 5, 7, 10, 11, 13)] <- neg
+	# extData[which(extData[,4] == pos), c(5, 7, 11, 13)] <- neg
+	# extData[which(extData[,5] == pos), c(2,3,4,8,9,15)] <- neg
+	# extData[which(extData[,6] == pos), c(5,9,13,15)] <- neg
+	# extData[which(extData[,7] == pos), c(2,3,5,6,8,9,11,15)] <- neg
+	# extData[which(extData[,8] == pos), c(5,7,9,11,15)] <- neg
+	# extData[which(extData[,9] == pos),c(5,7,8,11,12,13,14,15)] <- neg
+	# extData[which(extData[,15] == pos),c(5,7,8)] <- neg
+	# extData[which(extData[,18] == pos),c(15)] <- neg
+	# extData[which(extData[,19] == pos),c(3,15)] <- neg
 	
 	# initialize with all "unspecified ext causes"
-	ext.cod <- rep(extCauses[11], length(ext.id))
-	# begin checking symptoms
-	ext.cod[which(extData[,2] == pos)] <- extCauses[1]
-	ext.cod[which(extData[,3] == pos)] <- extCauses[2]
-	ext.cod[which(extData[,4] == pos)] <- extCauses[3]
-	ext.cod[which(extData[,5] == pos)] <- extCauses[7]
-	ext.cod[which(extData[,6] == pos)] <- extCauses[4]
-	ext.cod[which(extData[,9] == pos)] <- extCauses[5]
-	ext.cod[which(extData[,7] == pos)] <- extCauses[6]
-	ext.cod[which(extData[,10] == pos)] <- extCauses[9]
-	ext.cod[which(extData[,19] == pos)] <- extCauses[9]
-	ext.cod[which(extData[,15] == pos)] <- extCauses[10]
-	ext.cod[which(extData[,18] == pos)] <- extCauses[8]
+	# ext.cod <- rep(extCauses[11], length(ext.id))
+	# # begin checking symptoms
+	# ext.cod[which(extData[,2] == pos)] <- extCauses[1]
+	# ext.cod[which(extData[,3] == pos)] <- extCauses[2]
+	# ext.cod[which(extData[,4] == pos)] <- extCauses[3]
+	# ext.cod[which(extData[,5] == pos)] <- extCauses[7]
+	# ext.cod[which(extData[,6] == pos)] <- extCauses[4]
+	# ext.cod[which(extData[,9] == pos)] <- extCauses[5]
+	# ext.cod[which(extData[,7] == pos)] <- extCauses[6]
+	# ext.cod[which(extData[,10] == pos)] <- extCauses[9]
+	# ext.cod[which(extData[,19] == pos)] <- extCauses[9]
+	# ext.cod[which(extData[,15] == pos)] <- extCauses[10]
+	# ext.cod[which(extData[,18] == pos)] <- extCauses[8]
+
+	probs <- matrix(1, dim(extData)[1], length(external.causes))
+	for(i in 1:dim(extData)[1]){
+		for(j in 1:length(external.causes)){
+			probs[i, j] <- csmfsub[j] * prod(probsub[which(extData[i,] == pos), j])
+		}
+		probs[i, ] <- probs[i, ] / sum(probs[i, ])
+	}
+	ext.prob <- probs
+
 
 	# delete death confirmed external
 	if(length(ext.where) > 0){
@@ -574,20 +587,13 @@ removeExtV5 <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, 
 		ext.csmf <- vector("list", length(subpop_order_list))
 		for(i in 1:length(ext.csmf)){
 			ext.csmf[[i]] <- rep(0, length(extCauses))
-			ext.cod.temp <- ext.cod[which(ext.sub == subpop_order_list[i])]
-			if(!is.null(ext.cod.temp)){
-				for(j in 1:length(extCauses)){
-					ext.csmf[[i]][j] <- length(which(ext.cod.temp == extCauses[j]))
-				}
-				ext.csmf[[i]] <- ext.csmf[[i]]/length(which(subpop == subpop_order_list[i]))		
+			ext.prob.temp <- ext.prob[which(ext.sub == subpop_order_list[i]), , drop = FALSE]
+			if(!is.null(ext.prob.temp)){
+					ext.csmf[[i]] <- apply(ext.prob.temp, 2, mean) * dim(ext.prob.temp)[1] / length(which(subpop == subpop_order_list[i]))		
 			}
 		}
 	}else{
-		ext.csmf <- rep(0, length(extCauses))
-		for(i in 1:length(extCauses)){
-			ext.csmf[i] <- length(which(ext.cod == extCauses[i]))
-		}
-		ext.csmf <- ext.csmf/N.all		
+		ext.csmf <- apply(ext.prob, 2, mean) * length(ext.id) / N.all		
 	}
 	if(length(ext.where) > 0) subpop <- subpop[-ext.where]
 	return(list(data = data, 
@@ -595,7 +601,8 @@ removeExtV5 <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, 
 				prob.orig = prob.orig, 
 				ext.sub  = ext.sub,
 				ext.id = ext.id, 
-				ext.cod = ext.cod,
+				ext.prob = ext.prob,
+				ext.cod = NULL,
 				ext.csmf = ext.csmf))
 }
 
@@ -904,19 +911,21 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			# code missing as -1
 			checked <- datacheck.interVAJava(data, obj, warning.write)
 			warning <- NULL
+			offset <- 0
 		}else{
 			# code missing as NA
 			checked <- datacheck.interVA5(data, obj, warning.write)
 			warning <- checked$warning
 			checked <- checked$checked
+			offset <- 1
 		}
 		message("Data check finished.\n")
 		## update in data with missing, nothing is updated into missing, so only changing Y and N
 		for(i in 1:(dim(data)[2]-1)){
-			data[which(checked[, i] == 1), i+1] <- "Y"
-			data[which(checked[, i] == 0), i+1] <- ""
-			data[which(checked[, i] == -1), i+1] <- "." # for 2012
-			data[which(is.na(checked[, i])), i+1] <- "." # for 2016
+			data[which(checked[, i+offset] == 1), i+1] <- "Y"
+			data[which(checked[, i+offset] == 0), i+1] <- ""
+			data[which(checked[, i+offset] == -1), i+1] <- "." # for 2012
+			data[which(is.na(checked[, i+offset])), i+1] <- "." # for 2016
 		}	
   	}else{
   		warning <- NULL
@@ -928,7 +937,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 
   		
   		}else{
-			externals <- removeExtV5(data,prob.orig, isNumeric, subpop, subpop_order_list, external.causes, external.symps)
+  			csmf.orig <- probbase[1, -(1:20)]
+			externals <- removeExtV5(data,prob.orig, csmf.orig, isNumeric, subpop, subpop_order_list, external.causes, external.symps)
   		}
   		data <- externals$data
   		subpop <- externals$subpop
@@ -1494,7 +1504,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     	
     	p.indiv.ext <- matrix(0, nrow = length(externals$ext.id), ncol = C.j + length(external.causes) )
     	if(length(externals$ext.id) > 0){
-	    	for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}    		
+    		# WHO 2012
+    		if(is.null(externals$ext.prob)){
+	    		for(i in 1:length(externals$ext.id)){p.indiv.ext[i, externals$ext.cod[i]] <- 1}    
+    		# WHO 2016	
+    		}else{
+				p.indiv.ext[, external.causes] <- externals$ext.prob
+    		}
+		
     	}
     	p.indiv <- rbind(p.indiv, p.indiv.ext) 
     	id <- c(id, externals$ext.id)

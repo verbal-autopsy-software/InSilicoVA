@@ -208,13 +208,13 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 			external.causes <- object$external.causes
 			C0 <- dim(indiv)[2]
 			ext.flag <- apply(object$indiv.prob[, external.causes], 1, sum)
-			ext.probs <- object$indiv.prob[which(ext.flag == 1), ]
+			ext.probs <- object$indiv.prob[which(ext.flag > 0), , drop = FALSE]
 
 			indiv <- cbind(indiv[, 1:(external.causes[1] - 1)], 
 				          matrix(0, dim(indiv)[1], length(external.causes)), 
 				          indiv[, external.causes[1]:C0])
 			colnames(indiv) <- colnames(object$indiv.prob)
-			id.out <- c(id[match(rownames(object$data), id)], id[which(ext.flag == 1)])
+			id.out <- c(id[match(rownames(object$data), id)], id[which(ext.flag > 0)])
 		}else{
 			id.out <- id
 			ext.probs <- NULL
@@ -260,7 +260,7 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 			external.causes <- object$external.causes
 			C0 <- dim(indiv)[2]
 			ext.flag <- apply(object$indiv.prob[, external.causes], 1, sum)
-			ext.probs <- data.frame(object$indiv.prob[which(ext.flag == 1), external.causes])
+			ext.probs <- data.frame(object$indiv.prob[which(ext.flag > 0), external.causes, drop = FALSE])
 			ext.probs$ID <- rownames(ext.probs)
 			ext.probs <- merge(ext.probs, datagroup.all[, c("ID", "final.group.num")])
 			probcolumns <- which(colnames(ext.probs) %in% c("ID", "final.group.num") == FALSE)

@@ -9,7 +9,8 @@
 
 \section{Changes in version 1.2.2 (2018-07-13)}{
  \itemize{
-   \item Fix typo in checking WHO 2016 input using InterVA5 rules.
+   \item Fix typo in checking WHO 2016 input using InterVA5 rules, and update the check rules for external causes based on all symptoms associated with external causes (instead of using only the most deterministic one as in the previous versions).
+   \item Fix typo in shifting columns for WHO 2016 input.
    \item Fix the issue that sometimes 0 acceptance rate is displayed when the chain is in fact moving.
    \item Fix inconsistent names in InterVA5 default input.
    \item Removed most of the cat() calls and replaced them with message().

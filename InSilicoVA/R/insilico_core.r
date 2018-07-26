@@ -1485,7 +1485,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 				    						  	   dim(temp)[1],
 				    						  	   length(external.causes), 
 				    						  	   byrow = TRUE), 
-				    						temp[, ext1:C.j])	
+				    						temp[, ext1:C.j])
+				csmf.sub.all[[j]][is.nan(csmf.sub.all[[j]])] <- 0    							
     		}
     		csmf.sub <- csmf.sub.all
     	##
@@ -1514,6 +1515,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		
     	}
     	p.indiv <- rbind(p.indiv, p.indiv.ext) 
+    	p.indiv[is.nan(p.indiv)] <- 0
     	id <- c(id, externals$ext.id)
     	subpop <- c(subpop, externals$ext.sub)
    }

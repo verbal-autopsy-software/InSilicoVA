@@ -1593,7 +1593,8 @@ out <- list(
 		indiv.CI = indiv.CI, 
 		is.customized = customization.dev,
 		errors = errorlog,
-		warning = warning)
+		warning = warning,
+		data.type = data.type)
 
 # get also individual probabilities
 if(!is.null(indiv.CI)){
@@ -1602,7 +1603,6 @@ if(!is.null(indiv.CI)){
 	out$indiv.prob.upper <- indiv$upper
 	out$indiv.prob.lower <- indiv$lower			
 }
-out$data.type <- data.type
 class(out) <- "insilico"
 return(out)  	
 } 

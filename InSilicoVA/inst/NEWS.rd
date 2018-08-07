@@ -7,6 +7,13 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
+\section{Changes in version 1.2.3 (2018-08-07)}{
+ \itemize{
+   \item Add codes to safely handle data containing NA values.
+
+ }
+}
+
 \section{Changes in version 1.2.2 (2018-07-13)}{
  \itemize{
    \item Fix typo in checking WHO 2016 input using InterVA5 rules, and update the check rules for external causes based on all symptoms associated with external causes (instead of using only the most deterministic one as in the previous versions).

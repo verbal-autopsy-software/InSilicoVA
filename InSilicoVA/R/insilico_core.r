@@ -686,8 +686,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		# change data coding
 		for(i in 2:dim(data)[2]){
 			data[, i] <- as.character(data[, i])
-			data[data[,i]=="n", i] <- ""
-			data[data[,i]=="N", i] <- ""
+			if(sum(data[,i]=="n", na.rm = T) > 0) data[data[,i]=="n", i] <- ""
+			if(sum(data[,i]=="N", na.rm = T) > 0) data[data[,i]=="N", i] <- ""
 			misstmp <- which(data[,i] %in% c("Y", "y", "N", "n") == FALSE)
 			if(length(misstmp) > 0) data[misstmp, i] <- "."
 		}

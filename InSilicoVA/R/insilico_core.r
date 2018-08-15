@@ -393,7 +393,7 @@ datacheck.interVA5 <- function(data, obj, warning.write){
         # subst.vector[probbaseV5[,6]=="N"] <- 0
         # subst.vector[probbaseV5[,6]=="Y"] <- 1
 
-		warning <- NULL
+		warning <- vector("list", dim(data)[1])
 		for(i in 1:dim(data)[1]){
 			tmp <- InterVA5::DataCheck5(data.num[i,], id=data[i,1], probbaseV5=probbaseV5, InSilico_check = TRUE, write=warning.write)
 	        input.current <- tmp$Output

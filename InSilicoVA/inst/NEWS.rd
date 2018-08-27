@@ -7,10 +7,10 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
-\section{Changes in version 1.2.3 (2018-08-07)}{
+\section{Changes in version 1.2.3 (2018-08-27)}{
  \itemize{
    \item Add codes to safely handle data containing NA values.
-
+   \item Fix the writing of warning and error log files for both WHO 2012 and 2016 formats, and allowed customized directory. 
  }
 }
 

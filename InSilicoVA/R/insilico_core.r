@@ -394,15 +394,18 @@ datacheck.interVA5 <- function(data, obj, warning.write){
         # subst.vector[probbaseV5[,6]=="Y"] <- 1
 
 		warning <- vector("list", dim(data)[1])
+		firstPass <- secondPass <- NULL
 		for(i in 1:dim(data)[1]){
 			tmp <- InterVA5::DataCheck5(data.num[i,], id=data[i,1], probbaseV5=probbaseV5, InSilico_check = TRUE, write=warning.write)
 	        input.current <- tmp$Output
 	        warning[[i]] <- rbind(tmp$firstPass, tmp$secondPass)
+	        firstPass <- rbind(firstPass, tmp$firstPass)
+            secondPass <- rbind(secondPass, tmp$secondPass)
 	        checked[i, ] <- input.current
 	        if(i %% 10 == 0) cat(".")
 	    }
 
-		return(list(checked=checked, warning = warning))
+		return(list(checked=checked, warning = warning, firstPass=firstPass, secondPass = secondPass))
 }
 
 
@@ -919,9 +922,19 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			# code missing as NA
 			checked <- datacheck.interVA5(data, obj, warning.write)
 			warning <- checked$warning
+			if(warning.write){
+				 cat(paste("Error & warning log built for InSilicoVA", Sys.time(), "\n"),file="errorlog_insilico.txt",append = FALSE)
+				 cat(errorlog, 
+				 	paste("\n", "the following data discrepancies were identified and handled:", "\n"), 
+				 	checked$firstPass, 
+				 	paste("\n", "Second pass", "\n"), 
+				 	checked$secondPass, sep="\n", file="errorlog_insilico.txt", 
+				 	append=TRUE)
+			}
 			checked <- checked$checked
 			offset <- 1
 		}
+
 		message("Data check finished.\n")
 		## update in data with missing, nothing is updated into missing, so only changing Y and N
 		for(i in 1:(dim(data)[2]-1)){

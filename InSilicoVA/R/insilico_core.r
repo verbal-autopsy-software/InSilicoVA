@@ -77,6 +77,9 @@ insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1],isNumeric 
   	message("Due to the inconsistent names in the early version of InterVA5, the indicator 'i183o' has been renamed as 'i183a'.")
   }
   if(!is.null(directory)){
+  	  if(strsplit(directory, "")[[1]][1] == "~"){
+  	  	directory <- gsub("~", Sys.getenv("HOME"), directory)
+  	  }
 	  if(tail(strsplit(directory, "")[[1]], 1) != "/"){
 	  	dir_err <- paste0(directory, "/")
 	  }else{

@@ -1,5 +1,4 @@
 % Check from R:
-%  news(db = tools:::.build_news_db_from_package_NEWS_Rd("~/R/Pkgs/Matrix/inst/NEWS.Rd"))
 \name{NEWS}
 \title{News for \R Package \pkg{InSilicoVA}}
 \encoding{UTF-8}

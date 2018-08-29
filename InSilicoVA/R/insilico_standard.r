@@ -61,12 +61,12 @@
 #' @param CondProbNum Customized conditional probability matrix to use if specified fully by numerical values between 0 and 1. If it is specified, re-estimation of conditional probabilities will not be performed, i.e., \code{updateCondProb} will be set to FALSE.
 #' @param datacheck Logical indicator for whether to check the data satisfying
 #' InterVA rules. Default set to be TRUE. If \code{warning.write} is set to
-#' true, the inconsistent input will be logged in file warnings.txt. It's
+#' true, the inconsistent input will be logged in file warning_insilico.txt and errorlog_insilico.txt. It's
 #' strongly suggested to be set to TRUE.
 #' @param datacheck.missing Logical indicator for whether to perform data check before deleting complete missing symptoms. Default to TRUE.
 #' @param warning.write Logical indicator for whether to save the changes made
 #' to data input by \code{datacheck}. If set to TRUE, the changes will be
-#' logged in file warnings.txt in current working directory.
+#' logged in file warning_insilico.txt and errorlog_insilico.txt in current working directory.
 #' @param directory The directory to store the output from. It should be an valid existing directory or a folder to be created.
 #' @param external.sep Logical indicator for whether to separate out external
 #' causes first. Default set to be TRUE. If set to TRUE, the algorithm will

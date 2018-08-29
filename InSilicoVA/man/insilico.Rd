@@ -50,14 +50,14 @@ probability matrix. Default to TRUE.}
 
 \item{datacheck}{Logical indicator for whether to check the data satisfying
 InterVA rules. Default set to be TRUE. If \code{warning.write} is set to
-true, the inconsistent input will be logged in file warnings.txt. It's
+true, the inconsistent input will be logged in file warning_insilico.txt and errorlog_insilico.txt. It's
 strongly suggested to be set to TRUE.}
 
 \item{datacheck.missing}{Logical indicator for whether to perform data check before deleting complete missing symptoms. Default to TRUE.}
 
 \item{warning.write}{Logical indicator for whether to save the changes made
 to data input by \code{datacheck}. If set to TRUE, the changes will be
-logged in file warnings.txt in current working directory.}
+logged in file warning_insilico.txt and errorlog_insilico.txt in current working directory.}
 
 \item{directory}{The directory to store the output from. It should be an valid existing directory or a folder to be created.}
 

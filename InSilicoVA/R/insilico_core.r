@@ -704,11 +704,13 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		# change data coding
 		for(i in 2:dim(data)[2]){
 			data[, i] <- as.character(data[, i])
+			# Notice for WHO 2012 input, NA will be converted to absence
 			if(sum(is.na(data[, i])) > 0){
 				data[which(is.na(data[, i])), i] <- "."
 			}
-			data[data[,i]=="n", i] <- ""
-			data[data[,i]=="N", i] <- ""
+			if(sum(data[, i] == "") > 0) stop("Wrong format: WHO 2016 input uses 'N' to denote absence of symptom instead of ''. Please change your coding first.")
+			# data[data[,i]=="n", i] <- ""
+			# data[data[,i]=="N", i] <- ""
 			misstmp <- which(data[,i] %in% c("Y", "y", "N", "n") == FALSE)
 			if(length(misstmp) > 0) data[misstmp, i] <- "."
 		}
@@ -922,6 +924,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   	}
 
   	# standardize to Upper case
+	# WHO 2016 format should have been corrected to have no NA at this point
 	data <- data.frame(lapply(data, as.character), 
 					   stringsAsFactors=FALSE)
 	for(j in 2:dim(data)[2]){
@@ -1072,16 +1075,21 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   	if(exclude.impossible.cause && (!customization.dev)){
 	  	impossible <- NULL
 	  	if(data.type == "WHO2012"){
-		  	demog.set <- c("elder", "midage", "adult", "child", "under5", "infant", "neonate", "male", "female")
+		  	demog.set <- c("elder", "midage", "adult", "child", "under5", "infant", "neonate", "male", "female", 
+		  		"magegp1", "magegp2", "magegp3", "died_d1", "died_d23", "died_d36", "died_w1", "no_life")
 	  	}else{
-	  		demog.set <- c("i019a", "i019b", "i022a", "i022b", "i022c", "i022d", "i022e", "i022f", "i022g")
+	  		demog.set <- c("i019a", "i019b", "i022a", "i022b", "i022c", "i022d", "i022e", "i022f", "i022g", 
+	  						"i022h", "i022i", "i022j", "i022k", "i022l", "i022m", "i022n", "i114o")
 	  	}
 	  	demog.index <- match(demog.set, colnames(data)[-1])
 	  	demog.index <- demog.index[!is.na(demog.index)]
   		for(ss in demog.index){
 			for(cc in 1:C){
 				if(cond.prob.true[ss, cc] == 0){
-					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss)))
+					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss), as.integer(0)))
+				}
+				if(cond.prob.true[ss, cc] == 1){
+					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss), as.integer(1)))
 				}
 			}
 		}
@@ -1096,9 +1104,9 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			}
 		}
 	}else{
-		# java checks if impossible has 2 columns
-		# and set check impossible cause flag to false if it has 3 columns...
-		impossible <- matrix(as.integer(0), 1, 3)
+		# java checks if impossible has 3 columns
+		# and set check impossible cause flag to false if it has 4 columns
+		impossible <- matrix(as.integer(0), 1, 4)
 	}
 
 

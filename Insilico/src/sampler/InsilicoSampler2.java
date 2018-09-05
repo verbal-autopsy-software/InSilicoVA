@@ -730,7 +730,7 @@ public class InsilicoSampler2 {
         }
 
         // check impossible causes?
-        boolean check_impossible = impossible[0].length == 2;
+        boolean check_impossible = impossible[0].length == 3;
         int[][] zero_matrix = new int[N][C];
         for(int i = 0; i < N; i++){
             for(int j = 0; j < C; j++){
@@ -740,7 +740,10 @@ public class InsilicoSampler2 {
         if(check_impossible){
             for(int i = 0; i < N; i++){
                 for(int k = 0; k < impossible.length; k++){
-                    if(indic[i][impossible[k][1] - 1] == 1){
+                    if(indic[i][impossible[k][1] - 1] == 1 & impossible[k][2] == 0){
+                        zero_matrix[i][impossible[k][0] - 1] = 0;
+                    }
+                    if(indic[i][impossible[k][1] - 1] == 0 & impossible[k][2] == 1){
                         zero_matrix[i][impossible[k][0] - 1] = 0;
                     }
                 }

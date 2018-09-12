@@ -89,6 +89,7 @@ insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1],isNumeric 
   }else{
 	 dir_err <- NULL
   }
+  negate <- NULL
 
 
 ##----------------------------------------------------------##
@@ -1018,7 +1019,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	if(!is.null(missing.all)){	
 		data <- data[, -(missing.all + 1)]
 		prob.orig <- prob.orig[-missing.all, ]	
-		negate <- negate[-missing.all]
+		if(!is.null(negate)) negate <- negate[-missing.all]
 	}	
 
 

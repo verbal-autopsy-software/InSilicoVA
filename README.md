@@ -1,4 +1,4 @@
-# InSilicoVA  [![Build Status](https://travis-ci.org/richardli/InSilicoVA.svg?branch=master)](https://travis-ci.org/richardli/InSilicoVA)
+# InSilicoVA  [![Build Status](https://travis-ci.org/verbal-autopsy-software/InSilicoVA.svg?branch=master)](https://travis-ci.org/verbal-autopsy-software/InSilicoVA)
 
 To install the package from CRAN, run the script: 
 ```r

@@ -7,6 +7,11 @@
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
 
+\section{Changes in version 1.2.5 (2018-10-12)}{
+ \itemize{
+   \item Added checks for extra columns in physician debias function.
+ }
+}
 \section{Changes in version 1.2.4 (2018-09-12)}{
  \itemize{
    \item Add option to exclude impossible causes based on different rules.

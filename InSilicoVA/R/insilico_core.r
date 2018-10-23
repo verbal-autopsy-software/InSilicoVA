@@ -602,8 +602,11 @@ removeExtV5 <- function(data, prob.orig, csmf.orig, is.Numeric, subpop, subpop_o
 	}else{
 		if(!is.null(subpop)){
 			ext.csmf <- vector("list", length(subpop_order_list))
+			for(i in 1:length(ext.csmf)){
+				ext.csmf[[i]] <- rep(0, length(extCauses))
+			}
 		}else{
-			ext.csmf <- NA
+			ext.csmf <- rep(0, length(extCauses))
 		}
 		ext.prob <- matrix(0, dim(extData)[1], length(external.causes))
 

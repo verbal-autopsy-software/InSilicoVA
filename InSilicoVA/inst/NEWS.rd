@@ -7,6 +7,11 @@
 \newcommand{\sspace}{\ifelse{latex}{\out{~}}{ }}
 
 
+\section{Changes in version 1.2.6 (2018-10-23)}{
+ \itemize{
+   \item Bug fix for subsetting data with no external symptoms.
+ }
+}
 \section{Changes in version 1.2.5 (2018-10-12)}{
  \itemize{
    \item Added checks for extra columns in physician debias function.

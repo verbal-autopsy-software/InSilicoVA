@@ -1,8 +1,8 @@
 Package: InSilicoVA
 Type: Package
 Title: Probabilistic Verbal Autopsy Coding with 'InSilicoVA' Algorithm
-Version: 1.2.6
-Date: 2018-10-23
+Version: 1.2.5
+Date: 2018-10-28
 Author: Zehang Li, Tyler McCormick, Sam Clark
 Maintainer: Zehang Li <lizehang@gmail.com>
 Depends: R (>= 2.15.0), rJava, coda, ggplot2, InterVA5

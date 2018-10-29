@@ -14,5 +14,5 @@ Tyler H. McCormick, Zehang Richard Li, Clara Calvert, Amelia C. Crampin, Kathlee
 
 ### What's New
 - [CRAN version](https://cran.r-project.org/web/packages/InSilicoVA/news.html) 
-- [Current developer version](InSilicoVA/inst/NEWS.rd)
+- [Current developer version](InSilicoVA/NEWS.md)
  

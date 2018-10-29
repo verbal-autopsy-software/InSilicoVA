@@ -1017,7 +1017,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   		subpop <- externals$subpop
   		prob.orig <- externals$prob.orig
   		negate <- externals$negate
-  		if(length(data) == 0){
+  		if(dim(data)[1] == 0){
   			message("All deaths are assigned external causes. A list of external causes is returned instead of insilico object.")
   			out <- data.frame(ID = externals$ext.id, 
   							  causes = vacauses[externals$ext.cod])

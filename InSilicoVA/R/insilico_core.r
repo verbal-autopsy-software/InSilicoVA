@@ -902,32 +902,40 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	  	if(!is.null(CondProb)){
 	  		prob.orig <- CondProb
 	  		exclude.impossible.cause <- "none"
+	  		vacauses <- colnames(CondProbNum)
+	  		if(is.null(vacauses)) vacauses <- paste0("Cause", 1:dim(CondProbNum)[2])	  	
 	  	}
 	  	if(!is.null(CondProbNum)){
 	  		prob.orig <- CondProbNum 
-	  		updateCondProb <- FALSE			
+	  		updateCondProb <- FALSE		
+	  		vacauses <- colnames(CondProbNum)
+	  		if(is.null(vacauses)) vacauses <- paste0("Cause", 1:dim(CondProbNum)[2])	
 	  	}
 	 
 		##-----------------------------------------------------##
 		## remove bad data happens before taking into missing
 		## (i.e. data without age/sex or has no real symptoms)
-		if(data.type == "WHO2012"){
-			tmp <- removeBad(data, isNumeric, subpop)
-			if(warning.write){
-				cat(paste("Error log built for InSilicoVA", Sys.time(), "\n"),file=paste0(dir_err, "errorlog_insilico.txt"),append = FALSE)
-				 cat(tmp$errorlog, sep="\n", file=paste0(dir_err, "errorlog_insilico.txt"), 
-				 	append=TRUE)
+		if(datacheck){
+			if(data.type == "WHO2012"){
+				tmp <- removeBad(data, isNumeric, subpop)
+				if(warning.write){
+					cat(paste("Error log built for InSilicoVA", Sys.time(), "\n"),file=paste0(dir_err, "errorlog_insilico.txt"),append = FALSE)
+					 cat(tmp$errorlog, sep="\n", file=paste0(dir_err, "errorlog_insilico.txt"), 
+					 	append=TRUE)
+				}
+			}else if(data.type == "WHO2016"){
+				tmp <- removeBadV5(data, isNumeric, subpop)
 			}
-		}else if(data.type == "WHO2016"){
-			tmp <- removeBadV5(data, isNumeric, subpop)
-		}
-	  	data <- tmp[[1]]
-	  	subpop <- tmp[[2]]
-  	  	errorlog <- tmp[[3]]
-  	  	if(is.null(subpop)){
-	  		subpop_order_list <- NULL
-	  	}else{
-		  	subpop_order_list <- sort(unique(subpop))
+		  	data <- tmp[[1]]
+		  	subpop <- tmp[[2]]
+	  	  	errorlog <- tmp[[3]]
+	  	  	if(is.null(subpop)){
+		  		subpop_order_list <- NULL
+		  	}else{
+			  	subpop_order_list <- sort(unique(subpop))
+		  	}
+	  	}else{	  			    
+	  		errorlog <- NULL
 	  	}
 
   	}else{
@@ -1019,9 +1027,15 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
   		negate <- externals$negate
   		if(dim(data)[1] == 0){
   			message("All deaths are assigned external causes. A list of external causes is returned instead of insilico object.")
-  			out <- data.frame(ID = externals$ext.id, 
+  			if(data.type == "WHO2012"){
+  				out <- data.frame(ID = externals$ext.id, 
   							  causes = vacauses[externals$ext.cod])
 
+  			}else if(data.type == "WHO2016"){
+  				extprobs <- externals$ext.prob
+	  			out <- data.frame(ID = externals$ext.id, extprobs)
+  				colnames(out)[-1] <- vacauses[external.causes]
+  			}
   			return(out)
   		}
   	}

@@ -1,4 +1,4 @@
-# InSilicoVA  [![Build Status](https://travis-ci.org/verbal-autopsy-software/InSilicoVA.svg?branch=master)](https://travis-ci.org/verbal-autopsy-software/InSilicoVA) [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/InSilicoVA)](https://cran.r-project.org/package=InSilicoVA)
+# InSilicoVA  [![Build Status](https://travis-ci.org/verbal-autopsy-software/InSilicoVA.svg?branch=master)](https://travis-ci.org/verbal-autopsy-software/InSilicoVA) [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/InSilicoVA)](https://cran.r-project.org/package=InSilicoVA) [![](https://cranlogs.r-pkg.org/badges/InSilicoVA)](https://cran.r-project.org/package=InSilicoVA) [![](https://cranlogs.r-pkg.org/badges/grand-total/InSilicoVA?color=orange)](https://cran.r-project.org/package=InSilicoVA)
 
 To install the package from CRAN, run the script: 
 ```r

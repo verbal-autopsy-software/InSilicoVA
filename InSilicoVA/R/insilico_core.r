@@ -8,6 +8,7 @@
 #' 
 #' @param data see \code{\link{insilico}}
 #' @param data.type see \code{\link{insilico}}
+#' @param sci see \code{\link{insilico}}
 #' @param isNumeric see \code{\link{insilico}}
 #' @param updateCondProb see \code{\link{insilico}}
 #' @param keepProbbase.level see \code{\link{insilico}}
@@ -64,7 +65,7 @@
 #' @keywords InSilicoVA
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1],isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, directory = NULL, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = c("subset", "all", "InterVA", "none")[1], impossible.combination = NULL, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, groupcode=FALSE, ...){ 
+insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NULL, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, directory = NULL, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = c("subset", "all", "InterVA", "none")[1], impossible.combination = NULL, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, groupcode=FALSE, ...){ 
   # handling changes throughout time
   args <- as.list(match.call())
   if(!is.null(args$length.sim)){
@@ -389,11 +390,11 @@ datacheck.interVAJava <- function(data, obj, warning.write, dir_err = NULL){
 
 ## Update: for the first 9 symptoms (age and gender) instead of imputing 0, we impute NA
 ##         this can also be customized to set to more symptoms...
-datacheck.interVA5 <- function(data, obj, warning.write){
+datacheck.interVA5 <- function(data, obj, warning.write, probbaseV5){
 		
 		# this has been updated to correspond to the 4.03 version probbase which contains minor changes from before.
-		data("probbaseV5", envir = environment())
-		probbaseV5 <- get("probbaseV5", envir  = environment())
+		# data("probbaseV5", envir = environment())
+		# probbaseV5 <- get("probbaseV5", envir  = environment())
 
 		data.num <- matrix(0, dim(data)[1], dim(data)[2] - 1)
 		for(j in 2:dim(data)[2]){
@@ -790,8 +791,25 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		data("causetext", envir = environment())
 		causetext<- get("causetext", envir  = environment())		
 	}else{
-		data("probbaseV5", envir = environment())
-		probbase<- get("probbaseV5", envir  = environment())
+	    if (is.null(sci)) {
+	        data("probbaseV5", envir = environment())
+	        probbaseV5 <- get("probbaseV5", envir = environment())
+	        probbaseV5 <- as.matrix(probbaseV5)
+	        probbaseV5Version <- probbaseV5[1,3]
+	    }
+	    if (!is.null(sci)) {
+	        validSCI <- TRUE
+	        if (!is.data.frame(sci)) validSCI <- FALSE
+	        if (nrow(sci) != 354) validSCI <- FALSE
+	        if (ncol(sci) != 87) validSCI <- FALSE
+	        if (!validSCI) {
+	            stop("error: invalid sci (must be data frame with 354 rows and 87 columns).")
+	        }
+	        probbaseV5 <- as.matrix(sci)
+	        probbaseV5Version <- probbaseV5[1,3]
+	    }
+	    probbase <- probbaseV5
+	    message("Using Probbase version:  ", probbaseV5Version)
 		data("causetextV5", envir = environment())
 		causetext<- get("causetextV5", envir  = environment())		
 	}
@@ -979,7 +997,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			offset <- 0
 		}else{
 			# code missing as NA
-			checked <- datacheck.interVA5(data, obj, warning.write)
+			checked <- datacheck.interVA5(data, obj, warning.write, probbase)
 			
 			warning <- checked$warning
 			if(warning.write){

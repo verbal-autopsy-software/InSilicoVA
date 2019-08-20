@@ -1,5 +1,9 @@
 # InSilicoVA - changes
 
+Version 1.2.7 (2019-08-20)
+==========================
++ Include function to load the latest P(S|C) from InterVA-5 software
+
 Version 1.2.6 (2018-12-10)
 ==========================
 + Bug fix for model with customized P(S|C)

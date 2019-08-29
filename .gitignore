@@ -3,11 +3,6 @@
 org.eclipse.jdt.core.prefs
 .classpath
 Insilico/bin
-*.class
-Insilico/library/META-INF
-*.iml
-*.
-*.xml
 .name
 InSilicoVA.Rcheck/*
 *.
@@ -17,6 +12,11 @@ Documents/cache
 Documents/figure
 *.synctex.gz
 Documents/data
-insilico_indiv_prob.csv
 .Rhistory
-plot_demo_script.r
+Insilico/.idea
+Insilico/out/production/Insilico/sampler/*.class
+Insilico/out/production/Insilico/utils/*class
+Insilico/src/sampler/*.class
+Insilico/src/utils/*.class
+Insilico.iml
+commons-math3-3.6.1-reduced.zip

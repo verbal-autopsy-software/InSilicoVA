@@ -664,7 +664,7 @@ public class InsilicoSampler2 {
                     broader);
         }
 
-        System.out.printf("InSilicoVA Sampler initiated, %d iterations to sample\n", N_gibbs);
+        System.out.printf("InSilicoVA Sampler Initiated, %d Iterations to Sample\n", N_gibbs);
         // list of random number generators to use
         DoubleRandomEngine rngEngine=new DoubleMersenneTwister(seed);
         Normal rngN=new Normal(0.0,1.0,rngEngine);

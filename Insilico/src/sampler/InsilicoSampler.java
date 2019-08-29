@@ -433,7 +433,7 @@ public class InsilicoSampler {
 		// initialization
 		InsilicoSampler insilico = new InsilicoSampler();
 		insilico.initiate(N, S, C, N_sub, N_level, subpop, probbase, probbase_order, level_values);
-		System.out.printf("Insilico Sampler initiated, %d iterations to sample\n", N_gibbs);
+		System.out.printf("InSilicoVA Sampler initiated, %d iterations to sample\n", N_gibbs);
 		// list of random number generators to use
 		DoubleRandomEngine rngEngine=new DoubleMersenneTwister(seed);
 		Normal rngN=new Normal(0.0,1.0,rngEngine);

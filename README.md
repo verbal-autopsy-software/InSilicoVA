@@ -16,3 +16,10 @@ Tyler H. McCormick, Zehang Richard Li, Clara Calvert, Amelia C. Crampin, Kathlee
 - [CRAN version](https://cran.r-project.org/web/packages/InSilicoVA/news/news.html) 
 - [Current developer version](InSilicoVA/NEWS.md)
  
+
+### Additional information when running large models
+If you hit the error message compaining about java heap size, e.g. ``java.lang.OutOfMemoryError: Java heap space``
+
+Try start a new R session and run this line of code **before** calling ``library(openVA)`` or ``library(InSilicoVA)``:
+
+> options(java.parameters = c("-XX:+UseConcMarkSweepGC"))

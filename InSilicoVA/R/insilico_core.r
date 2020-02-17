@@ -824,7 +824,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	## Extract sub-populations		
 	##----------------------------------------------------------##
 	# get subpopulation if it's a columnname
-  	if(class(subpop) == "list" || length(subpop) == 1){
+  	if(methods::is(subpop, "list") || length(subpop) == 1){
   		col.index <- match(subpop, colnames(data))
   		if(length(which(is.na(col.index))) > 0){
   			stop("error: invalid sub-population name specification")

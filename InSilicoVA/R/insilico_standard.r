@@ -181,6 +181,7 @@
 #' @import coda
 #' @import ggplot2
 #' @import InterVA5
+#' @import methods
 #' @importFrom stats median quantile rbinom reorder runif
 #' @importFrom utils write.csv
 #' @importFrom stats ecdf
@@ -366,7 +367,7 @@ insilico <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NULL, i
 	  	message("length.sim argument is replaced with Nsim argument, will remove in later versions.\n")
 	  }
 
-	  if(class(exclude.impossible.cause) == "logical"){
+	  if(methods::is(exclude.impossible.cause, "logical")){
 	  	if(exclude.impossible.cause){
 	  		exclude.impossible.cause <- "subset"
 	  	}else{

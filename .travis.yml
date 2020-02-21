@@ -1,6 +1,7 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
+
 sudo: false
 cache: packages
 before_install:
@@ -9,3 +10,21 @@ before_install:
 # do not build vignettes...takes too long and times out on travis
 r_build_args: --no-build-vignettes --no-manual
 r_check_args: --no-build-vignettes --no-manual --timings
+
+jobs:
+  include:
+  - language: java
+    jdk: oraclejdk7
+  include:
+  - language: java
+    jdk: oraclejdk8
+  include:
+  - language: java
+    jdk: oraclejdk9
+  include:
+  - language: java
+    jdk: oraclejdk10
+  include:
+  - language: java
+    jdk: oraclejdk11
+    

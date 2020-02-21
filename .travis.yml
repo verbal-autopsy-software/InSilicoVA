@@ -5,10 +5,11 @@ language: r
 matrix:
   include:
   - r: release
-    
     sudo: true
     cache: packages
     before_install:
+      - cd InSilicoVA
+      - jdk_switcher use oraclejdk8
     script:
       - R CMD javareconf
       - R CMD build --no-build-vignettes --no-manual . 
@@ -17,9 +18,8 @@ matrix:
     sudo: true
     cache: packages
     before_install:
-      - sudo apt-get -y install openjdk-8-jdk
-      - jdk_switcher use openjdk8
       - cd InSilicoVA
+      - jdk_switcher use oraclejdk9
     script:
       - R CMD javareconf -e
       - R CMD build --no-build-vignettes --no-manual . 

@@ -1,26 +1,32 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: R
-r:
-  - release
-  - devel
-java:
-  - oraclejdk7
-  - oraclejdk8
-  - oraclejdk9
-  - oraclejdk10
-  - oraclejdk11
+language: r
 
-sudo: false
-cache: packages
-before_install:
- - cd InSilicoVA
+matrix:
+  include:
+  - java: oraclejdk7
+  - r: release
+  sudo: false
+  cache: packages
+  before_install:
+    - cd InSilicoVA
+  script:
+    - R CMD javareconf -e
+    - R CMD build --no-build-vignettes --no-manual . 
+    - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
+  - java: oraclejdk8
+  - r: release
+  sudo: false
+  cache: packages
+  before_install:
+    - cd InSilicoVA
+  script:
+    - R CMD javareconf -e
+    - R CMD build --no-build-vignettes --no-manual . 
+    - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
 
 # do not build vignettes...takes too long and times out on travis
-r_build_args: --no-build-vignettes --no-manual
-r_check_args: --no-build-vignettes --no-manual --timings
+#r_build_args: --no-build-vignettes --no-manual
+#r_check_args: --no-build-vignettes --no-manual --timings
 
-script:
-  - R CMD build .
-  - R CMD check *tar.gz
   

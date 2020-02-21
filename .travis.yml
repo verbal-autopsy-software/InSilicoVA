@@ -2,29 +2,25 @@
 
 language: R
 
+jobs:
+  include:
+  - jdk: oraclejdk7
+  include:
+  - jdk: oraclejdk8
+  include:
+  - jdk: oraclejdk9
+  include:
+  - jdk: oraclejdk10
+  include:
+  - jdk: oraclejdk11
+
 sudo: false
 cache: packages
 before_install:
  - cd InSilicoVA
+ - R CMD javareconf -e
 
 # do not build vignettes...takes too long and times out on travis
 r_build_args: --no-build-vignettes --no-manual
 r_check_args: --no-build-vignettes --no-manual --timings
 
-jobs:
-  include:
-  - language: java
-    jdk: oraclejdk7
-  include:
-  - language: java
-    jdk: oraclejdk8
-  include:
-  - language: java
-    jdk: oraclejdk9
-  include:
-  - language: java
-    jdk: oraclejdk10
-  include:
-  - language: java
-    jdk: oraclejdk11
-    

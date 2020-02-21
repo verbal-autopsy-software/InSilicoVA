@@ -5,12 +5,10 @@ language: r
 matrix:
   include:
   - r: release
+    
     sudo: true
     cache: packages
     before_install:
-      - sudo apt-get -y install openjdk-7-jdk
-      - cd InSilicoVA
-    jdk: openjdk7
     script:
       - R CMD javareconf
       - R CMD build --no-build-vignettes --no-manual . 
@@ -20,13 +18,12 @@ matrix:
     cache: packages
     before_install:
       - sudo apt-get -y install openjdk-8-jdk
+      - jdk_switcher use openjdk8
       - cd InSilicoVA
-    jdk: openjdk8
-
-script:
-  - R CMD javareconf -e
-  - R CMD build --no-build-vignettes --no-manual . 
-  - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
+    script:
+      - R CMD javareconf -e
+      - R CMD build --no-build-vignettes --no-manual . 
+      - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
 
 # do not build vignettes...takes too long and times out on travis
 #r_build_args: --no-build-vignettes --no-manual

@@ -10,7 +10,7 @@ matrix:
     before_install:
       - cd InSilicoVA
       - sudo apt install -y openjdk-8-jdk
-      - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk/jre/bin/java
+      - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
     script:
       - R CMD javareconf
       - R CMD build --no-build-vignettes --no-manual . 
@@ -21,7 +21,7 @@ matrix:
     before_install:
       - cd InSilicoVA
     script:
-      - R CMD javareconf -e
+      - R CMD javareconf
       - R CMD build --no-build-vignettes --no-manual . 
       - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
 

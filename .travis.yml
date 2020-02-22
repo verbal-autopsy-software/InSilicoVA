@@ -13,7 +13,7 @@ matrix:
     script:
       - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
       - export PATH=$JAVA_HOME/bin:$PATH
-      - R CMD javareconf -e
+      - R CMD javareconf
       - R CMD build --no-build-vignettes --no-manual . 
       - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
   - r: release

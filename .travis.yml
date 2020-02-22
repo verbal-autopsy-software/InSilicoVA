@@ -10,6 +10,7 @@ matrix:
     before_install:
       - cd InSilicoVA
       - sudo apt install -y openjdk-8-jdk
+    jdk: openjdk8
     script:
       - sudo update-alternatives --list java
       - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java

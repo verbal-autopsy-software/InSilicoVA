@@ -12,6 +12,7 @@ matrix:
       - sudo apt install -y openjdk-8-jdk
       - sudo update-alternatives --list java
       - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+      - . /etc/environment
       - R CMD javareconf
     script:
       - R CMD build --no-build-vignettes --no-manual . 

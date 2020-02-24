@@ -21,6 +21,30 @@ matrix:
     cache: packages
     before_install:
       - cd InSilicoVA
+      - sudo apt install -y openjdk-9-jdk
+    script:
+      - export JAVA_HOME=/usr/lib/jvm/java-9-openjdk-amd64/
+      - export PATH=$JAVA_HOME/bin:$PATH
+      - R CMD javareconf
+      - R CMD build --no-build-vignettes --no-manual . 
+      - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
+  - r: release
+    sudo: true
+    cache: packages
+    before_install:
+      - cd InSilicoVA
+      - sudo apt install -y openjdk-10-jdk
+    script:
+      - export JAVA_HOME=/usr/lib/jvm/java-10-openjdk-amd64/
+      - export PATH=$JAVA_HOME/bin:$PATH
+      - R CMD javareconf
+      - R CMD build --no-build-vignettes --no-manual . 
+      - R CMD check --no-build-vignettes --no-manual --timings *tar.gz
+  - r: release
+    sudo: true
+    cache: packages
+    before_install:
+      - cd InSilicoVA
     script:
       - R CMD javareconf
       - R CMD build --no-build-vignettes --no-manual . 

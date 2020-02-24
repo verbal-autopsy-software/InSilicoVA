@@ -21,9 +21,9 @@ matrix:
     cache: packages
     before_install:
       - curl -o openjdk-9.0.4_linux-x64_bin.tar.gz https://download.java.net/java/GA/jdk9/9.0.4/binaries/openjdk-9.0.4_linux-x64_bin.tar.gz
-      - sudo mkdir /usr/local/java; sudo mv openjdk-9.0.4_linux-x64_bin.tar.gz /usr/local/java/
-      - cd /usr/local/java; sudo tar xvfz openjdk-9.0.4_linux-x64_bin.tar.gz
-      - cd; cd InSilicoVA
+      - sudo mkdir /usr/local/java
+      - sudo tar xvfz openjdk-9.0.4_linux-x64_bin.tar.gz -C /usr/local/java/
+      - cd InSilicoVA
     script:
       - export JAVA_HOME=/usr/local/java/jdk-9.0.4
       - export PATH=$JAVA_HOME/bin:$PATH
@@ -35,9 +35,9 @@ matrix:
     cache: packages
     before_install:
       - curl -o openjdk-10.0.2_linux-x64_bin.tar.gz https://download.java.net/java/GA/jdk10/10.0.2/19aef61b38124481863b1413dce1855f/13/openjdk-10.0.2_linux-x64_bin.tar.gz
-      - sudo mkdir /usr/local/java; sudo mv openjdk-10.0.2_linux-x64_bin.tar.gz /usr/local/java/
-      - cd /usr/local/java; sudo tar xvfz openjdk-10.0.2_linux-x64_bin.tar.gz
-      - cd; cd InSilicoVA
+      - sudo mkdir /usr/local/java
+      - sudo tar xvfz openjdk-10.0.2_linux-x64_bin.tar.gz -C /usr/local/java/
+      - cd InSilicoVA
     script:
       - export JAVA_HOME=/usr/local/java/jdk-10.0.2
       - export PATH=$JAVA_HOME/bin:$PATH

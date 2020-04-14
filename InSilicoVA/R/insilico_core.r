@@ -871,6 +871,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			        stop(paste("error: invalid data input format. Symptom(s) not found:", correct_names[!exist]))
 		  		}else{
 		  			data <- data[, c(1, match(correct_names, tolower(colnames(data))))]
+		  			colnames(data)[-1] <- tolower(colnames(data)[-1])
 		  		}
 	    	}
 	    	## check the column names and give warning
@@ -890,11 +891,13 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 
 		  	if(dim(data)[2] != dim(probbase)[1] ){
 		  		correct_names <- probbase[2:354, 1]
-		  		exist <- correct_names %in% colnames(data)
+		  		exist <- correct_names %in% tolower(colnames(data))
 		  		if(length(which(exist == FALSE)) > 0){
 			        stop(paste("error: invalid data input format. Symptom(s) not found:", correct_names[!exist]))
 		  		}else{
-		  			data <- data[, c(1, match(correct_names, colnames(data)))]
+		  			data <- data[, c(1, match(correct_names, tolower(colnames(data))))]
+		  			colnames(data)[-1] <- tolower(colnames(data)[-1])
+
 		  		}
 	    	}
 	    	## check the column names and give warning

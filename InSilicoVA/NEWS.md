@@ -3,6 +3,7 @@
 Version 1.2.8 (2020-04-14)
 ==========================
 + Minor improvements in summary display.
++ Minor stability improvement to recognize both lower and upper cases in physician de-bias function.
 
 Version 1.2.7 (2020-02-18)
 ==========================

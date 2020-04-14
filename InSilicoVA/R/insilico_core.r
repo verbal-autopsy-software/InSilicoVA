@@ -72,6 +72,7 @@ insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NUL
   	Nsim <- args$length.sim
   	message("length.sim argument is replaced with Nsim argument, will remove in later versions.\n")
   }
+  data.type <- toupper(data.type)
 
   ## Add java system check
   jv <- .jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
@@ -80,8 +81,8 @@ insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NUL
 	  if(jvn < 1.7) stop("Java >= 7 is needed for this package but not available")
    }
 
-  if(data.type == "WHO2016" & "i183o" %in% colnames(data)){
-  	colnames(data)[which(colnames(data) == "i183o")] <- "i183a"
+  if(data.type == "WHO2016" & "i183o" %in% tolower(colnames(data))){
+  	colnames(data)[which(tolower(colnames(data)) == "i183o")] <- "i183a"
   	message("Due to the inconsistent names in the early version of InterVA5, the indicator 'i183o' has been renamed as 'i183a'.")
   }
   if(!is.null(directory)){
@@ -865,11 +866,11 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		  	negate <- rep(FALSE, dim(prob.orig)[1])
 			if(dim(data)[2] != dim(probbase)[1] ){
 		  		correct_names <- probbase[2:246, 2]
-		  		exist <- correct_names %in% colnames(data)
+		  		exist <- correct_names %in% tolower(colnames(data))
 		  		if(length(which(exist == FALSE)) > 0){
 			        stop(paste("error: invalid data input format. Symptom(s) not found:", correct_names[!exist]))
 		  		}else{
-		  			data <- data[, c(1, match(correct_names, colnames(data)))]
+		  			data <- data[, c(1, match(correct_names, tolower(colnames(data))))]
 		  		}
 	    	}
 	    	## check the column names and give warning

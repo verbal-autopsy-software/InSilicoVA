@@ -881,6 +881,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		    vacauses <- causetext[4:64,2]
 		    external.causes = seq(50, 60)
 		    external.symps = seq(20, 38)
+		    # These are codes to verify the external causes and symptoms are correct when probbase is updated
+		    if(FALSE){
+		    	test_symps <- valabels[-1]
+		    	test_ext_symps <- probbaseV5[match(test_symps[external.symps], probbaseV5[,1]), 2]
+		    	test_ext_causes <- vacauses[external.causes]
+		    	print(test_ext_symps)
+		    	print(test_ext_causes)
+		    }
 
 		}else{
 			stop("Wrong data.type, need to be WHO2012 or WHO2016")

@@ -1477,7 +1477,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	theta.last.j <- .jarray(matrix(0, N_sub.j, C), dispatch = TRUE)
 	keepProb.j <- !updateCondProb
 
-	ins  <- .jcall(obj, "[D", "Fit", 
+	ins <- try( 
+		.jcall(obj, "[D", "Fit", 
 		dimensions.j, 
 		probbase.j, probbase_order.j, level_values.j, 
 		prior_a.j, prior_b.j, jumprange.j, trunc_min.j, trunc_max.j, 
@@ -1486,6 +1487,12 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		mu.j, sigma2.j, isUnix, keepProb.j, 
 		isAdded, mu.last.j, sigma2.last.j, theta.last.j, 
 		C.phy.j, vacauses.broader.j, assignment.j, impossible.j) 
+		, FALSE)
+	if(is(ins, "try-error")){
+		java_message()	
+		stop()
+	}
+
     # one dimensional array is straightforward
     fit <- ins
     # fit <-  .jeval(ins, .jevalArray))
@@ -1720,3 +1727,9 @@ if(!is.null(indiv.CI)){
 class(out) <- "insilico"
 return(out)  	
 } 
+
+#' Message to set heap size for Java
+#' @keywords internal
+java_message <- function(){
+	message("\nIf you receive Java heap space error, try re-starting R and run this line, *before* loading any libraries:\n  options(java.parameters = c('-Xmx2g'))\nThis line allocates 2GB of memory to Java. You can change the memory size by modifying the parameter '-Xmx2g'.")
+}

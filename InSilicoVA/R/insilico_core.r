@@ -710,6 +710,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		# change data coding
 		for(i in 2:dim(data)[2]){
 			data[, i] <- as.character(data[, i])
+			if(colnames(data)[i] %in% subpop) next
 			# Notice for WHO 2012 input, NA will be converted to absence
 			if(sum(is.na(data[, i])) > 0){
 				data[which(is.na(data[, i])), i] <- "."

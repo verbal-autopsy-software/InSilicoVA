@@ -1199,8 +1199,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	  		}
 	 	 	cc.onlyprem <- match("Prematurity", vacauses.current)
 	 	 	cc.notprem <- match("Birth asphyxia", vacauses.current)
-			if(!is.na(ss) %% !is.na(cc.onlyprem)) impossible <- rbind(impossible, c(as.integer(cc.onlyprem), as.integer(ss), val.onlyprem))
-			if(!is.na(ss) %% !is.na(cc.notprem)) impossible <- rbind(impossible, c(as.integer(cc.notprem), as.integer(ss), val.notprem))
+			if(!is.na(ss) && !is.na(cc.onlyprem)) impossible <- rbind(impossible, c(as.integer(cc.onlyprem), as.integer(ss), val.onlyprem))
+			if(!is.na(ss) && !is.na(cc.notprem)) impossible <- rbind(impossible, c(as.integer(cc.notprem), as.integer(ss), val.notprem))
 		} 
 
 		impossible <- as.matrix(impossible)	

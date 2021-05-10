@@ -144,13 +144,13 @@ insilico.fit(
 a insilico fit object, see see \code{\link{insilico}} for more detail.
 }
 \description{
-This function implements InSilicoVA model. This is the lower level core function of InSilicoVA with more flexibility in customized input. For more detail of model specification, see the paper on \url{http://arxiv.org/abs/1411.3042} and the default function \code{\link{insilico}}.
+This function implements InSilicoVA model. This is the lower level core function of InSilicoVA with more flexibility in customized input. For more detail of model specification, see the paper on \url{https://arxiv.org/abs/1411.3042} and the default function \code{\link{insilico}}.
 }
 \references{
 Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C.
 Crampin, Kathleen Kahn and Samuel J. Clark(2014) \emph{Probabilistic
 cause-of-death assignment using verbal autopsies},
-\url{http://arxiv.org/abs/1411.3042} \cr \emph{Working paper no. 147, Center
+\url{https://arxiv.org/abs/1411.3042} \cr \emph{Working paper no. 147, Center
 for Statistics and the Social Sciences, University of Washington}
 }
 \seealso{

@@ -158,5 +158,5 @@ OS system differences. This function implements InSilico with customized
 input format and training data. 
 
 For more detail of model specification, see the paper on
-\url{http://arxiv.org/abs/1411.3042}.
+\url{https://arxiv.org/abs/1411.3042}.
 }

@@ -215,7 +215,7 @@ external causes separated calculated.}
 \description{
 This function implements InSilicoVA model. The InSilicoVA model is fitted
 with MCMC implemented in Java. For more detail, see the paper on
-\url{http://arxiv.org/abs/1411.3042}.
+\url{https://arxiv.org/abs/1411.3042}.
 }
 \details{
 For Windows user, this function will produce a popup window showing the
@@ -237,7 +237,7 @@ avoid heavy memory use. A warning will be given in that case. The extended
 chains will be thinned in the same way.
 
 For more detail of model specification, see the paper on
-\url{http://arxiv.org/abs/1411.3042}.
+\url{https://arxiv.org/abs/1411.3042}.
 }
 \examples{
 \dontrun{
@@ -404,7 +404,7 @@ fit1<- insilico(RandomVA1, subpop = NULL,
 Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C.
 Crampin, Kathleen Kahn and Samuel J. Clark(2014) \emph{Probabilistic
 cause-of-death assignment using verbal autopsies},
-\url{http://arxiv.org/abs/1411.3042} \cr \emph{Working paper no. 147, Center
+\url{https://arxiv.org/abs/1411.3042} \cr \emph{Working paper no. 147, Center
 for Statistics and the Social Sciences, University of Washington}
 }
 \seealso{

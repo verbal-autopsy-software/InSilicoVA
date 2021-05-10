@@ -20,10 +20,11 @@
 #' 
 #' Maintainer: Zehang Li <lizehang@uw.edu>
 #' @seealso \code{\link{insilico}}, \code{\link{updateIndiv}}, \code{\link{plot.insilico}}
-#' @references Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C.
-#' Crampin, Kathleen Kahn and Samuel J. Clark Probabilistic cause-of-death
-#' assignment using verbal autopsies, \emph{arXiv preprint arXiv:1411.3042}
-#' \url{http://arxiv.org/abs/1411.3042} (2014)
+#' @references 
+#' Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C. Crampin,
+#' Kathleen Kahn and Samuel J. Clark Probabilistic cause-of-death assignment
+#' using verbal autopsies, \emph{Journal of the American Statistical
+#' Association} (2016), 111(515):1036-1049.
 #' @examples
 #' \dontrun{
 #' data(RandomVA1)
@@ -350,10 +351,10 @@ get.indiv <- function(object, data = NULL, CI = 0.95, is.aggregate = FALSE, by =
 #' 
 #' Maintainer: Zehang Li <lizehang@@uw.edu>
 #' @seealso \code{\link{insilico}}, \code{\link{get.indiv}}
-#' @references Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C.
-#' Crampin, Kathleen Kahn and Samuel J. Clark Probabilistic cause-of-death
-#' assignment using verbal autopsies, \emph{arXiv preprint arXiv:1411.3042}
-#' \url{http://arxiv.org/abs/1411.3042} (2014)
+#' @references #' Tyler H. McCormick, Zehang R. Li, Clara Calvert, Amelia C. Crampin,
+#' Kathleen Kahn and Samuel J. Clark Probabilistic cause-of-death assignment
+#' using verbal autopsies, \emph{Journal of the American Statistical
+#' Association} (2016), 111(515):1036-1049.
 #' @examples
 #' \dontrun{
 #' data(RandomVA1)

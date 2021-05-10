@@ -4,8 +4,15 @@
 \alias{csmf.diag}
 \title{Convergence test for fitted InSilico model}
 \usage{
-csmf.diag(csmf, conv.csmf = 0.02, test = c("gelman", "heidel")[2],
-  verbose = TRUE, autoburnin = FALSE, which.sub = NULL, ...)
+csmf.diag(
+  csmf,
+  conv.csmf = 0.02,
+  test = c("gelman", "heidel")[2],
+  verbose = TRUE,
+  autoburnin = FALSE,
+  which.sub = NULL,
+  ...
+)
 }
 \arguments{
 \item{csmf}{It could be either fitted \code{"insilico"} object, a list of

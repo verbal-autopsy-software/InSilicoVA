@@ -4,11 +4,25 @@
 \alias{plot.insilico}
 \title{plot CSMF from a "insilico" object}
 \usage{
-\method{plot}{insilico}(x, type = c("errorbar", "bar", "compare")[1],
-  top = 10, causelist = NULL, which.sub = NULL, xlab = "Causes",
-  ylab = "CSMF", title = "Top CSMF Distribution", horiz = TRUE,
-  angle = 60, fill = "lightblue", err_width = 0.4, err_size = 0.6,
-  point_size = 2, border = "black", bw = FALSE, ...)
+\method{plot}{insilico}(
+  x,
+  type = c("errorbar", "bar", "compare")[1],
+  top = 10,
+  causelist = NULL,
+  which.sub = NULL,
+  xlab = "Causes",
+  ylab = "CSMF",
+  title = "Top CSMF Distribution",
+  horiz = TRUE,
+  angle = 60,
+  fill = "lightblue",
+  err_width = 0.4,
+  err_size = 0.6,
+  point_size = 2,
+  border = "black",
+  bw = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{fitted \code{"insilico"} object}

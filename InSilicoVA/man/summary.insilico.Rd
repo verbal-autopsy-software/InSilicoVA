@@ -4,8 +4,15 @@
 \alias{summary.insilico}
 \title{Summarizing InSilicoVA Model Fits}
 \usage{
-\method{summary}{insilico}(object, CI.csmf = 0.95, CI.cond = 0.95,
-  file = NULL, top = 10, id = NULL, ...)
+\method{summary}{insilico}(
+  object,
+  CI.csmf = 0.95,
+  CI.cond = 0.95,
+  file = NULL,
+  top = 10,
+  id = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{Fitted \code{"insilico"} object.}

@@ -4,8 +4,15 @@
 \alias{get.indiv}
 \title{Get individual COD probabilities from InSilicoVA Model Fits}
 \usage{
-get.indiv(object, data = NULL, CI = 0.95, is.aggregate = FALSE,
-  by = NULL, java_option = "-Xmx1g", ...)
+get.indiv(
+  object,
+  data = NULL,
+  CI = 0.95,
+  is.aggregate = FALSE,
+  by = NULL,
+  java_option = "-Xmx1g",
+  ...
+)
 }
 \arguments{
 \item{object}{Fitted \code{"insilico"} object.}

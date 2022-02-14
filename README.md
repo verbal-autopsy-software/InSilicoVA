@@ -6,6 +6,12 @@ To install the package from CRAN, run the script:
 install.packages("InSilicoVA")
 ```
 
+To install the github testing version of InSilicoVA, run the script
+```r
+library(devtools)
+devtools::install_github("verbal-autopsy-software/InSilicoVA", subdir = "InSilicoVA")
+```
+
 To use InSilicoVA, 'rJava' package is required and it requires Java 6 or above properly installed and linked to R. See <a href="Documents/Insilico-manual.pdf">the user manual</a> for more detail.
 
 ### Reference

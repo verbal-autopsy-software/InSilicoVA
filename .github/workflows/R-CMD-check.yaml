@@ -27,7 +27,6 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      working-directory: ./InSilicoVA
 
     steps:
       - uses: actions/checkout@v1
@@ -72,7 +71,7 @@ jobs:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         run: |
           options(crayon.enabled = TRUE)
-          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-multiarch", "--run-donttest"), error_on = "warning", check_dir = "check")
+          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-multiarch", "--run-donttest"), error_on = "warning", check_dir = "check", path = "InSIlicoVA")
         shell: Rscript {0}
 
       - name: Upload check results

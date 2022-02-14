@@ -11,6 +11,7 @@ name: R-CMD-check
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
+    working-directory: ./InSilicoVA
 
     name: ${{ matrix.config.os-name }}, R ${{ matrix.config.r }}, Java ${{ matrix.config.java }}
 

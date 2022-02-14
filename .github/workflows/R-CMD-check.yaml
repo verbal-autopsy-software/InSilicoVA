@@ -11,7 +11,6 @@ name: R-CMD-check
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-    working-directory: ./InSilicoVA
 
     name: ${{ matrix.config.os-name }}, R ${{ matrix.config.r }}, Java ${{ matrix.config.java }}
 
@@ -28,6 +27,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      working-directory: ./InSilicoVA
 
     steps:
       - uses: actions/checkout@v1

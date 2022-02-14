@@ -12,6 +12,6 @@ Description: Computes individual causes of death and population cause-specific m
 License: GPL-2
 URL: https://github.com/verbal-autopsy-software/InSilicoVA
 BugReports: https://github.com/verbal-autopsy-software/InSilicoVA/issues
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     testthat

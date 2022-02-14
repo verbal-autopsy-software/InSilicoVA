@@ -62,7 +62,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
-          working-directory: './InSilicoVA'
+          working-directory: './InSilicoVA/InSilicoVA'
           extra-packages: rcmdcheck
 
       - name: Check

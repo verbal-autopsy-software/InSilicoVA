@@ -59,19 +59,17 @@ jobs:
           do
             eval sudo $cmd
           done < <(Rscript -e 'writeLines(install.packages('remotes'); remotes::system_requirements("ubuntu", "20.04"))')
-      - name: Install dependencies
-        run: |
-          install.packages('remotes')
-          remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("rcmdcheck")
-        shell: Rscript {0}
+
+      - uses: r-lib/actions/setup-r-dependencies@v1
+        with:
+          extra-packages: rcmdcheck
 
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         run: |
           options(crayon.enabled = TRUE)
-          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-multiarch", "--run-donttest"), error_on = "warning", check_dir = "check", path = "InSIlicoVA")
+          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-multiarch", "--run-donttest"), error_on = "warning", check_dir = "check", path = "InSilicoVA")
         shell: Rscript {0}
 
       - name: Upload check results

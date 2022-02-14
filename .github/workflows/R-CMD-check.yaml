@@ -61,6 +61,7 @@ jobs:
           done < <(Rscript -e 'writeLines(install.packages('remotes'); remotes::system_requirements("ubuntu", "20.04"))')
 
       - uses: r-lib/actions/setup-r-dependencies@v1
+        working-directory: ./InSilicoVA
         with:
           extra-packages: rcmdcheck
 

@@ -59,9 +59,10 @@ jobs:
           while read -r cmd
           do
             eval sudo $cmd
-          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
+          done < <(Rscript -e 'writeLines(install.packages('remotes'); remotes::system_requirements("ubuntu", "20.04"))')
       - name: Install dependencies
         run: |
+          install.packages('remotes')
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}

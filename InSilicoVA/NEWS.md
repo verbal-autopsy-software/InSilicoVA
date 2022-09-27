@@ -1,5 +1,5 @@
 # InSilicoVA - changes
-Version 1.3.6 (2022-09-25) 
+Version 1.4.0 (2022-09-25) 
 ==========================
 + Bug fix in `mapICD`.
 + New color palette that is colorblind friendly.

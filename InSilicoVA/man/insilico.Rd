@@ -6,7 +6,7 @@
 \usage{
 insilico(
   data,
-  data.type = c("WHO2012", "WHO2016")[1],
+  data.type = c("WHO2012", "WHO2016")[2],
   sci = NULL,
   isNumeric = FALSE,
   updateCondProb = TRUE,

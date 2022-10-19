@@ -348,7 +348,7 @@
 #' 
 #' }
 #' @export insilico
-insilico <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NULL, isNumeric = FALSE, 
+insilico <- function(data, data.type = c("WHO2012", "WHO2016")[2], sci = NULL, isNumeric = FALSE, 
   updateCondProb = TRUE, keepProbbase.level = TRUE,
   CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, 
   warning.write = FALSE, directory = NULL, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, 

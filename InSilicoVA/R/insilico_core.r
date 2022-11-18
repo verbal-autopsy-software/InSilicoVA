@@ -75,7 +75,7 @@ insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NUL
   data.type <- toupper(data.type)
 
   if(!datacheck && data.type == "WHO2016"){
-  	warning("Data check is turned off. Please be very careful with this, because some indicators needs to be negated in the data check steps (i.e., having symptom = Yes turned into not having symptom = No). Failed to properly negate all such symptoms will lead to erroneous inference.")
+  	warning("Data check is turned off. Please be very careful with this, because some indicators needs to be negated in the data check steps (i.e., having symptom = Yes turned into not having symptom = No). Failure to properly negate all such symptoms will lead to erroneous inference.")
   }
 
   ## Add java system check
@@ -541,7 +541,7 @@ removeExt <- function(data, prob.orig, is.Numeric, subpop, subpop_order_list, ex
 				ext.csmf = ext.csmf))
 }
 
-removeExtV5 <- function(data, prob.orig, csmf.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps, nagete){
+removeExtV5 <- function(data, prob.orig, csmf.orig, is.Numeric, subpop, subpop_order_list, external.causes, external.symps, negate){
 ###########################################################
 # function to remove external causes/symps and assign deterministic deaths
 # @param:
@@ -904,14 +904,14 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	    count.changelabel = 0
 	    for(i in 1:length(valabels)){
 	        if(tolower(colnames(data)[i]) != tolower(valabels)[i]){
-	            warning(paste("Input columne '", colnames(data)[i], "' does not match InterVA standard: '", 
+	            warning(paste("Input column '", colnames(data)[i], "' does not match InterVA standard: '", 
 	                    valabels[i], "'", sep = ""),
 	                    call. = FALSE, immediate. = TRUE)
 	            count.changelabel = count.changelabel + 1
 	        }         
 	    }
 	    if(count.changelabel > 0){
-	        warning(paste(count.changelabel, "column names changed in input. \n If the change in undesirable, please change in the input to match standard InterVA4 input format.\n"), call. = FALSE, immediate. = TRUE)
+	        warning(paste(count.changelabel, "column names changed in input. \n If the change is undesirable, please change the input to match standard InterVA4 input format.\n"), call. = FALSE, immediate. = TRUE)
 	        colnames(data) <- valabels
 	    }
 

@@ -918,8 +918,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 	  	if(!is.null(CondProb)){
 	  		prob.orig <- CondProb
 	  		exclude.impossible.cause <- "none"
-	  		vacauses <- colnames(CondProbNum)
-	  		if(is.null(vacauses)) vacauses <- paste0("Cause", 1:dim(CondProbNum)[2])	  	
+	  		vacauses <- colnames(CondProb)
+	  		if(is.null(vacauses)) vacauses <- paste0("Cause", 1:dim(CondProb)[2])	  	
 	  	}
 	  	if(!is.null(CondProbNum)){
 	  		prob.orig <- CondProbNum 

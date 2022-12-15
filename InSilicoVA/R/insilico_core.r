@@ -1243,7 +1243,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			ss <- match(impossible.combination[ii, 1], colnames(data)[-1])
 			cc <- match(impossible.combination[ii, 2], colnames(prob.orig))
 			if((!is.na(ss)) && (!is.na(cc))){
-					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss)))
+					impossible <- rbind(impossible, c(as.integer(cc), as.integer(ss), as.integer(impossible.combination[ii, 3])))
 			}
 		}
 	}else{

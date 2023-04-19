@@ -699,7 +699,7 @@ public class InsilicoSampler2 {
         if(!isAdded){
             // initialize values
             for(int sub  = 0; sub < N_sub; sub++){
-                mu_now[sub] = mu;
+                for(int c = 0; c < C; c++) mu_now[sub][c] = mu[c];
                 sigma2_now[sub] = sigma2;
                 theta_now[sub][0] = 1;
                 double expsum = Math.exp(1.0);
@@ -707,14 +707,14 @@ public class InsilicoSampler2 {
                     theta_now[sub][c] = Math.log(rand.nextDouble() * 100.0);
                     expsum += Math.exp(theta_now[sub][c]);
                 }
-                for(int c = 0; c < C; c++){
+                for(int c = 0; c < C; c++) {
                     p_now[sub][c] = Math.exp(theta_now[sub][c]) / expsum;
                 }
             }
         }else{
             // if the chain is to continue from a previous one, initialize with the _now values imported
             for(int sub  = 0; sub < N_sub; sub++){
-                mu_now[sub] = mu_continue[sub];
+                for(int c = 0; c < C; c++) mu_now[sub][c] = mu_continue[sub][c];
                 sigma2_now[sub] = sigma2_continue[sub];
                 theta_now[sub] = theta_continue[sub];
                 // recalculate p from theta
@@ -843,7 +843,7 @@ public class InsilicoSampler2 {
                     mu_now[sub][c] = mu_mean;
                 }
 
-                // sample sigma2
+                 // sample sigma2
                 double shape = (C-remove_causes[sub]-1.0)/2;
                 double rate2 = 0;
                 for(int c = 0 ; c < C; c++) rate2 += Math.pow(theta_now[sub][c] - mu_now[sub][c] *

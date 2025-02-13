@@ -603,6 +603,7 @@ public class InsilicoSampler2 {
      * seed, N_gibbs, thin: integers
      * mu: vector initialized in R
      * sigma2: value initialized in R
+     * 2025 update: known_cause is a N vector \in {1, ..., C} or -1 if not known
      */
     public static double[] Fit(int[] dimensions,
                                double[][] probbase, double[][] probbase_order, double[] level_values,
@@ -612,7 +613,8 @@ public class InsilicoSampler2 {
                                double[] mu, double sigma2, boolean this_is_Unix, boolean useProbbase,
                                boolean isAdded,
                                double[][] mu_continue, double[] sigma2_continue, double[][] theta_continue,
-                               int C_phy, double[] broader, double[][] assignment, int[][] impossible){
+                               int C_phy, double[] broader, double[][] assignment, int[][] impossible, 
+                                     int[] known_cause){
 //			public static void main(String[] args){
 //				int N = 5;
 //				int S = 3;
@@ -699,7 +701,7 @@ public class InsilicoSampler2 {
         if(!isAdded){
             // initialize values
             for(int sub  = 0; sub < N_sub; sub++){
-                for(int c = 0; c < C; c++) mu_now[sub][c] = mu[c];
+                mu_now[sub] = mu;
                 sigma2_now[sub] = sigma2;
                 theta_now[sub][0] = 1;
                 double expsum = Math.exp(1.0);
@@ -707,14 +709,14 @@ public class InsilicoSampler2 {
                     theta_now[sub][c] = Math.log(rand.nextDouble() * 100.0);
                     expsum += Math.exp(theta_now[sub][c]);
                 }
-                for(int c = 0; c < C; c++) {
+                for(int c = 0; c < C; c++){
                     p_now[sub][c] = Math.exp(theta_now[sub][c]) / expsum;
                 }
             }
         }else{
             // if the chain is to continue from a previous one, initialize with the _now values imported
             for(int sub  = 0; sub < N_sub; sub++){
-                for(int c = 0; c < C; c++) mu_now[sub][c] = mu_continue[sub][c];
+                mu_now[sub] = mu_continue[sub];
                 sigma2_now[sub] = sigma2_continue[sub];
                 theta_now[sub] = theta_continue[sub];
                 // recalculate p from theta
@@ -747,6 +749,13 @@ public class InsilicoSampler2 {
                         zero_matrix[i][impossible[k][0] - 1] = 0;
                     }
                 }
+            }
+        }
+        for(int i = 0; i < N; i++){
+            if(known_cause[i] > 0){
+                for(int c = 0; c < C; c++){
+                    if(c != known_cause[i] - 1) zero_matrix[i][c] = 0;
+                }                
             }
         }
         // check if specific causes are impossible for a whole subpopulation
@@ -843,7 +852,7 @@ public class InsilicoSampler2 {
                     mu_now[sub][c] = mu_mean;
                 }
 
-                 // sample sigma2
+                // sample sigma2
                 double shape = (C-remove_causes[sub]-1.0)/2;
                 double rate2 = 0;
                 for(int c = 0 ; c < C; c++) rate2 += Math.pow(theta_now[sub][c] - mu_now[sub][c] *

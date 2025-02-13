@@ -49,6 +49,7 @@
 #' @param nlevel.dev number of levels in \code{probbase.dev}. Default to be NULL
 #' @param indiv.CI credible interval for individual probabilities
 #' @param groupcode logical indicator of including the group code in the output causes
+#' @param known_labels a data frame with two columns: the first column is the death ID and the second column is the known cause of death (need to match the cause list for the given data format). When it is provided for some causes, they will be used as partial labels in the input data. Any unmatched observations (unmatched by either ID or cause) will not contribute to partial labels. Default to be NULL
 #' @param ... unused arguments
 
 #' @return 
@@ -65,7 +66,7 @@
 #' @keywords InSilicoVA
 #' 
 #' @export insilico.fit
-insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NULL, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, directory = NULL, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = c("subset2", "subset", "all", "InterVA", "none")[1], impossible.combination = NULL, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, groupcode=FALSE, ...){ 
+insilico.fit <- function(data, data.type = c("WHO2012", "WHO2016")[1], sci = NULL, isNumeric = FALSE, updateCondProb = TRUE, keepProbbase.level = TRUE,  CondProb = NULL, CondProbNum = NULL, datacheck = TRUE, datacheck.missing = TRUE, warning.write = FALSE, directory = NULL, external.sep = TRUE, Nsim = 4000, thin = 10, burnin = 2000, auto.length = TRUE, conv.csmf = 0.02, jump.scale = 0.1, levels.prior = NULL, levels.strength = 1, trunc.min = 0.0001, trunc.max = 0.9999, subpop = NULL, java_option = "-Xmx1g", seed = 1, phy.code = NULL, phy.cat = NULL, phy.unknown = NULL, phy.external = NULL, phy.debias = NULL, exclude.impossible.cause = c("subset2", "subset", "all", "InterVA", "none")[1], impossible.combination = NULL, no.is.missing = FALSE, customization.dev = FALSE, Probbase_by_symp.dev = FALSE, probbase.dev = NULL, table.dev = NULL, table.num.dev = NULL, gstable.dev = NULL, nlevel.dev = NULL, indiv.CI = NULL, groupcode=FALSE, known_labels = NULL, ...){ 
   # handling changes throughout time
   args <- as.list(match.call())
   if(!is.null(args$length.sim)){
@@ -1398,6 +1399,15 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 			indic[temp.ind, i] <- 1
 		}
 	}
+	known_cause <- rep(-1, N)
+	if(!is.null(known_labels)){
+		for(i in 1:dim(known_labels)[1]){
+			j <- match(known_labels[i, 1], data[, 1])
+			k <- match(known_labels[i, 2], vacauses.current)
+			if(!is.na(j)) known_cause[j] <- k
+		}
+  }
+
 	## if data contains missing ".", translate to -1
 	if(isNumeric){
 		contains.missing <- (length(which(data == "-1"))> 0)
@@ -1551,6 +1561,8 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
     sigma2.last.j <- .jarray(rep(0, N_sub.j), dispatch = TRUE)
 	theta.last.j <- .jarray(matrix(0, N_sub.j, C), dispatch = TRUE)
 	keepProb.j <- !updateCondProb
+	known_cause.j <- .jarray(as.integer(known_cause), dispatch = TRUE)
+
 
 	ins <- try( 
 		.jcall(obj, "[D", "Fit", 
@@ -1561,7 +1573,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 		seed.j, N_gibbs.j, burn.j, thin.j, 
 		mu.j, sigma2.j, isUnix, keepProb.j, 
 		isAdded, mu.last.j, sigma2.last.j, theta.last.j, 
-		C.phy.j, vacauses.broader.j, assignment.j, impossible.j) 
+		C.phy.j, vacauses.broader.j, assignment.j, impossible.j, known_cause.j) 
 		, FALSE)
 	if(is(ins, "try-error")){
 		java_message()	
@@ -1616,7 +1628,7 @@ ParseResult <- function(N_sub.j, C.j, S.j, N_level.j, pool.j, fit){
 						seed.j, N_gibbs.j, burn.j, thin.j, 
 						mu.j, sigma2.j, isUnix, keepProb.j, 
 						TRUE, mu.last.j, sigma2.last.j, theta.last.j, 
-						C.phy.j, vacauses.broader.j, assignment.j, impossible.j)
+						C.phy.j, vacauses.broader.j, assignment.j, impossible.j, known_cause.j)
     		# one dimensional array is straightforward
     		fit.add <- ins
     		# fit.add <-  t(sapply(ins, .jevalArray))

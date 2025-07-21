@@ -1,4 +1,8 @@
 # InSilicoVA - changes
+Version 1.4.2 (2025-07-21) 
+==========================
++ Document formatting update for CRAN.
+
 Version 1.4.0 (2022-09-25) 
 ==========================
 + Bug fix in `mapICD`.

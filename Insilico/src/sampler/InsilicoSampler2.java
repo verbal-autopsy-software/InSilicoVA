@@ -740,12 +740,16 @@ public class InsilicoSampler2 {
             }
         }
         if(check_impossible){
+
             for(int i = 0; i < N; i++){
                 for(int k = 0; k < impossible.length; k++){
                     if(indic[i][impossible[k][1] - 1] == 1 & impossible[k][2] == 0){
                         zero_matrix[i][impossible[k][0] - 1] = 0;
                     }
                     if(indic[i][impossible[k][1] - 1] == 0 & impossible[k][2] == 1){
+                        zero_matrix[i][impossible[k][0] - 1] = 0;
+                    }
+                    if(indic[i][impossible[k][1] - 1] == -1 & impossible[k][2] == -1){
                         zero_matrix[i][impossible[k][0] - 1] = 0;
                     }
                 }
